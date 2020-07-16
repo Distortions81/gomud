@@ -6,12 +6,14 @@ import (
 	"net"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
 const STATE_WELCOME = 0
 const STATE_PLAYING = 10
 
+var ConnectionListLock sync.RWMutex
 var ConnectionList []Connection
 
 type Connection struct {
@@ -58,7 +60,9 @@ func checkError(err error) {
 func newDescriptor(desc net.Conn) {
 	desc.Write([]byte("Connected!\n"))
 	newConnection := Connection{desc: desc, life: time.Now(), state: STATE_WELCOME, name: "Unknown"}
+	ConnectionListLock.Lock()
 	ConnectionList = append(ConnectionList, newConnection)
+	ConnectionListLock.Unlock()
 
 	WriteToDesc(desc, "What would you like to be called?")
 
@@ -70,18 +74,19 @@ func readConnection(desc net.Conn) {
 
 	for {
 
+		ConnectionListLock.Lock()
 		pnum := findPlayer(desc)
-
-		if pnum == -1 {
-			fmt.Println("Couldn't find descriptor in list.")
-			return
+		if pnum < 0 {
+			ConnectionListLock.Unlock()
+			return //Player is dead
 		}
+		player := ConnectionList[pnum]
+		ConnectionListLock.Unlock()
 
-		player := &ConnectionList[pnum]
 		message, err := reader.ReadString('\n')
 
 		if err != nil {
-			LostConnection(desc)
+			lostConnection(desc)
 			desc.Close()
 			return
 		}
@@ -115,6 +120,9 @@ func readConnection(desc net.Conn) {
 				if command != "" && len(command) > 3 {
 					player.name = fmt.Sprintf("%s", command)
 					player.state = STATE_PLAYING
+
+					syncPlayer(player)
+
 					WriteToDesc(desc, "Okay, you will be called "+command)
 					showCommands(desc)
 					buf := fmt.Sprintf("%s has joined!", command)
@@ -127,12 +135,19 @@ func readConnection(desc net.Conn) {
 					WriteToDesc(desc, "Goodbye")
 					buf := fmt.Sprintf("%s has quit.", player.name)
 					desc.Close()
+
+					ConnectionListLock.Lock()
+					pnum := findPlayer(desc)
 					removePlayer(pnum)
+					ConnectionListLock.Unlock()
+
 					WriteToAll(buf)
+					return
 				} else if command == "who" {
 					output := "Players online:\n"
 
 					max := len(ConnectionList)
+					ConnectionListLock.RLock()
 					for x, p := range ConnectionList {
 						buf := ""
 
@@ -146,6 +161,7 @@ func readConnection(desc net.Conn) {
 							output = output + "\n\r"
 						}
 					}
+					ConnectionListLock.RUnlock()
 					WriteToDesc(desc, output)
 				} else if command == "say" {
 					if arglen > 0 {
@@ -180,6 +196,9 @@ func WriteToDesc(desc net.Conn, text string) {
 }
 
 func WriteToAll(text string) {
+	ConnectionListLock.RLock()
+	defer ConnectionListLock.RUnlock()
+
 	for _, con := range ConnectionList {
 		if con.state == STATE_PLAYING {
 			message := fmt.Sprintf("%s\n\r", text)
@@ -190,6 +209,9 @@ func WriteToAll(text string) {
 }
 
 func WriteToOthers(desc net.Conn, text string) {
+	ConnectionListLock.RLock()
+	defer ConnectionListLock.RUnlock()
+
 	for _, con := range ConnectionList {
 		if con.desc != desc && con.state == STATE_PLAYING {
 			message := fmt.Sprintf("%s\n\r", text)
@@ -199,14 +221,16 @@ func WriteToOthers(desc net.Conn, text string) {
 	fmt.Println(text)
 }
 
-func LostConnection(desc net.Conn) {
+func lostConnection(desc net.Conn) {
+
+	ConnectionListLock.Lock()
+	defer ConnectionListLock.Unlock()
 
 	pnum := findPlayer(desc)
-
 	if pnum >= 0 {
 		if ConnectionList[pnum].state == STATE_PLAYING {
 			msg := fmt.Sprintf("%s disconnected.", ConnectionList[pnum].name)
-			WriteToAll(msg)
+			go WriteToAll(msg)
 			removePlayer(pnum)
 			return
 		}
@@ -216,6 +240,7 @@ func LostConnection(desc net.Conn) {
 }
 
 func findPlayer(desc net.Conn) int {
+
 	for x, con := range ConnectionList {
 		if con.desc == desc {
 			return x
@@ -226,6 +251,18 @@ func findPlayer(desc net.Conn) int {
 }
 
 func removePlayer(i int) {
-	ConnectionList = append(ConnectionList[:i], ConnectionList[i+1:]...)
-	fmt.Println("player removed.")
+	if i >= 0 {
+		ConnectionList = append(ConnectionList[:i], ConnectionList[i+1:]...)
+		fmt.Println("player removed.")
+	}
+}
+
+func syncPlayer(player Connection) {
+	//Sync everything back
+	ConnectionListLock.Lock()
+	pnum := findPlayer(player.desc)
+	if pnum >= 0 {
+		ConnectionList[pnum] = player
+	}
+	ConnectionListLock.Unlock()
 }
