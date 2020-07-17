@@ -65,7 +65,8 @@ func newDescriptor(desc net.Conn) {
 	ConnectionList = append(ConnectionList, newConnection)
 	ConnectionListLock.Unlock()
 
-	WriteToDesc(desc, "What would you like to be called?")
+	time.Sleep(time.Millisecond * 100)
+	WriteToDesc(desc, "\r\nWhat would you like to be called?")
 
 	go readConnection(desc) //new thread!
 }
@@ -159,7 +160,7 @@ func readConnection(desc net.Conn) {
 						}
 						output = output + buf
 						if x <= max {
-							output = output + "\n\r"
+							output = output + "\r\n"
 						}
 					}
 					ConnectionListLock.RUnlock()
@@ -192,7 +193,7 @@ func showCommands(desc net.Conn) {
 }
 
 func WriteToDesc(desc net.Conn, text string) {
-	message := fmt.Sprintf("%s\n\r", text)
+	message := fmt.Sprintf("%s\r\n", text)
 	desc.Write([]byte(message))
 }
 
@@ -202,7 +203,7 @@ func WriteToAll(text string) {
 
 	for _, con := range ConnectionList {
 		if con.state == STATE_PLAYING {
-			message := fmt.Sprintf("%s\n\r", text)
+			message := fmt.Sprintf("%s\r\n", text)
 			con.desc.Write([]byte(message))
 		}
 	}
@@ -215,7 +216,7 @@ func WriteToOthers(desc net.Conn, text string) {
 
 	for _, con := range ConnectionList {
 		if con.desc != desc && con.state == STATE_PLAYING {
-			message := fmt.Sprintf("%s\n\r", text)
+			message := fmt.Sprintf("%s\r\n", text)
 			con.desc.Write([]byte(message))
 		}
 	}
