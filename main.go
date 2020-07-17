@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"./support"
 	"github.com/sasha-s/go-deadlock"
 )
 
@@ -59,14 +60,14 @@ func checkError(err error) {
 }
 
 func newDescriptor(desc net.Conn) {
-	desc.Write([]byte("Connected!\n"))
+	WriteToDesc(desc, "Connected!")
 	newConnection := Connection{desc: desc, life: time.Now(), state: STATE_WELCOME, name: "Unknown"}
 	ConnectionListLock.Lock()
 	ConnectionList = append(ConnectionList, newConnection)
 	ConnectionListLock.Unlock()
 
 	time.Sleep(time.Millisecond * 100)
-	WriteToDesc(desc, "\r\nWhat would you like to be called?")
+	WriteToDesc(desc, "What would you like to be called?")
 
 	go readConnection(desc) //new thread!
 }
@@ -85,7 +86,8 @@ func readConnection(desc net.Conn) {
 		player := ConnectionList[pnum]
 		ConnectionListLock.Unlock()
 
-		message, err := reader.ReadString('\n')
+		umes, err := reader.ReadString('\n')
+		message := support.StripCtlAndExtFromBytes(umes)
 
 		if err != nil {
 			lostConnection(desc)
@@ -96,6 +98,7 @@ func readConnection(desc net.Conn) {
 		msg := strings.ReplaceAll(message, "\n", "")
 		msg = strings.ReplaceAll(msg, "\r", "")
 		msg = strings.ReplaceAll(msg, "\t", "")
+		msg = strings.TrimSpace(msg)
 
 		if msg != "" {
 
@@ -119,15 +122,15 @@ func readConnection(desc net.Conn) {
 			}
 
 			if player.state == STATE_WELCOME {
-				if command != "" && len(command) > 3 {
-					player.name = fmt.Sprintf("%s", command)
+				if slen > 3 && slen < 128 {
+					player.name = fmt.Sprintf("%s", msg)
 					player.state = STATE_PLAYING
 
 					syncPlayer(player)
 
-					WriteToDesc(desc, "Okay, you will be called "+command)
+					WriteToDesc(desc, "Okay, you will be called "+msg)
 					showCommands(desc)
-					buf := fmt.Sprintf("%s has joined!", command)
+					buf := fmt.Sprintf("%s has joined!", msg)
 					WriteToAll(buf)
 				} else {
 					WriteToDesc(desc, "That isn't a valid name.")
