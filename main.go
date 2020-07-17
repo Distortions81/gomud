@@ -111,7 +111,7 @@ func readConnection(desc net.Conn) {
 				arglen = len(args)
 
 				if arglen > 0 {
-					command = strings.ToLower(args[0])
+					command = (args[0])
 					if arglen > 1 {
 						aargs = strings.Join(args[1:arglen], " ")
 					}
@@ -119,7 +119,7 @@ func readConnection(desc net.Conn) {
 			}
 
 			if player.state == STATE_WELCOME {
-				if command != "" && len(command) > 3 {
+				if command != "" && len(command) > 3 {	
 					player.name = fmt.Sprintf("%s", command)
 					player.state = STATE_PLAYING
 
