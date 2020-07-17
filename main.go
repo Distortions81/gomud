@@ -6,14 +6,15 @@ import (
 	"net"
 	"os"
 	"strings"
-	"sync"
 	"time"
+
+	"github.com/sasha-s/go-deadlock"
 )
 
 const STATE_WELCOME = 0
 const STATE_PLAYING = 10
 
-var ConnectionListLock sync.RWMutex
+var ConnectionListLock deadlock.RWMutex
 var ConnectionList []Connection
 
 type Connection struct {
@@ -236,6 +237,7 @@ func lostConnection(desc net.Conn) {
 		}
 	}
 
+	removePlayer(pnum)
 	fmt.Println("A connection was lost.")
 }
 
