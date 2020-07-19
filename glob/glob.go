@@ -1,33 +1,43 @@
 package glob
 
 import (
+	"bufio"
 	"net"
 	"time"
+
+	"../def"
 )
 
-/*Connections*/
+var ServerState = def.SERVER_RUNNING
+var ServerListener *net.TCPListener
 var ConnectionList []ConnectionData
-var ServerListener *TCPListener
+
+var LastConnectionID int
 
 type ConnectionData struct {
-	connection    net.Conn
-	address       string
-	state         int
-	connectedTime time.Time
-	idleTime      time.Time
+	Name          string
+	Desc          net.Conn
+	Address       string
+	State         int
+	ConnectedTime time.Time
+	IdleTime      time.Time
+	Reader        *bufio.Reader
+	Id            int
+	BytesOut      int
+	BytesIn       int
 
-	player *PlayerData
-	valid  bool
+	Player *PlayerData
+	Valid  bool
 }
 
 type PlayerData struct {
-	name          string
-	description   string
-	state         int
-	connectedTime time.Time
-	idleTime      time.Time
-	admin         bool
+	Name          string
+	Description   string
+	State         int
+	ConnectedTime time.Time
+	IdleTime      time.Time
+	Admin         bool
 
-	connection *net.Conn
-	valid      bool
+	Desc  *net.Conn
+	Valid bool
 }
