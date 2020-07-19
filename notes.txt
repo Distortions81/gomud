@@ -1,0 +1,16 @@
+Dream list
+
+world->areas->sectors aka 1.1.10
+aka north link 5-10
+all sectors get unique ids, meaning they can be moved between areas, and we don't need to to put the area in the vnum.
+fixes all worry of vnum juggling
+areas/sectors/rooms show edit history, changes and builders.
+areas on git for version history, with test/public branches
+
+login->server->character
+possibly make seperate program, that passes connections to servers (easier to handle copyover/crashes, and avoid reconnect/relog)
+
+races/classes/skills/spells/commands scripting language, lower barrier to entry.
+probably handle disconnected/deleted players/items/states at all times (via dedicated functions)
+
+online quest editor

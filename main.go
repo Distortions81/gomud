@@ -9,41 +9,35 @@ import (
 	"strings"
 	"time"
 
+	"./def"
 	"./support"
 )
 
-const DEFAULT_PORT = ":7777"
-const STRING_UNKNOWN = "unknown"
-
-/*Connection State*/
-const CON_STATE_WELCOME = 0
-const CON_STATE_ENTER_LOGIN = 10
-const CON_STATE_INVALID_LOGIN = 20
-
-const CON_STATE_PASSWORD = 30
-const CON_STATE_INVALID_PASSWORD = 40
-
-const CON_STATE_NEWS = 50
-const CON_STATE_PLAYING = 100
-
-/*New Users*/
-const CON_STATE_NEW_LOGIN = 30
-const CON_STATE_NEW_LOGIN_CONFIRM = 0
-const CON_STATE_NEW_PASSWORD = 0
-const CON_STATE_NEW_PASSWORD_CONFIRM = 0
-
 /*Connections*/
-var ConnectionList []Connection
+var ConnectionList []ConnectionData
 var ServerListener *TCPListener
 
-type Connection struct {
-	desc net.Conn
-	reader
-	ip string
+type ConnectionData struct {
+	connection    net.Conn
+	address       string
+	state         int
+	connectedTime time.Time
+	idleTime      time.Time
 
-	name  string
-	state int
-	time  time.Time
+	player *PlayerData
+	valid  bool
+}
+
+type PlayerData struct {
+	name          string
+	description   string
+	state         int
+	connectedTime time.Time
+	idleTime      time.Time
+	admin         bool
+
+	connection *net.Conn
+	valid      bool
 }
 
 func checkError(err error, fatal bool) {
@@ -59,12 +53,12 @@ func checkError(err error, fatal bool) {
 func main() {
 
 	/*Find Network*/
-	addr, err := net.ResolveTCPAddr("tcp", DEFAULT_PORT)
-	checkError(err)
+	addr, err := net.ResolveTCPAddr("tcp", def.DEFAULT_PORT)
+	checkError(err, def.ERROR_FATAL)
 
 	/*Open Listener*/
 	ServerListener, err := net.ListenTCP("tcp", addr)
-	checkError(err)
+	checkError(err, def.ERROR_FATAL)
 
 	/*Print Connection*/
 	buf := fmt.Sprint("Server online at: %s", addr.String())
@@ -76,16 +70,21 @@ func main() {
 }
 
 func mainLoop() {
+
+	/*Check for new connections*/
 	conn, err := ServerListener.Accept()
 	if err == nil {
-		log.Println("New descriptor.")
-		conn.
-			newDescriptor(conn)
+		log.Println("[INFO] New connection.")
+		conn.newDescriptor(conn)
+
+		/*Change connections settings*/
 		conn.SetLinger(-1)
 		conn.SetNoDelay(true)
 		conn.SetReadBuffer(10000)     //10k, 10 seconds of insanely-fast typing
 		conn.SetWriteBuffer(12500000) //12.5MB, 10 second buffer at 10mbit
-
+	} else {
+		log.Println("[WARN] Attempted to accept invalid connection.")
+		return
 	}
 
 	for p := range ConnectionList {
@@ -95,9 +94,9 @@ func mainLoop() {
 
 func newDescriptor(desc net.Conn) {
 	WriteToDesc(desc, "Connected!")
-	newConnection := Connection{desc: desc, ip: STRING_UNKNOWN, time: time.Now(), state: CON_STATE_WELCOME, name: STRING_UNKNOWN}
+	newConnection := ConnectionData{connection: desc, address: def.STRING_UNKNOWN, state: def.CON_STATE_WELCOME, connectedTime: time.Now(), idleTime: time.Now(), player: nil, valid: true}
 	ConnectionList = append(ConnectionList, newConnection)
-	WriteToDesc(desc, "To create a new user, enter: 'new'\nWhat would you like to be called?")
+	WriteToDesc(desc, "To create a new login, type: new\nLogin:")
 }
 
 func readConnection(player Connection) {
@@ -138,7 +137,7 @@ func readConnection(player Connection) {
 			}
 		}
 
-		if player.state == CON_STATE_WELCOME {
+		if player.state == def.CON_STATE_WELCOME {
 			if slen > 3 && slen < 128 {
 				player.name = fmt.Sprintf("%s", msg)
 				player.state = CON_STATE_PLAYING
@@ -152,7 +151,7 @@ func readConnection(player Connection) {
 			} else {
 				WriteToDesc(desc, "That isn't a valid name.")
 			}
-		} else if player.state == CON_STATE_PLAYING {
+		} else if player.state == def.CON_STATE_PLAYING {
 			if command == "quit" {
 				WriteToDesc(desc, "Goodbye")
 				buf := fmt.Sprintf("%s has quit.", player.name)
@@ -170,7 +169,7 @@ func readConnection(player Connection) {
 				for x, p := range ConnectionList {
 					buf := ""
 
-					if p.state == CON_STATE_PLAYING {
+					if p.state == def.CON_STATE_PLAYING {
 						buf = fmt.Sprintf("%d: %s", x+1, p.name)
 					} else {
 						buf = fmt.Sprintf("%d: %s", x+1, "(Connecting)")
@@ -218,13 +217,13 @@ func WriteToAll(text string) {
 			con.desc.Write([]byte(message))
 		}
 	}
-	fmt.Println(text)
+	log.Println("[ALL] " + text)
 }
 
 func WriteToOthers(desc net.Conn, text string) {
 
 	for _, con := range ConnectionList {
-		if con.desc != desc && con.state == CON_STATE_PLAYING {
+		if con.desc != desc && con.state == def.CON_STATE_PLAYING {
 			message := fmt.Sprintf("%s\r\n", text)
 			con.desc.Write([]byte(message))
 		}
@@ -236,7 +235,7 @@ func lostConnection(desc net.Conn) {
 
 	pnum := findPlayer(desc)
 	if pnum >= 0 {
-		if ConnectionList[pnum].state == CON_STATE_PLAYING {
+		if ConnectionList[pnum].state == def.CON_STATE_PLAYING {
 			msg := fmt.Sprintf("%s disconnected.", ConnectionList[pnum].name)
 			go WriteToAll(msg)
 			removePlayer(pnum)
@@ -245,7 +244,7 @@ func lostConnection(desc net.Conn) {
 	}
 
 	removePlayer(pnum)
-	fmt.Println("A connection was lost.")
+	fmt.Println("Connection dropped at login.")
 }
 
 func removePlayer(i int) {

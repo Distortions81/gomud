@@ -1,0 +1,44 @@
+package def
+
+const DEFAULT_PORT = ":7777"
+const STRING_UNKNOWN = "unknown"
+
+/*Connection State*/
+const CON_STATE_WELCOME = 0
+const CON_STATE_ENTER_LOGIN = 10
+const CON_STATE_INVALID_LOGIN = 20
+
+const CON_STATE_PASSWORD = 30
+const CON_STATE_INVALID_PASSWORD = 40
+
+const CON_STATE_NEWS = 50
+const CON_STATE_PLAYING = 100
+
+/*New Users*/
+const CON_STATE_NEW_LOGIN = 30
+const CON_STATE_NEW_LOGIN_CONFIRM = 0
+const CON_STATE_NEW_PASSWORD = 0
+const CON_STATE_NEW_PASSWORD_CONFIRM = 0
+
+/*Player States*/
+const PLAYER_ALIVE = 0
+const PLAYER_SIT = 10
+const PLAYER_REST = 20
+const PLAYER_SLEEP = 30
+const PLAYER_STUNNED = 40
+const PLAYER_DEAD = 50
+
+/*Errors*/
+const ERROR_NONFATAL = false
+const ERROR_FATAL = true
+
+/*Player Type*/
+cosnt PLAYER_TYPE_NEW = 0
+cosnt PLAYER_TYPE_NORMAL = 10
+cosnt PLAYER_TYPE_VETERAN = 20
+cosnt PLAYER_TYPE_TRUSTED = 30
+
+cosnt PLAYER_TYPE_BUILDER = 70
+cosnt PLAYER_TYPE_MODERATOR = 80
+cosnt PLAYER_TYPE_ADMIN = 90
+cosnt PLAYER_TYPE_OWNER = 100
