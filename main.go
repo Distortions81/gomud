@@ -47,83 +47,45 @@ func main() {
 func mainLoop() {
 
 	/*Seperate thread, wait for new connections*/
-	go func() {
-		for glob.ServerState == def.SERVER_RUNNING {
-			/*Check for new connections*/
-			conn, err := glob.ServerListener.AcceptTCP()
-
-			if err == nil {
-				buf := fmt.Sprintf("New connection from %s.", conn.LocalAddr().String())
-				log.Println(buf)
-
-				/*Change connections settings*/
-				conn.SetLinger(-1)
-				conn.SetNoDelay(true)
-				conn.SetReadBuffer(10000)     //10k, 10 seconds of insanely-fast typing
-				conn.SetWriteBuffer(12500000) //12.5MB, 10 second buffer at 10mbit
-
-				newDescriptor(conn)
-			}
-
-		}
-	}()
-
-	/* Main game loop */
 	for glob.ServerState == def.SERVER_RUNNING {
+		/*Check for new connections*/
+		desc, err := glob.ServerListener.AcceptTCP()
 
-		/*--- LOCK ---*/
-		glob.ConnectionListLock.Lock()
-		/*--- LOCK ---*/
+		if err == nil {
+			buf := fmt.Sprintf("New connection from %s.", desc.LocalAddr().String())
+			log.Println(buf)
 
-		/*Read all connections*/
-		for i, p := range glob.ConnectionList {
-			if p.Valid {
-				readConnection(&glob.ConnectionList[i])
+			/*Change connections settings*/
+			desc.SetLinger(-1)
+			desc.SetNoDelay(true)
+			desc.SetReadBuffer(10000)     //10k, 10 seconds of insanely-fast typing
+			desc.SetWriteBuffer(12500000) //12.5MB, 10 second buffer at 10mbit
+
+			//TODO Add full greeting/info
+			/*Respond here, so we don't have to wait for lock*/
+			_, err := desc.Write([]byte("To create a new login, type: new\nLogin:"))
+			if err != nil {
+				checkError(err, def.ERROR_NONFATAL)
 			}
+
+			go newDescriptor(desc)
 		}
-
-		/*Memory cleanup area, do this at the *very end* only*/
-		//
-		/*Connections*/
-		for i, p := range glob.ConnectionList {
-			/*Remove no longer valid connections*/
-			if p.Valid == false {
-				glob.ConnectionList = append(glob.ConnectionList[:i], glob.ConnectionList[i+1:]...)
-			}
-			/*Disconnect people here be to be cleaner*/
-			if p.State == def.CON_STATE_DISCONNECTING {
-				p.State = def.CON_STATE_DISCONNECTED
-				lostConnection(&p)
-				p.Desc.Close()
-				p.Valid = false
-			}
-		}
-		/*--- UNLOCK ---*/
-		glob.ConnectionListLock.Unlock()
-		/*--- UNLOCK ---*/
 
 	}
-	log.Println("Loop exited.")
 }
 
 func newDescriptor(desc *net.TCPConn) {
-
-	/*Respond here, so we don't have to wait for lock*/
-	_, err := desc.Write([]byte("To create a new login, type: new\nLogin:"))
-	if err != nil {
-		checkError(err, def.ERROR_NONFATAL)
-	}
 
 	/*--- LOCK ---*/
 	glob.ConnectionListLock.Lock()
 	/*--- LOCK ---*/
 
-	/* WE NEED TO TAKE OVER, TO ACCEPT NEW INCOMING CONNECTION */
+	/*Add to descriptor list*/
+	//TODO re-use old ConnectionData on reconnect, re-atach to old player
 
 	/*Generate new descriptor data*/
-	glob.LastConnectionID++
-	id := glob.LastConnectionID
-	reader := bufio.NewReader(desc)
+	id := glob.ConnectionListMax
+	glob.ConnectionListMax++
 	addr := desc.LocalAddr()
 
 	/*Append*/
@@ -134,14 +96,16 @@ func newDescriptor(desc *net.TCPConn) {
 		State:         def.CON_STATE_WELCOME,
 		ConnectedTime: time.Now(),
 		IdleTime:      time.Now(),
-		Reader:        reader,
 		Id:            id,
 		BytesOut:      0,
 		BytesIn:       0,
 		Player:        nil,
 		Valid:         true}
 
+	//Replace with fixed size for speed?
 	glob.ConnectionList = append(glob.ConnectionList, newConnection)
+
+	go readConnection(&glob.ConnectionList[id])
 
 	/*--- UNLOCK ---*/
 	glob.ConnectionListLock.Unlock()
@@ -149,89 +113,101 @@ func newDescriptor(desc *net.TCPConn) {
 }
 
 func readConnection(c *glob.ConnectionData) {
-	umes, err := c.Reader.ReadString('\n')
 
-	if err == nil && umes != "" {
-		/*Clean up user input*/
-		message := support.StripCtlAndExtFromBytes(umes)
-		msg := strings.ReplaceAll(message, "\n", "")
-		msg = strings.ReplaceAll(msg, "\r", "")
-		msg = strings.ReplaceAll(msg, "\t", "")
-		msg = strings.TrimSpace(msg)
+	reader := bufio.NewReader(c.Desc)
 
-		if msg != "" {
+	for {
 
-			slen := len(msg)
-			command := ""
-			aargs := ""
-			arglen := -1
+		umes, err := reader.ReadString('\n')
 
-			args := strings.Split(msg, " ")
+		//TODO max line length are max lines/sec
+		if err == nil && umes != "" {
+			/*Clean up user input*/
+			message := support.StripCtlAndExtFromBytes(umes)
+			msg := strings.ReplaceAll(message, "\n", "")
+			msg = strings.ReplaceAll(msg, "\r", "")
+			msg = strings.ReplaceAll(msg, "\t", "")
+			msg = strings.TrimSpace(msg)
 
-			if slen > 1 {
+			if msg != "" {
 
-				arglen = len(args)
+				slen := len(msg)
+				command := ""
+				aargs := ""
+				arglen := -1
 
-				if arglen > 0 {
-					command = strings.ToLower(args[0])
-					if arglen > 1 {
-						aargs = strings.Join(args[1:arglen], " ")
-					}
-				}
-			}
+				args := strings.Split(msg, " ")
 
-			if c.State == def.CON_STATE_WELCOME {
-				if slen > 3 && slen < 128 {
-					c.Name = fmt.Sprintf("%s", msg)
-					c.State = def.CON_STATE_PLAYING
+				if slen > 1 {
 
-					WriteToDesc(c, "Okay, you will be called "+msg)
-					showCommands(c)
-					buf := fmt.Sprintf("%s has joined!", msg)
-					WriteToAll(buf)
-				} else {
-					WriteToDesc(c, "That isn't a valid name.")
-				}
-			} else if c.State == def.CON_STATE_PLAYING {
-				if command == "quit" {
-					WriteToDesc(c, "Goodbye")
-					buf := fmt.Sprintf("%s has quit.", c.Name)
-					WriteToAll(buf)
+					arglen = len(args)
 
-					c.State = def.CON_STATE_DISCONNECTING
-					return
-				} else if command == "who" {
-					output := "Players online:\n"
-
-					max := len(glob.ConnectionList)
-					for x, p := range glob.ConnectionList {
-						buf := ""
-
-						if p.State == def.CON_STATE_PLAYING {
-							buf = fmt.Sprintf("%d: %s", x+1, p.Name)
-						} else {
-							buf = fmt.Sprintf("%d: %s", x+1, "(Connecting)")
-						}
-						output = output + buf
-						if x <= max {
-							output = output + "\r\n"
-						}
-					}
-					WriteToDesc(c, output)
-				} else if command == "say" {
 					if arglen > 0 {
-						out := fmt.Sprintf("%s says: %s", c.Name, aargs)
-						us := fmt.Sprintf("You say: %s", aargs)
-
-						WriteToOthers(c, out)
-						WriteToDesc(c, us)
-					} else {
-						WriteToDesc(c, "But, what do you want to say?")
+						command = strings.ToLower(args[0])
+						if arglen > 1 {
+							aargs = strings.Join(args[1:arglen], " ")
+						}
 					}
+				}
 
-				} else {
-					WriteToDesc(c, "That isn't a valid command.")
-					showCommands(c)
+				if c.State == def.CON_STATE_WELCOME {
+					if slen > 3 && slen < 128 {
+						c.Name = fmt.Sprintf("%s", msg)
+						c.State = def.CON_STATE_PLAYING
+
+						WriteToDesc(c, "Okay, you will be called "+msg)
+						showCommands(c)
+						buf := fmt.Sprintf("%s has joined!", msg)
+						WriteToAll(buf)
+					} else {
+						WriteToDesc(c, "That isn't a valid name.")
+					}
+				} else if c.State == def.CON_STATE_PLAYING {
+					if command == "quit" {
+						WriteToDesc(c, "Goodbye")
+						buf := fmt.Sprintf("%s has quit.", c.Name)
+						WriteToAll(buf)
+
+						c.State = def.CON_STATE_DISCONNECTING
+						return
+					} else if command == "who" {
+						output := "Players online:\n"
+
+						//Who list can work from a copy
+						glob.ConnectionListLock.RLock()
+						cList := glob.ConnectionList
+						glob.ConnectionListLock.RUnlock()
+
+						max := len(cList)
+						for x, p := range cList {
+							buf := ""
+
+							if p.State == def.CON_STATE_PLAYING {
+								buf = fmt.Sprintf("%d: %s", x+1, p.Name)
+							} else {
+								buf = fmt.Sprintf("%d: %s", x+1, "(Connecting)")
+							}
+							output = output + buf
+							if x <= max {
+								output = output + "\r\n"
+							}
+						}
+						WriteToDesc(c, output)
+					} else if command == "say" {
+						if arglen > 0 {
+							out := fmt.Sprintf("%s says: %s", c.Name, aargs)
+							us := fmt.Sprintf("You say: %s", aargs)
+
+							WriteToOthers(c, out)
+							WriteToDesc(c, us)
+						} else {
+							WriteToDesc(c, "But, what do you want to say?")
+						}
+
+					} else {
+						WriteToDesc(c, "That isn't a valid command.")
+						showCommands(c)
+					}
 				}
 			}
 		}
@@ -256,6 +232,7 @@ func WriteToDesc(c *glob.ConnectionData, text string) {
 
 func WriteToAll(text string) {
 
+	glob.ConnectionListLock.Lock()
 	for _, con := range glob.ConnectionList {
 		if con.State == def.CON_STATE_PLAYING {
 			message := fmt.Sprintf("%s\r\n", text)
@@ -267,11 +244,13 @@ func WriteToAll(text string) {
 			checkError(err, def.ERROR_NONFATAL)
 		}
 	}
+	glob.ConnectionListLock.Unlock()
 	log.Println(text)
 }
 
 func WriteToOthers(c *glob.ConnectionData, text string) {
 
+	glob.ConnectionListLock.Lock()
 	for _, con := range glob.ConnectionList {
 		if con.Desc != c.Desc && con.State == def.CON_STATE_PLAYING {
 			message := fmt.Sprintf("%s\r\n", text)
@@ -283,6 +262,7 @@ func WriteToOthers(c *glob.ConnectionData, text string) {
 			checkError(err, def.ERROR_NONFATAL)
 		}
 	}
+	glob.ConnectionListLock.Unlock()
 	log.Println(text)
 }
 

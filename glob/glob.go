@@ -1,7 +1,6 @@
 package glob
 
 import (
-	"bufio"
 	"net"
 	"sync"
 	"time"
@@ -11,10 +10,10 @@ import (
 
 var ServerState = def.SERVER_RUNNING
 var ServerListener *net.TCPListener
-var ConnectionList []ConnectionData
-var ConnectionListLock sync.Mutex
 
-var LastConnectionID int
+var ConnectionListMax int
+var ConnectionList []ConnectionData
+var ConnectionListLock sync.RWMutex
 
 type ConnectionData struct {
 	Name          string
@@ -23,8 +22,6 @@ type ConnectionData struct {
 	State         int
 	ConnectedTime time.Time
 	IdleTime      time.Time
-	Reader        *bufio.Reader
-	Writer        *bufio.Writer
 	Id            int
 	BytesOut      int
 	BytesIn       int
