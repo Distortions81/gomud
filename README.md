@@ -1,1 +1,3 @@
 # gomud
+
+Goals: Basics first!
