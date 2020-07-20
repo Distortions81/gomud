@@ -322,8 +322,13 @@ func descWriteError(c *glob.ConnectionData, err error) {
 	if err != nil {
 		checkError(err, def.ERROR_NONFATAL)
 
-		buf := fmt.Sprintf("%s lost their connection.", c.Name)
-		WriteToOthers(c, buf)
+		if c.Name != def.STRING_UNKNOWN && c.State == def.CON_STATE_PLAYING {
+			buf := fmt.Sprintf("%s lost their connection.", c.Name)
+			WriteToOthers(c, buf)
+		} else {
+			buf := fmt.Sprintf("%s disconnected.", c.Address)
+			log.Println(buf)
+		}
 
 		c.State = def.CON_STATE_DISCONNECTED
 		c.Valid = false
