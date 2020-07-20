@@ -15,8 +15,11 @@ const GREET_FILE = "greet.txt"
 const NEWS_FILE = "news.txt"
 
 const SERVER_RUNNING = 0
-const SERVER_PAUSED = 1
-const SERVER_STOP = 2
+const SERVER_BOOTING = 1
+const SERVER_CLOSING = 2
+const SERVER_CLOSED = 3
+const SERVER_PAUSED = 4
+const SERVER_PRIVATE = 5
 
 /*Connection State*/
 const CON_STATE_DISCONNECTED = -2

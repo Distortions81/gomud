@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"time"
 
 	"./def"
 	"./glob"
+	"./netconn"
 	"./support"
 )
 
@@ -57,41 +57,9 @@ func mainLoop() {
 			_, err = desc.Write([]byte(def.VERSION + "\r\nTo create a new character, type: NEW\r\nName: \r\n"))
 			support.CheckError(err, def.ERROR_NONFATAL)
 
-			go desc.NewDescriptor(desc)
-			/* desc/desc.go */
+			go netconn.NewDescriptor(desc)
+			/* netconn/netconn.go */
 		}
 
 	}
-}
-
-func createPlayer() glob.PlayerData {
-	player := glob.PlayerData{
-		Name:        def.STRING_UNKNOWN,
-		Password:    "",
-		PlayerType:  def.PLAYER_TYPE_NEW,
-		Level:       0,
-		State:       def.PLAYER_ALIVE,
-		Sector:      0,
-		Vnum:        0,
-		Created:     time.Now(),
-		LastSeen:    time.Now(),
-		Seconds:     0,
-		IPs:         []string{},
-		Connections: []int{},
-		BytesIn:     []int{},
-		BytesOut:    []int{},
-		Email:       "",
-
-		Description: "",
-		Sex:         "",
-
-		Desc:  nil,
-		Valid: true,
-	}
-	return player
-}
-
-func showCommands(c *glob.ConnectionData) {
-	us := fmt.Sprintf("commands: say, who, quit")
-	desc.WriteToDesc(c, us)
 }

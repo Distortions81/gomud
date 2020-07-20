@@ -1,7 +1,12 @@
 package support
 
+import (
+	"fmt"
+	"log"
+	"os"
+)
 
-func support.CheckError(err error, fatal bool) {
+func CheckError(err error, fatal bool) {
 	if err != nil {
 		buf := fmt.Sprintf("error: %s", err.Error())
 		log.Println(buf)

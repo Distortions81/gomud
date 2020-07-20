@@ -1,9 +1,8 @@
-package desc
+package netconn
 
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"strings"
@@ -73,7 +72,7 @@ func NewDescriptor(desc *net.TCPConn) {
 	buf := fmt.Sprintf("Created new connection #%d.", glob.ConnectionListMax)
 	log.Println(buf)
 
-	go desc.ReadConnection(&glob.ConnectionList[glob.ConnectionListMax])
+	go ReadConnection(&glob.ConnectionList[glob.ConnectionListMax])
 	return
 
 }
@@ -144,65 +143,64 @@ func ReadConnection(con *glob.ConnectionData) {
 				if con.State == def.CON_STATE_WELCOME {
 					if command == "new" {
 						buf := fmt.Sprintf("Names must be between %d and %d letters long, A-z only.", def.MIN_PLAYER_NAME_LENGTH, def.MAX_PLAYER_NAME_LENGTH)
-						desc.WriteToDesc(con, buf)
-						desc.WriteToDesc(con, "What name would you like to go by?")
+						WriteToDesc(con, buf)
+						WriteToDesc(con, "What name would you like to go by?")
 						con.State = def.CON_STATE_NEW_LOGIN
 					} else {
-						filedata, err := ioutil.ReadFile(def.PLAYER_DIR + alphaChar)
+						//filedata, err := ioutil.ReadFile(def.PLAYER_DIR + alphaChar)
 						if err != nil {
-							desc.WriteToDesc(con, "Couldn't find a player by that name.")
-							desc.WriteToDesc(con, "Try again, or type 'NEW' to create a new character.")
-							desc.WriteToDesc(con, "Name:")
+							WriteToDesc(con, "Couldn't find a player by that name.")
+							WriteToDesc(con, "Try again, or type 'NEW' to create a new character.")
+							WriteToDesc(con, "Name:")
 						} else {
 							/* Login check goes here alphaChar*/
 							con.State = def.CON_STATE_PASSWORD
 							con.Name = alphaChar
-							desc.WriteToDesc(con, "Password:")
+							WriteToDesc(con, "Password:")
 						}
 					}
 				} else if con.State == def.CON_STATE_PASSWORD {
-					desc.WriteToDesc(con, "Welcome back, "+con.Name+"!")
+					WriteToDesc(con, "Welcome back, "+con.Name+"!")
 					con.State = def.CON_STATE_PLAYING
 				} else if con.State == def.CON_STATE_NEW_LOGIN {
 					if alphaCharLen > def.MIN_PLAYER_NAME_LENGTH && alphaCharLen < def.MAX_PLAYER_NAME_LENGTH {
 						con.Name = alphaChar
-						desc.WriteToDesc(con, "Are you sure you want your name to be known as '"+alphaChar+"'? (y/n)")
+						WriteToDesc(con, "Are you sure you want your name to be known as '"+alphaChar+"'? (y/n)")
 						con.State = def.CON_STATE_NEW_LOGIN_CONFIRM
 					} else {
-						desc.WriteToDesc(con, "That isn't a acceptable name... Try again:")
+						WriteToDesc(con, "That isn't a acceptable name... Try again:")
 					}
 
 				} else if con.State == def.CON_STATE_NEW_LOGIN_CONFIRM {
 					if command == "y" || command == "yes" {
-						desc.WriteToDesc(con, "You shall be called "+alphaChar+", then...")
-						desc.WriteToDesc(con, "Password:")
+						WriteToDesc(con, "You shall be called "+alphaChar+", then...")
+						WriteToDesc(con, "Password:")
 						con.State = def.CON_STATE_NEW_PASSWORD
 					} else {
 						con.State = def.CON_STATE_NEW_LOGIN
-						desc.WriteToDesc(con, "What name would you like to go by then?")
+						WriteToDesc(con, "What name would you like to go by then?")
 					}
 
 				} else if con.State == def.CON_STATE_NEW_PASSWORD {
-					desc.WriteToDesc(con, "Type again to confirm:")
+					WriteToDesc(con, "Type again to confirm:")
 					con.State = def.CON_STATE_NEW_PASSWORD_CONFIRM
 				} else if con.State == def.CON_STATE_NEW_PASSWORD_CONFIRM {
 
 					/*Check password*/
 					if 1 == 1 {
-						desc.WriteToDesc(con, "Password confirmed, logging in!")
-						showCommands(con)
+						WriteToDesc(con, "Password confirmed, logging in!")
 						con.State = def.CON_STATE_PLAYING
 					} else {
-						desc.WriteToDesc(con, "Passwords didn't match, try again.")
-						desc.WriteToDesc(con, "Password:")
+						WriteToDesc(con, "Passwords didn't match, try again.")
+						WriteToDesc(con, "Password:")
 					}
 
 					/*Commands area*/
 				} else if con.State == def.CON_STATE_PLAYING {
 					if command == "quit" {
-						desc.WriteToDesc(con, "Goodbye!")
+						WriteToDesc(con, "Goodbye!")
 						buf := fmt.Sprintf("%s has quit.", con.Name)
-						desc.WriteToAll(buf)
+						WriteToAll(buf)
 
 						con.State = def.CON_STATE_DISCONNECTING
 					} else if command == "who" {
@@ -226,21 +224,20 @@ func ReadConnection(con *glob.ConnectionData) {
 								output = output + "\r\n"
 							}
 						}
-						desc.WriteToDesc(con, output)
+						WriteToDesc(con, output)
 					} else if command == "say" {
 						if arglen > 0 {
 							out := fmt.Sprintf("%s says: %s", con.Name, aargs)
 							us := fmt.Sprintf("You say: %s", aargs)
 
-							desc.WriteToOthers(con, out)
-							desc.WriteToDesc(con, us)
+							WriteToOthers(con, out)
+							WriteToDesc(con, us)
 						} else {
-							desc.WriteToDesc(con, "But, what do you want to say?")
+							WriteToDesc(con, "But, what do you want to say?")
 						}
 
 					} else {
-						desc.WriteToDesc(con, "That isn't a valid command.")
-						showCommands(con)
+						WriteToDesc(con, "That isn't a valid command.")
 					}
 				}
 				if con.State == def.CON_STATE_DISCONNECTING {
@@ -264,7 +261,7 @@ func DescWriteError(c *glob.ConnectionData, err error) {
 
 		if c.Name != def.STRING_UNKNOWN && c.State == def.CON_STATE_PLAYING {
 			buf := fmt.Sprintf("%s lost their connection.", c.Name)
-			desc.WriteToOthers(c, buf)
+			WriteToOthers(c, buf)
 		} else {
 			buf := fmt.Sprintf("%s disconnected.", c.Address)
 			log.Println(buf)
@@ -281,7 +278,7 @@ func WriteToDesc(c *glob.ConnectionData, text string) {
 	bytes, err := c.Desc.Write([]byte(message))
 	c.BytesOut += bytes
 
-	desc.DescWriteError(c, err)
+	DescWriteError(c, err)
 }
 
 func WriteToAll(text string) {
@@ -297,7 +294,7 @@ func WriteToAll(text string) {
 			bytes, err := con.Desc.Write([]byte(message))
 			con.BytesOut += bytes
 
-			desc.DescWriteError(con, err)
+			DescWriteError(con, err)
 		}
 	}
 	log.Println(text)
@@ -316,7 +313,7 @@ func WriteToOthers(c *glob.ConnectionData, text string) {
 			bytes, err := con.Desc.Write([]byte(message))
 			con.BytesOut += bytes
 
-			desc.DescWriteError(c, err)
+			DescWriteError(c, err)
 		}
 	}
 	log.Println(text)
