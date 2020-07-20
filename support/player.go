@@ -1,4 +1,11 @@
-import "time"
+package support
+
+import (
+	"time"
+
+	"../def"
+	"../glob"
+)
 
 func createPlayer(desc *glob.ConnectionData) glob.PlayerData {
 	player := glob.PlayerData{

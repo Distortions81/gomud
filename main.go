@@ -7,7 +7,6 @@ import (
 
 	"./def"
 	"./glob"
-	"./netconn"
 	"./support"
 )
 
@@ -57,7 +56,7 @@ func mainLoop() {
 			_, err = desc.Write([]byte(def.VERSION + "\r\nTo create a new character, type: NEW\r\nName: \r\n"))
 			support.CheckError(err, def.ERROR_NONFATAL)
 
-			go netconn.NewDescriptor(desc)
+			go support.NewDescriptor(desc)
 			/* netconn/netconn.go */
 		}
 
