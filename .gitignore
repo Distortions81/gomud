@@ -9,7 +9,6 @@
 *.test
 *.sh
 *.log
-gomud
 go.sum
 
 # Output of the go coverage tool, specifically when used with LiteIDE
@@ -20,3 +19,4 @@ go.sum
 out/linecount.json
 out/linecount.txt
 out/linecount.txt
+gomud

@@ -130,6 +130,13 @@ func readConnection(con *glob.ConnectionData) {
 
 		umes, err := reader.ReadString('\n')
 
+		if err != nil {
+			glob.ConnectionListLock.Lock()
+			descWriteError(con, err)
+			glob.ConnectionListLock.Unlock()
+			return
+		}
+
 		//TODO max line length and max lines/sec
 		if err == nil && umes != "" {
 
@@ -186,12 +193,11 @@ func readConnection(con *glob.ConnectionData) {
 					}
 				} else if con.State == def.CON_STATE_PLAYING {
 					if command == "quit" {
-						WriteToDesc(con, "Goodbye")
+						WriteToDesc(con, "Goodbye!")
 						buf := fmt.Sprintf("%s has quit.", con.Name)
 						WriteToAll(buf)
 
 						con.State = def.CON_STATE_DISCONNECTING
-						return
 					} else if command == "who" {
 						output := "Players online:\n"
 
@@ -232,6 +238,10 @@ func readConnection(con *glob.ConnectionData) {
 						showCommands(con)
 					}
 				}
+				if con.State == def.CON_STATE_DISCONNECTING {
+					con.Valid = false
+					con.Desc.Close()
+				}
 				/*--- UNLOCK ---*/
 				glob.ConnectionListLock.Unlock()
 				/*--- UNLOCK ---*/
@@ -245,15 +255,25 @@ func showCommands(c *glob.ConnectionData) {
 	WriteToDesc(c, us)
 }
 
+func descWriteError(c *glob.ConnectionData, err error) {
+	if err != nil {
+		checkError(err, def.ERROR_NONFATAL)
+
+		buf := fmt.Sprintf("%s lost their connection.", c.Name)
+		WriteToOthers(c, buf)
+
+		c.State = def.CON_STATE_DISCONNECTED
+		c.Valid = false
+		c.Desc.Close()
+	}
+}
+
 func WriteToDesc(c *glob.ConnectionData, text string) {
 	message := fmt.Sprintf("%s\r\n", text)
 	bytes, err := c.Desc.Write([]byte(message))
 	c.BytesOut += bytes
 
-	if err != nil {
-		c.State = def.CON_STATE_DISCONNECTING
-	}
-	checkError(err, def.ERROR_NONFATAL)
+	descWriteError(c, err)
 }
 
 func WriteToAll(text string) {
@@ -269,10 +289,8 @@ func WriteToAll(text string) {
 			message := fmt.Sprintf("%s\r\n", text)
 			bytes, err := con.Desc.Write([]byte(message))
 			con.BytesOut += bytes
-			if err != nil {
-				con.State = def.CON_STATE_DISCONNECTING
-			}
-			checkError(err, def.ERROR_NONFATAL)
+
+			descWriteError(&con, err)
 		}
 	}
 	log.Println(text)
@@ -291,10 +309,8 @@ func WriteToOthers(c *glob.ConnectionData, text string) {
 			message := fmt.Sprintf("%s\r\n", text)
 			bytes, err := con.Desc.Write([]byte(message))
 			con.BytesOut += bytes
-			if err != nil {
-				con.State = def.CON_STATE_DISCONNECTING
-			}
-			checkError(err, def.ERROR_NONFATAL)
+
+			descWriteError(c, err)
 		}
 	}
 	log.Println(text)
