@@ -15,7 +15,6 @@ go.sum
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
 out/linecount.json
 out/linecount.txt
 out/linecount.txt
