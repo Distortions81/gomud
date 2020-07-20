@@ -2,10 +2,10 @@ package glob
 
 import (
 	"net"
-	"sync"
 	"time"
 
 	"../def"
+	"github.com/sasha-s/go-deadlock"
 )
 
 var ServerState = def.SERVER_RUNNING
@@ -13,7 +13,7 @@ var ServerListener *net.TCPListener
 
 var ConnectionListMax int
 var ConnectionList []ConnectionData
-var ConnectionListLock sync.RWMutex
+var ConnectionListLock deadlock.RWMutex
 
 type ConnectionData struct {
 	Name          string

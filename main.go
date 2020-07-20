@@ -120,15 +120,18 @@ func readConnection(c *glob.ConnectionData) {
 
 		umes, err := reader.ReadString('\n')
 
-		//TODO max line length are max lines/sec
+		//TODO max line length and max lines/sec
 		if err == nil && umes != "" {
+
 			/*Clean up user input*/
+			//TODO, strip non-printable, space and telnet but not unicode.
 			message := support.StripCtlAndExtFromBytes(umes)
 			msg := strings.ReplaceAll(message, "\n", "")
 			msg = strings.ReplaceAll(msg, "\r", "")
 			msg = strings.ReplaceAll(msg, "\t", "")
 			msg = strings.TrimSpace(msg)
 
+			//TODO, split into normal commands and fight/round commands, if we do rounds.
 			if msg != "" {
 
 				slen := len(msg)
@@ -138,18 +141,22 @@ func readConnection(c *glob.ConnectionData) {
 
 				args := strings.Split(msg, " ")
 
+				//If we have arguments
 				if slen > 1 {
 
 					arglen = len(args)
-
 					if arglen > 0 {
+						//Command name, tolower
 						command = strings.ToLower(args[0])
+						//arguments
 						if arglen > 1 {
 							aargs = strings.Join(args[1:arglen], " ")
 						}
 					}
 				}
 
+				//Move all this to handlers, to get rid of if/elseif mess,
+				//and to enable autocomplete and shortcuts/aliases.
 				if c.State == def.CON_STATE_WELCOME {
 					if slen > 3 && slen < 128 {
 						c.Name = fmt.Sprintf("%s", msg)
@@ -173,7 +180,7 @@ func readConnection(c *glob.ConnectionData) {
 					} else if command == "who" {
 						output := "Players online:\n"
 
-						//Who list can work from a copy
+						//Who list can work from a copy instead of remaining locked
 						glob.ConnectionListLock.RLock()
 						cList := glob.ConnectionList
 						glob.ConnectionListLock.RUnlock()
