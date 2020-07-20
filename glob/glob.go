@@ -17,6 +17,7 @@ var ConnectionListLock deadlock.RWMutex
 
 type ConnectionData struct {
 	Name          string
+	PasswordHash  string
 	Desc          *net.TCPConn
 	Address       string
 	State         int

@@ -56,17 +56,19 @@ func mainLoop() {
 			log.Println(buf)
 
 			/*Change connections settings*/
-			desc.SetLinger(-1)
-			desc.SetNoDelay(true)
-			desc.SetReadBuffer(10000)     //10k, 10 seconds of insanely-fast typing
-			desc.SetWriteBuffer(12500000) //12.5MB, 10 second buffer at 10mbit
+			simplify			err := desc.SetLinger(-1)
+			checkError(err, def.ERROR_NONFATAL)
+			err = desc.SetNoDelay(true)
+			checkError(err, def.ERROR_NONFATAL)
+			err = desc.SetReadBuffer(10000) //10k, 10 seconds of insanely-fast typing
+			checkError(err, def.ERROR_NONFATAL)
+			err = desc.SetWriteBuffer(12500000) //12.5MB, 10 second buffer at 10mbit
+			checkError(err, def.ERROR_NONFATAL)
 
 			//TODO Add full greeting/info
 			/*Respond here, so we don't have to wait for lock*/
-			_, err := desc.Write([]byte("To create a new login, type: new\nLogin:"))
-			if err != nil {
-				checkError(err, def.ERROR_NONFATAL)
-			}
+			_, err = desc.Write([]byte("To create a new login, type: new\nLogin:"))
+			checkError(err, def.ERROR_NONFATAL)
 
 			go newDescriptor(desc)
 		}
@@ -123,6 +125,10 @@ func readConnection(c *glob.ConnectionData) {
 		//TODO max line length and max lines/sec
 		if err == nil && umes != "" {
 
+			/*--- LOCK ---*/
+			glob.ConnectionListLock.Lock()
+			/*--- LOCK ---*/
+
 			/*Clean up user input*/
 			//TODO, strip non-printable, space and telnet but not unicode.
 			message := support.StripCtlAndExtFromBytes(umes)
@@ -157,10 +163,12 @@ func readConnection(c *glob.ConnectionData) {
 
 				//Move all this to handlers, to get rid of if/elseif mess,
 				//and to enable autocomplete and shortcuts/aliases.
+
 				if c.State == def.CON_STATE_WELCOME {
 					if slen > 3 && slen < 128 {
+
 						c.Name = fmt.Sprintf("%s", msg)
-						c.State = def.CON_STATE_PLAYING
+						c.State = def.CON_STATE_PLAYING //needs locks
 
 						WriteToDesc(c, "Okay, you will be called "+msg)
 						showCommands(c)
@@ -181,9 +189,7 @@ func readConnection(c *glob.ConnectionData) {
 						output := "Players online:\n"
 
 						//Who list can work from a copy instead of remaining locked
-						glob.ConnectionListLock.RLock()
 						cList := glob.ConnectionList
-						glob.ConnectionListLock.RUnlock()
 
 						max := len(cList)
 						for x, p := range cList {
@@ -217,6 +223,9 @@ func readConnection(c *glob.ConnectionData) {
 					}
 				}
 			}
+			/*--- UNLOCK ---*/
+			glob.ConnectionListLock.Unlock()
+			/*--- UNLOCK ---*/
 		}
 	}
 }
@@ -239,7 +248,6 @@ func WriteToDesc(c *glob.ConnectionData, text string) {
 
 func WriteToAll(text string) {
 
-	glob.ConnectionListLock.Lock()
 	for _, con := range glob.ConnectionList {
 		if con.State == def.CON_STATE_PLAYING {
 			message := fmt.Sprintf("%s\r\n", text)
@@ -251,13 +259,11 @@ func WriteToAll(text string) {
 			checkError(err, def.ERROR_NONFATAL)
 		}
 	}
-	glob.ConnectionListLock.Unlock()
 	log.Println(text)
 }
 
 func WriteToOthers(c *glob.ConnectionData, text string) {
 
-	glob.ConnectionListLock.Lock()
 	for _, con := range glob.ConnectionList {
 		if con.Desc != c.Desc && con.State == def.CON_STATE_PLAYING {
 			message := fmt.Sprintf("%s\r\n", text)
@@ -269,7 +275,6 @@ func WriteToOthers(c *glob.ConnectionData, text string) {
 			checkError(err, def.ERROR_NONFATAL)
 		}
 	}
-	glob.ConnectionListLock.Unlock()
 	log.Println(text)
 }
 
