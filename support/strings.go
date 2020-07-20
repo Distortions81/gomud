@@ -12,50 +12,27 @@ func TruncateString(str string, num int) string {
 	return bnoden
 }
 
+//AlphaCharOnly A-z
+func AlphaCharOnly(str string) string {
+	b := make([]byte, len(str))
+	var bl int
+	for i := 0; i < len(str); i++ {
+		c := str[i]
+		if c >= 'A' && c < 'z' {
+			b[bl] = c
+			bl++
+		}
+	}
+	return string(b[:bl])
+}
+
 //StripCtlAndExtFromBytes Strip all specials
 func StripCtlAndExtFromBytes(str string) string {
 	b := make([]byte, len(str))
 	var bl int
 	for i := 0; i < len(str); i++ {
 		c := str[i]
-		if c >= 32 && c < 127 {
-			b[bl] = c
-			bl++
-		}
-	}
-	return string(b[:bl])
-}
-
-//SubCtlAndExtFromBytes Sub with ? unless newline/return/tab
-func SubControlAndSpecial(str string) string {
-	b := make([]byte, len(str))
-	var bl int
-	for i := 0; i < len(str); i++ {
-		c := str[i]
-		if c >= 32 && c < 127 {
-			b[bl] = c
-			bl++
-		} else if c == '\n' || c == '\r' || c == '\t' {
-			b[bl] = ' '
-			bl++
-		} else {
-			b[bl] = '?'
-			bl++
-		}
-	}
-	return string(b[:bl])
-}
-
-//SubCtlAndExtFromBytes Sub with ? unless newline/return/tab
-func SubSpecial(str string) string {
-	b := make([]byte, len(str))
-	var bl int
-	for i := 0; i < len(str); i++ {
-		c := str[i]
-		if c == '\n' || c == '\r' || c == '\t' {
-			b[bl] = ' '
-			bl++
-		} else {
+		if c >= 32 && c < 255 {
 			b[bl] = c
 			bl++
 		}

@@ -17,7 +17,6 @@ var ConnectionListLock deadlock.Mutex
 
 type ConnectionData struct {
 	Name          string
-	PasswordHash  string
 	Desc          *net.TCPConn
 	Address       string
 	State         int
@@ -32,9 +31,16 @@ type ConnectionData struct {
 }
 
 type PlayerData struct {
-	Name          string
-	Description   string
-	State         int
+	Id          int
+	Name        string
+	Password    string
+	Account     string
+	Description string
+
+	State  int
+	Sector int
+	Vnum   int
+
 	ConnectedTime time.Time
 	IdleTime      time.Time
 	Admin         bool

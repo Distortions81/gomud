@@ -67,7 +67,7 @@ func mainLoop() {
 
 			//TODO Add full greeting/info
 			/*Respond here, so we don't have to wait for lock*/
-			_, err = desc.Write([]byte("To create a new login, type: new\r\nLogin:"))
+			_, err = desc.Write([]byte("\r\nTo create a new login, type: new\r\nLogin: \r\n"))
 			checkError(err, def.ERROR_NONFATAL)
 
 			go newDescriptor(desc)
@@ -113,7 +113,7 @@ func newDescriptor(desc *net.TCPConn) {
 	/*Generate new descriptor data*/
 	if glob.ConnectionListMax >= def.MAX_DESCRIPTORS-1 {
 		log.Println("MAX_DESCRIPTORS REACHED!")
-		desc.Write([]byte("Sorry, something has gone wrong (MAX_DESCRIPTORS)!\r\nPlease report this error!\r\n"))
+		desc.Write([]byte("Sorry, something has gone wrong (MAX_DESCRIPTORS)!\r\nGoodbye!\r\n"))
 		return
 	}
 
@@ -163,7 +163,8 @@ func readConnection(con *glob.ConnectionData) {
 		if err == nil && umes != "" {
 
 			/*Clean up user input*/
-			//TODO, strip non-printable, space and telnet but not unicode.
+			alphaChar := support.AlphaCharOnly(umes)
+			alphaCharLen := len(alphaChar)
 			message := support.StripCtlAndExtFromBytes(umes)
 			msg := strings.ReplaceAll(message, "\n", "")
 			msg = strings.ReplaceAll(msg, "\r", "")
@@ -181,7 +182,7 @@ func readConnection(con *glob.ConnectionData) {
 				args := strings.Split(msg, " ")
 
 				//If we have arguments
-				if slen > 1 {
+				if slen > 0 {
 
 					arglen = len(args)
 					if arglen > 0 {
@@ -200,20 +201,57 @@ func readConnection(con *glob.ConnectionData) {
 				glob.ConnectionListLock.Lock()
 				/*--- LOCK ---*/
 
+				/*Login, password area*/
 				if con.State == def.CON_STATE_WELCOME {
-					if slen > 3 && slen < 128 {
-
-						con.Name = fmt.Sprintf("%s", msg)
-						con.State = def.CON_STATE_PLAYING //needs locks
-
-						WriteToDesc(con, "Okay, you will be called "+msg)
-
-						showCommands(con)
-						buf := fmt.Sprintf("%s has joined!", msg)
-						WriteToAll(buf)
+					if command == "new" {
+						buf := fmt.Sprintf("Names must be between %d and %d letters long, A-z only.", def.MIN_PLAYER_NAME_LENGTH, def.MAX_PLAYER_NAME_LENGTH)
+						WriteToDesc(con, buf)
+						WriteToDesc(con, "What name would you like to go by?")
+						con.State = def.CON_STATE_NEW_LOGIN
 					} else {
-						WriteToDesc(con, "That isn't a valid name.")
+						/* Login check goes here alphaChar*/
+						con.State = def.CON_STATE_PASSWORD
+						con.Name = alphaChar
+						WriteToDesc(con, "Password:")
 					}
+				} else if con.State == def.CON_STATE_PASSWORD {
+					WriteToDesc(con, "Welcome back, "+con.Name+"!")
+					con.State = def.CON_STATE_PLAYING
+				} else if con.State == def.CON_STATE_NEW_LOGIN {
+					if alphaCharLen > def.MIN_PLAYER_NAME_LENGTH && alphaCharLen < def.MAX_PLAYER_NAME_LENGTH {
+						con.Name = alphaChar
+						WriteToDesc(con, "Are you sure you want your name to be known as '"+alphaChar+"'? (y/n)")
+						con.State = def.CON_STATE_NEW_LOGIN_CONFIRM
+					} else {
+						WriteToDesc(con, "That isn't a acceptable name... Try again:")
+					}
+
+				} else if con.State == def.CON_STATE_NEW_LOGIN_CONFIRM {
+					if command == "y" || command == "yes" {
+						WriteToDesc(con, "You shall be called "+alphaChar+", then...")
+						WriteToDesc(con, "Password:")
+						con.State = def.CON_STATE_NEW_PASSWORD
+					} else {
+						con.State = def.CON_STATE_NEW_LOGIN
+						WriteToDesc(con, "What name would you like to go by then?")
+					}
+
+				} else if con.State == def.CON_STATE_NEW_PASSWORD {
+					WriteToDesc(con, "Type again to confirm:")
+					con.State = def.CON_STATE_NEW_PASSWORD_CONFIRM
+				} else if con.State == def.CON_STATE_NEW_PASSWORD_CONFIRM {
+
+					/*Check password*/
+					if 1 == 1 {
+						WriteToDesc(con, "Password confirmed, logging in!")
+						showCommands(con)
+						con.State = def.CON_STATE_PLAYING
+					} else {
+						WriteToDesc(con, "Passwords didn't match, try again.")
+						WriteToDesc(con, "Password:")
+					}
+
+					/*Commands area*/
 				} else if con.State == def.CON_STATE_PLAYING {
 					if command == "quit" {
 						WriteToDesc(con, "Goodbye!")
