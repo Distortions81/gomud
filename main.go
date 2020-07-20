@@ -201,7 +201,7 @@ func readConnection(con *glob.ConnectionData) {
 				glob.ConnectionListLock.Lock()
 				/*--- LOCK ---*/
 
-				/*Login, password area*/
+				/*NEW/Login/Password area*/
 				if con.State == def.CON_STATE_WELCOME {
 					if command == "new" {
 						buf := fmt.Sprintf("Names must be between %d and %d letters long, A-z only.", def.MIN_PLAYER_NAME_LENGTH, def.MAX_PLAYER_NAME_LENGTH)
