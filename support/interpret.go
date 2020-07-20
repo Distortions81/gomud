@@ -66,8 +66,14 @@ func interpretInput(con *glob.ConnectionData, input string) {
 	} else if con.State == def.CON_STATE_NEW_LOGIN {
 		if alphaCharLen > def.MIN_PLAYER_NAME_LENGTH && alphaCharLen < def.MAX_PLAYER_NAME_LENGTH {
 			con.Name = alphaChar
-			WriteToDesc(con, "Are you sure you want your name to be known as '"+alphaChar+"'? (y/n)")
-			con.State = def.CON_STATE_NEW_LOGIN_CONFIRM
+			_, err := ioutil.ReadFile(def.PLAYER_DIR + alphaChar)
+			if err != nil {
+				WriteToDesc(con, "Player name is already taken! Try again.")
+				WriteToDesc(con, "Name:")
+			} else {
+				WriteToDesc(con, "Are you sure you want your name to be known as '"+alphaChar+"'? (y/n)")
+				con.State = def.CON_STATE_NEW_LOGIN_CONFIRM
+			}
 		} else {
 			WriteToDesc(con, "That isn't a acceptable name... Try again:")
 		}
@@ -91,6 +97,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		if 1 == 1 {
 			WriteToDesc(con, "Password confirmed, logging in!")
 			con.State = def.CON_STATE_PLAYING
+			//support.WritePlayer()
 		} else {
 			WriteToDesc(con, "Passwords didn't match, try again.")
 			WriteToDesc(con, "Password:")

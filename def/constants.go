@@ -13,6 +13,7 @@ const PLAYER_DIR = "players/"
 const DATA_DIR = "data"
 const GREET_FILE = "greet.txt"
 const NEWS_FILE = "news.txt"
+const PFILE_MAXARGS = 10000
 
 const SERVER_RUNNING = 0
 const SERVER_BOOTING = 1
