@@ -12,8 +12,8 @@ var ServerState = def.SERVER_RUNNING
 var ServerListener *net.TCPListener
 
 var ConnectionListMax int
-var ConnectionList []ConnectionData
-var ConnectionListLock deadlock.RWMutex
+var ConnectionList [def.MAX_DESCRIPTORS + 1]ConnectionData
+var ConnectionListLock deadlock.Mutex
 
 type ConnectionData struct {
 	Name          string

@@ -41,7 +41,7 @@ func main() {
 
 	/*Listen for connections*/
 	mainLoop()
-	//ServerListener.Close()
+	ServerListener.Close()
 }
 
 func mainLoop() {
@@ -56,7 +56,7 @@ func mainLoop() {
 			log.Println(buf)
 
 			/*Change connections settings*/
-			simplify			err := desc.SetLinger(-1)
+			err := desc.SetLinger(-1)
 			checkError(err, def.ERROR_NONFATAL)
 			err = desc.SetNoDelay(true)
 			checkError(err, def.ERROR_NONFATAL)
@@ -67,7 +67,7 @@ func mainLoop() {
 
 			//TODO Add full greeting/info
 			/*Respond here, so we don't have to wait for lock*/
-			_, err = desc.Write([]byte("To create a new login, type: new\nLogin:"))
+			_, err = desc.Write([]byte("To create a new login, type: new\r\nLogin:"))
 			checkError(err, def.ERROR_NONFATAL)
 
 			go newDescriptor(desc)
@@ -86,8 +86,13 @@ func newDescriptor(desc *net.TCPConn) {
 	//TODO re-use old ConnectionData on reconnect, re-atach to old player
 
 	/*Generate new descriptor data*/
-	id := glob.ConnectionListMax
+	if glob.ConnectionListMax >= def.MAX_DESCRIPTORS {
+		log.Println("MAX_DESCRIPTORS REACHED!")
+		desc.Write([]byte("Sorry, something has gone wrong (MAX_DESCRIPTORS)!\r\nPlease report this error!\r\n"))
+		return
+	}
 	glob.ConnectionListMax++
+	id := glob.ConnectionListMax
 	addr := desc.LocalAddr()
 
 	/*Append*/
@@ -104,8 +109,7 @@ func newDescriptor(desc *net.TCPConn) {
 		Player:        nil,
 		Valid:         true}
 
-	//Replace with fixed size for speed?
-	glob.ConnectionList = append(glob.ConnectionList, newConnection)
+	glob.ConnectionList[id] = newConnection
 
 	go readConnection(&glob.ConnectionList[id])
 
@@ -114,9 +118,13 @@ func newDescriptor(desc *net.TCPConn) {
 	/*--- UNLOCK ---*/
 }
 
-func readConnection(c *glob.ConnectionData) {
+func readConnection(con *glob.ConnectionData) {
 
-	reader := bufio.NewReader(c.Desc)
+	/*--- LOCK ---*/
+	glob.ConnectionListLock.Lock()
+	reader := bufio.NewReader(con.Desc)
+	glob.ConnectionListLock.Unlock()
+	/*--- UNLOCK ---*/
 
 	for {
 
@@ -124,10 +132,6 @@ func readConnection(c *glob.ConnectionData) {
 
 		//TODO max line length and max lines/sec
 		if err == nil && umes != "" {
-
-			/*--- LOCK ---*/
-			glob.ConnectionListLock.Lock()
-			/*--- LOCK ---*/
 
 			/*Clean up user input*/
 			//TODO, strip non-printable, space and telnet but not unicode.
@@ -139,6 +143,9 @@ func readConnection(c *glob.ConnectionData) {
 
 			//TODO, split into normal commands and fight/round commands, if we do rounds.
 			if msg != "" {
+				/*--- LOCK ---*/
+				glob.ConnectionListLock.Lock()
+				/*--- LOCK ---*/
 
 				slen := len(msg)
 				command := ""
@@ -164,35 +171,38 @@ func readConnection(c *glob.ConnectionData) {
 				//Move all this to handlers, to get rid of if/elseif mess,
 				//and to enable autocomplete and shortcuts/aliases.
 
-				if c.State == def.CON_STATE_WELCOME {
+				if con.State == def.CON_STATE_WELCOME {
 					if slen > 3 && slen < 128 {
 
-						c.Name = fmt.Sprintf("%s", msg)
-						c.State = def.CON_STATE_PLAYING //needs locks
+						con.Name = fmt.Sprintf("%s", msg)
+						con.State = def.CON_STATE_PLAYING //needs locks
 
-						WriteToDesc(c, "Okay, you will be called "+msg)
-						showCommands(c)
+						WriteToDesc(con, "Okay, you will be called "+msg)
+						showCommands(con)
 						buf := fmt.Sprintf("%s has joined!", msg)
 						WriteToAll(buf)
 					} else {
-						WriteToDesc(c, "That isn't a valid name.")
+						WriteToDesc(con, "That isn't a valid name.")
 					}
-				} else if c.State == def.CON_STATE_PLAYING {
+				} else if con.State == def.CON_STATE_PLAYING {
 					if command == "quit" {
-						WriteToDesc(c, "Goodbye")
-						buf := fmt.Sprintf("%s has quit.", c.Name)
+						WriteToDesc(con, "Goodbye")
+						buf := fmt.Sprintf("%s has quit.", con.Name)
 						WriteToAll(buf)
 
-						c.State = def.CON_STATE_DISCONNECTING
+						con.State = def.CON_STATE_DISCONNECTING
 						return
 					} else if command == "who" {
 						output := "Players online:\n"
 
-						//Who list can work from a copy instead of remaining locked
-						cList := glob.ConnectionList
-
-						max := len(cList)
-						for x, p := range cList {
+						max := len(glob.ConnectionList)
+						for x, p := range glob.ConnectionList {
+							if x >= def.MAX_DESCRIPTORS {
+								break
+							}
+							if p.Valid == false {
+								continue
+							}
 							buf := ""
 
 							if p.State == def.CON_STATE_PLAYING {
@@ -205,27 +215,27 @@ func readConnection(c *glob.ConnectionData) {
 								output = output + "\r\n"
 							}
 						}
-						WriteToDesc(c, output)
+						WriteToDesc(con, output)
 					} else if command == "say" {
 						if arglen > 0 {
-							out := fmt.Sprintf("%s says: %s", c.Name, aargs)
+							out := fmt.Sprintf("%s says: %s", con.Name, aargs)
 							us := fmt.Sprintf("You say: %s", aargs)
 
-							WriteToOthers(c, out)
-							WriteToDesc(c, us)
+							WriteToOthers(con, out)
+							WriteToDesc(con, us)
 						} else {
-							WriteToDesc(c, "But, what do you want to say?")
+							WriteToDesc(con, "But, what do you want to say?")
 						}
 
 					} else {
-						WriteToDesc(c, "That isn't a valid command.")
-						showCommands(c)
+						WriteToDesc(con, "That isn't a valid command.")
+						showCommands(con)
 					}
 				}
+				/*--- UNLOCK ---*/
+				glob.ConnectionListLock.Unlock()
+				/*--- UNLOCK ---*/
 			}
-			/*--- UNLOCK ---*/
-			glob.ConnectionListLock.Unlock()
-			/*--- UNLOCK ---*/
 		}
 	}
 }
@@ -248,7 +258,13 @@ func WriteToDesc(c *glob.ConnectionData, text string) {
 
 func WriteToAll(text string) {
 
-	for _, con := range glob.ConnectionList {
+	for x, con := range glob.ConnectionList {
+		if x >= def.MAX_DESCRIPTORS {
+			break
+		}
+		if con.Valid == false {
+			continue
+		}
 		if con.State == def.CON_STATE_PLAYING {
 			message := fmt.Sprintf("%s\r\n", text)
 			bytes, err := con.Desc.Write([]byte(message))
@@ -264,7 +280,13 @@ func WriteToAll(text string) {
 
 func WriteToOthers(c *glob.ConnectionData, text string) {
 
-	for _, con := range glob.ConnectionList {
+	for x, con := range glob.ConnectionList {
+		if x >= def.MAX_DESCRIPTORS {
+			break
+		}
+		if con.Valid == false {
+			continue
+		}
 		if con.Desc != c.Desc && con.State == def.CON_STATE_PLAYING {
 			message := fmt.Sprintf("%s\r\n", text)
 			bytes, err := con.Desc.Write([]byte(message))
@@ -276,15 +298,4 @@ func WriteToOthers(c *glob.ConnectionData, text string) {
 		}
 	}
 	log.Println(text)
-}
-
-func lostConnection(c *glob.ConnectionData) {
-
-	if c.Name != def.STRING_UNKNOWN {
-		msg := fmt.Sprintf("%s disconnected.", c.Name)
-		go WriteToAll(msg)
-		return
-	}
-	buf := fmt.Sprintf("%s disconnected.", c.Address)
-	log.Println(buf)
 }

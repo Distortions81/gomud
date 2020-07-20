@@ -1,6 +1,7 @@
 package def
 
 const DEFAULT_PORT = ":7777"
+const MAX_DESCRIPTORS = 10000
 const STRING_UNKNOWN = "unknown"
 
 const SERVER_RUNNING = 0
