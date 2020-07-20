@@ -82,36 +82,60 @@ func newDescriptor(desc *net.TCPConn) {
 	glob.ConnectionListLock.Lock()
 	/*--- LOCK ---*/
 
-	/*Add to descriptor list*/
-	//TODO re-use old ConnectionData on reconnect, re-atach to old player
-
 	/*Generate new descriptor data*/
 	if glob.ConnectionListMax >= def.MAX_DESCRIPTORS {
 		log.Println("MAX_DESCRIPTORS REACHED!")
 		desc.Write([]byte("Sorry, something has gone wrong (MAX_DESCRIPTORS)!\r\nPlease report this error!\r\n"))
 		return
 	}
-	glob.ConnectionListMax++
-	id := glob.ConnectionListMax
-	addr := desc.LocalAddr()
 
-	/*Append*/
-	newConnection := glob.ConnectionData{
-		Name:          def.STRING_UNKNOWN,
-		Desc:          desc,
-		Address:       addr.String(),
-		State:         def.CON_STATE_WELCOME,
-		ConnectedTime: time.Now(),
-		IdleTime:      time.Now(),
-		Id:            id,
-		BytesOut:      0,
-		BytesIn:       0,
-		Player:        nil,
-		Valid:         true}
+	//Reuse old descs
+	reuse := false
+	x := 0
+	for x = 1; x <= glob.ConnectionListMax; x++ {
+		if glob.ConnectionList[x].Valid == false {
+			reuse = true
+			break
+		}
+	}
 
-	glob.ConnectionList[id] = newConnection
+	if reuse {
+		/*Replace vars so pointers don't break*/
+		glob.ConnectionList[x].Name = def.STRING_UNKNOWN
+		glob.ConnectionList[x].Desc = desc
+		glob.ConnectionList[x].Address = desc.LocalAddr().String()
+		glob.ConnectionList[x].State = def.CON_STATE_WELCOME
+		glob.ConnectionList[x].ConnectedTime = time.Now()
+		glob.ConnectionList[x].IdleTime = time.Now()
+		glob.ConnectionList[x].Id = x
+		glob.ConnectionList[x].BytesOut = 0
+		glob.ConnectionList[x].BytesIn = 0
+		glob.ConnectionList[x].Player = nil
+		glob.ConnectionList[x].Valid = true
 
-	go readConnection(&glob.ConnectionList[id])
+		buf := fmt.Sprintf("Recycling connection #%d.", x)
+		log.Println(buf)
+	} else {
+		/*Create*/
+		glob.ConnectionListMax++
+		newConnection := glob.ConnectionData{
+			Name:          def.STRING_UNKNOWN,
+			Desc:          desc,
+			Address:       desc.LocalAddr().String(),
+			State:         def.CON_STATE_WELCOME,
+			ConnectedTime: time.Now(),
+			IdleTime:      time.Now(),
+			Id:            glob.ConnectionListMax,
+			BytesOut:      0,
+			BytesIn:       0,
+			Player:        nil,
+			Valid:         true}
+		glob.ConnectionList[glob.ConnectionListMax] = newConnection
+		buf := fmt.Sprintf("Created new connection #%d.", glob.ConnectionListMax)
+		log.Println(buf)
+	}
+
+	go readConnection(&glob.ConnectionList[glob.ConnectionListMax])
 
 	/*--- UNLOCK ---*/
 	glob.ConnectionListLock.Unlock()
@@ -185,6 +209,14 @@ func readConnection(con *glob.ConnectionData) {
 						con.State = def.CON_STATE_PLAYING //needs locks
 
 						WriteToDesc(con, "Okay, you will be called "+msg)
+
+						//Free up old desc
+						for x := 0; x < glob.ConnectionListMax; x++ {
+							if glob.ConnectionList[x].Name == msg {
+								glob.ConnectionList[x].Valid = false
+							}
+						}
+
 						showCommands(con)
 						buf := fmt.Sprintf("%s has joined!", msg)
 						WriteToAll(buf)
@@ -212,9 +244,9 @@ func readConnection(con *glob.ConnectionData) {
 							buf := ""
 
 							if p.State == def.CON_STATE_PLAYING {
-								buf = fmt.Sprintf("%d: %s", x+1, p.Name)
+								buf = fmt.Sprintf("%d: %s", x, p.Name)
 							} else {
-								buf = fmt.Sprintf("%d: %s", x+1, "(Connecting)")
+								buf = fmt.Sprintf("%d: %s", x, "(Connecting)")
 							}
 							output = output + buf
 							if x <= max {
