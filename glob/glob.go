@@ -16,34 +16,43 @@ var ConnectionList [def.MAX_DESCRIPTORS + 1]ConnectionData
 var ConnectionListLock deadlock.Mutex
 
 type ConnectionData struct {
-	Name          string
-	Desc          *net.TCPConn
-	Address       string
-	State         int
-	ConnectedTime time.Time
-	IdleTime      time.Time
-	Id            int
-	BytesOut      int
-	BytesIn       int
+	Name    string
+	Desc    *net.TCPConn
+	Address string
+
+	State        int
+	ConnectedFor time.Time
+	IdleTime     time.Time
+	Id           int
+
+	BytesOut int
+	BytesIn  int
 
 	Player *PlayerData
 	Valid  bool
 }
 
 type PlayerData struct {
-	Id          int
-	Name        string
-	Password    string
-	Account     string
+	Name     string
+	Password string
+
+	PlayerType int
+	Level      int
+	State      int
+	Sector     int
+	Vnum       int
+
+	Created     time.Time
+	LastSeen    time.Time
+	Seconds     int
+	IPs         []string
+	Connections []int
+	BytesIn     []int
+	BytesOut    []int
+	Email       string
+
 	Description string
-
-	State  int
-	Sector int
-	Vnum   int
-
-	ConnectedTime time.Time
-	IdleTime      time.Time
-	Admin         bool
+	Sex         string
 
 	Desc  *net.Conn
 	Valid bool

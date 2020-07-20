@@ -1,10 +1,18 @@
 package def
 
+const VERSION = "v0.0.3-7-20-2020-213p"
 const DEFAULT_PORT = ":7777"
 const MAX_DESCRIPTORS = 10000
 const MAX_PLAYER_NAME_LENGTH = 25
 const MIN_PLAYER_NAME_LENGTH = 2
 const STRING_UNKNOWN = "unknown"
+
+/*Dir & File*/
+const PLAYER_DIR = "players/"
+
+const DATA_DIR = "data"
+const GREET_FILE = "greet.txt"
+const NEWS_FILE = "news.txt"
 
 const SERVER_RUNNING = 0
 const SERVER_PAUSED = 1
