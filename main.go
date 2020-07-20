@@ -80,66 +80,64 @@ func newDescriptor(desc *net.TCPConn) {
 
 	/*--- LOCK ---*/
 	glob.ConnectionListLock.Lock()
+	defer glob.ConnectionListLock.Unlock()
 	/*--- LOCK ---*/
 
+	for x := 1; x <= glob.ConnectionListMax; x++ {
+		var con *glob.ConnectionData
+		con = &glob.ConnectionList[x]
+		if con.Valid == true {
+			continue
+		} else {
+			/*Replace*/
+			con.Name = def.STRING_UNKNOWN
+			con.Desc = desc
+			con.Address = desc.LocalAddr().String()
+			con.State = def.CON_STATE_WELCOME
+			con.ConnectedTime = time.Now()
+			con.IdleTime = time.Now()
+			con.Id = x
+			con.BytesOut = 0
+			con.BytesIn = 0
+			con.Player = nil
+			con.Valid = true
+
+			buf := fmt.Sprintf("Recycling connection #%d.", x)
+			log.Println(buf)
+
+			go readConnection(&glob.ConnectionList[x])
+			return
+		}
+	}
+
 	/*Generate new descriptor data*/
-	if glob.ConnectionListMax >= def.MAX_DESCRIPTORS {
+	if glob.ConnectionListMax >= def.MAX_DESCRIPTORS-1 {
 		log.Println("MAX_DESCRIPTORS REACHED!")
 		desc.Write([]byte("Sorry, something has gone wrong (MAX_DESCRIPTORS)!\r\nPlease report this error!\r\n"))
 		return
 	}
 
-	//Reuse old descs
-	reuse := false
-	x := 0
-	for x = 1; x <= glob.ConnectionListMax; x++ {
-		if glob.ConnectionList[x].Valid == false {
-			reuse = true
-			break
-		}
-	}
-
-	if reuse {
-		/*Replace vars so pointers don't break*/
-		glob.ConnectionList[x].Name = def.STRING_UNKNOWN
-		glob.ConnectionList[x].Desc = desc
-		glob.ConnectionList[x].Address = desc.LocalAddr().String()
-		glob.ConnectionList[x].State = def.CON_STATE_WELCOME
-		glob.ConnectionList[x].ConnectedTime = time.Now()
-		glob.ConnectionList[x].IdleTime = time.Now()
-		glob.ConnectionList[x].Id = x
-		glob.ConnectionList[x].BytesOut = 0
-		glob.ConnectionList[x].BytesIn = 0
-		glob.ConnectionList[x].Player = nil
-		glob.ConnectionList[x].Valid = true
-
-		buf := fmt.Sprintf("Recycling connection #%d.", x)
-		log.Println(buf)
-	} else {
-		/*Create*/
-		glob.ConnectionListMax++
-		newConnection := glob.ConnectionData{
-			Name:          def.STRING_UNKNOWN,
-			Desc:          desc,
-			Address:       desc.LocalAddr().String(),
-			State:         def.CON_STATE_WELCOME,
-			ConnectedTime: time.Now(),
-			IdleTime:      time.Now(),
-			Id:            glob.ConnectionListMax,
-			BytesOut:      0,
-			BytesIn:       0,
-			Player:        nil,
-			Valid:         true}
-		glob.ConnectionList[glob.ConnectionListMax] = newConnection
-		buf := fmt.Sprintf("Created new connection #%d.", glob.ConnectionListMax)
-		log.Println(buf)
-	}
+	/*Create*/
+	glob.ConnectionListMax++
+	newConnection := glob.ConnectionData{
+		Name:          def.STRING_UNKNOWN,
+		Desc:          desc,
+		Address:       desc.LocalAddr().String(),
+		State:         def.CON_STATE_WELCOME,
+		ConnectedTime: time.Now(),
+		IdleTime:      time.Now(),
+		Id:            glob.ConnectionListMax,
+		BytesOut:      0,
+		BytesIn:       0,
+		Player:        nil,
+		Valid:         true}
+	glob.ConnectionList[glob.ConnectionListMax] = newConnection
+	buf := fmt.Sprintf("Created new connection #%d.", glob.ConnectionListMax)
+	log.Println(buf)
 
 	go readConnection(&glob.ConnectionList[glob.ConnectionListMax])
+	return
 
-	/*--- UNLOCK ---*/
-	glob.ConnectionListLock.Unlock()
-	/*--- UNLOCK ---*/
 }
 
 func readConnection(con *glob.ConnectionData) {
@@ -174,9 +172,6 @@ func readConnection(con *glob.ConnectionData) {
 
 			//TODO, split into normal commands and fight/round commands, if we do rounds.
 			if msg != "" {
-				/*--- LOCK ---*/
-				glob.ConnectionListLock.Lock()
-				/*--- LOCK ---*/
 
 				slen := len(msg)
 				command := ""
@@ -201,6 +196,9 @@ func readConnection(con *glob.ConnectionData) {
 
 				//Move all this to handlers, to get rid of if/elseif mess,
 				//and to enable autocomplete and shortcuts/aliases.
+				/*--- LOCK ---*/
+				glob.ConnectionListLock.Lock()
+				/*--- LOCK ---*/
 
 				if con.State == def.CON_STATE_WELCOME {
 					if slen > 3 && slen < 128 {
@@ -209,13 +207,6 @@ func readConnection(con *glob.ConnectionData) {
 						con.State = def.CON_STATE_PLAYING //needs locks
 
 						WriteToDesc(con, "Okay, you will be called "+msg)
-
-						//Free up old desc
-						for x := 0; x < glob.ConnectionListMax; x++ {
-							if glob.ConnectionList[x].Name == msg {
-								glob.ConnectionList[x].Valid = false
-							}
-						}
 
 						showCommands(con)
 						buf := fmt.Sprintf("%s has joined!", msg)
@@ -233,11 +224,9 @@ func readConnection(con *glob.ConnectionData) {
 					} else if command == "who" {
 						output := "Players online:\n"
 
-						max := len(glob.ConnectionList)
-						for x, p := range glob.ConnectionList {
-							if x >= def.MAX_DESCRIPTORS {
-								break
-							}
+						for x := 0; x <= glob.ConnectionListMax; x++ {
+							var p *glob.ConnectionData
+							p = &glob.ConnectionList[x]
 							if p.Valid == false {
 								continue
 							}
@@ -249,7 +238,7 @@ func readConnection(con *glob.ConnectionData) {
 								buf = fmt.Sprintf("%d: %s", x, "(Connecting)")
 							}
 							output = output + buf
-							if x <= max {
+							if x <= glob.ConnectionListMax {
 								output = output + "\r\n"
 							}
 						}
@@ -273,6 +262,10 @@ func readConnection(con *glob.ConnectionData) {
 				if con.State == def.CON_STATE_DISCONNECTING {
 					con.Valid = false
 					con.Desc.Close()
+					/*--- UNLOCK ---*/
+					glob.ConnectionListLock.Unlock()
+					/*--- UNLOCK ---*/
+					return
 				}
 				/*--- UNLOCK ---*/
 				glob.ConnectionListLock.Unlock()
@@ -310,10 +303,9 @@ func WriteToDesc(c *glob.ConnectionData, text string) {
 
 func WriteToAll(text string) {
 
-	for x, con := range glob.ConnectionList {
-		if x >= def.MAX_DESCRIPTORS {
-			break
-		}
+	for x := 0; x <= glob.ConnectionListMax; x++ {
+		var con *glob.ConnectionData
+		con = &glob.ConnectionList[x]
 		if con.Valid == false {
 			continue
 		}
@@ -322,7 +314,7 @@ func WriteToAll(text string) {
 			bytes, err := con.Desc.Write([]byte(message))
 			con.BytesOut += bytes
 
-			descWriteError(&con, err)
+			descWriteError(con, err)
 		}
 	}
 	log.Println(text)
@@ -330,10 +322,9 @@ func WriteToAll(text string) {
 
 func WriteToOthers(c *glob.ConnectionData, text string) {
 
-	for x, con := range glob.ConnectionList {
-		if x >= def.MAX_DESCRIPTORS {
-			break
-		}
+	for x := 0; x <= glob.ConnectionListMax; x++ {
+		var con *glob.ConnectionData
+		con = &glob.ConnectionList[x]
 		if con.Valid == false {
 			continue
 		}
