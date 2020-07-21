@@ -48,7 +48,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			WriteToDesc(con, "What name would you like to go by?")
 			con.State = def.CON_STATE_NEW_LOGIN
 		} else {
-			_, err := ioutil.ReadFile(def.PLAYER_DIR + alphaChar)
+			_, err := ioutil.ReadFile(def.DATA_DIR + def.PLAYER_DIR + alphaChar)
 			if err != nil {
 				WriteToDesc(con, "Couldn't find a player by that name.")
 				WriteToDesc(con, "Try again, or type 'NEW' to create a new character.")
@@ -66,7 +66,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 	} else if con.State == def.CON_STATE_NEW_LOGIN {
 		if alphaCharLen > def.MIN_PLAYER_NAME_LENGTH && alphaCharLen < def.MAX_PLAYER_NAME_LENGTH {
 			con.Name = alphaChar
-			_, err := ioutil.ReadFile(def.PLAYER_DIR + alphaChar)
+			_, err := ioutil.ReadFile(def.DATA_DIR + def.PLAYER_DIR + alphaChar)
 			if err != nil {
 				WriteToDesc(con, "Player name is already taken! Try again.")
 				WriteToDesc(con, "Name:")
@@ -80,6 +80,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 
 	} else if con.State == def.CON_STATE_NEW_LOGIN_CONFIRM {
 		if command == "y" || command == "yes" {
+			con.Player = CreatePlayer(con)
 			WriteToDesc(con, "You shall be called "+alphaChar+", then...")
 			WriteToDesc(con, "Password:")
 			con.State = def.CON_STATE_NEW_PASSWORD
@@ -141,6 +142,13 @@ func interpretInput(con *glob.ConnectionData, input string) {
 
 				WriteToOthers(con, out)
 				WriteToDesc(con, us)
+			} else {
+				WriteToDesc(con, "But, what do you want to say?")
+			}
+		} else if command == "writetest" {
+			if arglen > 0 {
+				WriteDesc(con)
+				WriteToDesc(con, "Wrote test.")
 			} else {
 				WriteToDesc(con, "But, what do you want to say?")
 			}

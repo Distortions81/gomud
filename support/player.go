@@ -1,8 +1,10 @@
 package support
 
 import (
+	"encoding/json"
 	"io/ioutil"
-	"strings"
+	"log"
+	"os"
 	"time"
 
 	"../def"
@@ -11,7 +13,7 @@ import (
 
 func CreatePlayer(desc *glob.ConnectionData) glob.PlayerData {
 	player := glob.PlayerData{
-		Name:        def.STRING_UNKNOWN,
+		Name:        desc.Name,
 		Password:    "",
 		PlayerType:  def.PLAYER_TYPE_NEW,
 		Level:       0,
@@ -30,7 +32,7 @@ func CreatePlayer(desc *glob.ConnectionData) glob.PlayerData {
 		Description: "",
 		Sex:         "",
 
-		Desc:  nil,
+		Desc:  desc,
 		Valid: true,
 	}
 	return player
@@ -38,26 +40,44 @@ func CreatePlayer(desc *glob.ConnectionData) glob.PlayerData {
 
 func ReadPlayer(name string, load bool) (*glob.PlayerData, bool) {
 
-	pdata, err := ioutil.ReadFile(def.PLAYER_DIR + name)
+	_, err := ioutil.ReadFile(def.DATA_DIR + def.PLAYER_DIR + name)
 	if err != nil {
 		return nil, false
 	} else {
 		if load == true {
-			lines := strings.Split(string(pdata), ";")
-			numlines := len(lines)
-
-			var args [def.PFILE_MAXARGS]string
-			for x := 0; x <= numlines; x++ {
-				args[x] = strings.Split(string(lines[x]), ",")
-			}
-
-			for x := 0; x <= numlines; x++ {
-				cline := strings.ReplaceAll(line[x], "\n\r", "")
-				data := line[x]
-			}
-
+			//
+			return nil, true
 		} else {
 			return nil, true
 		}
 	}
+}
 
+func WritePlayer(player *glob.PlayerData) bool {
+	writer := os.Stdout
+	enc := json.NewEncoder(writer)
+	enc.SetIndent("", "\t")
+
+	if err := enc.Encode(&player); err != nil {
+		log.Println(err)
+		return false
+	}
+	fo, err := os.Create(def.DATA_DIR + def.PLAYER_DIR + name)
+
+	if err != nil {
+		CheckError("WritePlayer: os.Create", err, def.ERROR_NONFATAL)
+	}
+	return true
+}
+
+func WriteDesc(desc *glob.ConnectionData) bool {
+	writer := os.Stdout
+	enc := json.NewEncoder(writer)
+	enc.SetIndent("", "\t")
+
+	if err := enc.Encode(&desc); err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
+}
