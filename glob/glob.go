@@ -17,7 +17,7 @@ var ConnectionListLock deadlock.Mutex
 
 type ConnectionData struct {
 	Name    string
-	Desc    *net.TCPConn
+	Desc    *net.TCPConn `json:"-,"`
 	Address string
 
 	State        int
@@ -28,8 +28,8 @@ type ConnectionData struct {
 	BytesOut int
 	BytesIn  int
 
-	Player *PlayerData
-	Valid  bool
+	Player *PlayerData `json:"-,"`
+	Valid  bool        `json:"-,"`
 }
 
 type PlayerData struct {
@@ -54,6 +54,6 @@ type PlayerData struct {
 	Description string
 	Sex         string
 
-	Desc  *net.Conn
-	Valid bool
+	Desc  *net.Conn `json:"-,"`
+	Valid bool      `json:"-,"`
 }
