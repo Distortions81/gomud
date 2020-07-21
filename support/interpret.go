@@ -30,6 +30,10 @@ func interpretInput(con *glob.ConnectionData, input string) {
 
 	args := strings.Split(msg, " ")
 
+	//SEPERATE player/desc areas
+	//Put in different functions
+	//Lock seperately
+
 	//If we have arguments
 	if msgLen > 0 {
 
@@ -43,6 +47,10 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			}
 		}
 	}
+
+	//Set player as no longer idle
+	con.IdleTime = time.Now()
+
 	/*NEW/Login/Password area*/
 	if con.State == def.CON_STATE_WELCOME {
 		if command == "new" {
@@ -70,7 +78,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		err := bcrypt.CompareHashAndPassword([]byte(player.Password), []byte(inputc))
 
 		if err == nil {
-			con.Player.Connection = con
+			LinkPlayerConnection(con.Player, con)
 			WriteToDesc(con, "Welcome back, "+player.Name+"!")
 			WriteToAll(player.Name + " has joined.")
 			con.State = def.CON_STATE_PLAYING
@@ -102,7 +110,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 	} else if con.State == def.CON_STATE_NEW_LOGIN_CONFIRM {
 		if command == "y" || command == "yes" {
 			con.Player = CreatePlayerFromDesc(con)
-			con.Player.Connection = con
+
 			WriteToDesc(con, "You shall be called "+con.Name+", then...")
 			WriteToDesc(con, "Passwords must be between 9 and 72 characters long, and contain at least 2 numbers/symbols.")
 			WriteToDesc(con, "Password:")
@@ -116,7 +124,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		symbolCount := len(NonAlphaCharOnly(inputc))
 		inputcLen := len(inputc)
 		if inputcLen >= 8 && inputcLen <= 72 && symbolCount >= 2 {
-			con.Temp = inputc
+			con.TempPass = inputc
 			WriteToDesc(con, "Type again to confirm:")
 			con.State = def.CON_STATE_NEW_PASSWORD_CONFIRM
 		} else {
@@ -126,8 +134,8 @@ func interpretInput(con *glob.ConnectionData, input string) {
 	} else if con.State == def.CON_STATE_NEW_PASSWORD_CONFIRM {
 
 		/*Hash password*/
-		if inputc == con.Temp {
-			WriteToDesc(con, "Encrypting password... One second please!")
+		if inputc == con.TempPass {
+			WriteToDesc(con, "Hashing password... One second please!")
 			hash, err := bcrypt.GenerateFromPassword([]byte(msg), def.PASSWORD_HASH_COST)
 			if err != nil {
 				CheckError("interp: password hash", err, def.ERROR_NONFATAL)
@@ -136,13 +144,15 @@ func interpretInput(con *glob.ConnectionData, input string) {
 				//TODO disconnect/invalidate and report
 				return
 			}
-			con.Temp = ""
+			con.TempPass = ""
 			con.Player.Password = string(hash)
 			WriteToDesc(con, "Done, logging in!")
 			con.State = def.CON_STATE_PLAYING
+			LinkPlayerConnection(con.Player, con)
+			//LinkToGame(con.Player)
 			WritePlayer(con.Player, true)
 		} else {
-			con.Temp = ""
+			con.TempPass = ""
 			WriteToDesc(con, "Passwords didn't match, try again.")
 			WriteToDesc(con, "Password:")
 		}
@@ -151,53 +161,67 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		/***************/
 		/*Commands area*/
 		/***************/
-		if command == "quit" {
-			WritePlayer(con.Player, true)
-			WriteToDesc(con, "Goodbye!")
-			buf := fmt.Sprintf("%s has quit.", con.Name)
-			WriteToAll(buf)
-			con.State = def.CON_STATE_DISCONNECTING
-		} else if command == "who" {
-			output := "Players online:\n"
+		if con.Player != nil && con.Player.Valid {
+			var player *glob.PlayerData
+			player = con.Player
 
-			for x := 0; x <= glob.ConnectionListMax; x++ {
-				var p *glob.ConnectionData = &glob.ConnectionList[x]
-				if p.Valid == false {
-					continue
+			if command == "quit" {
+				WritePlayer(player, true)
+				WriteToPlayer(player, "Goodbye!")
+				buf := fmt.Sprintf("%s has quit.", con.Name)
+				WriteToAll(buf)
+				con.State = def.CON_STATE_DISCONNECTING
+			} else if command == "who" {
+				output := "Players online:\n"
+
+				for x := 0; x <= glob.ConnectionListMax; x++ {
+					var p *glob.ConnectionData = &glob.ConnectionList[x]
+					if p.Valid == false {
+						continue
+					}
+					buf := ""
+
+					if p.State == def.CON_STATE_PLAYING {
+						idleString := ""
+						connectedString := ""
+						if time.Since(p.IdleTime).Truncate(time.Minute).Round(time.Second) > time.Minute {
+							idleString = " (idle " + time.Since(p.IdleTime).Round(time.Minute).String() + ")"
+						}
+						if time.Since(p.IdleTime).Truncate(time.Minute).Round(time.Second) > time.Minute {
+							connectedString = "(on " + time.Since(p.ConnectedFor).Round(time.Minute).String() + ")"
+						}
+
+						buf = fmt.Sprintf("%d: %s %s%s", x, player.Name, connectedString, idleString)
+					} else {
+						buf = fmt.Sprintf("%d: %s", x, "(Connecting)")
+					}
+					output = output + buf
+					if x <= glob.ConnectionListMax {
+						output = output + "\r\n"
+					}
 				}
-				buf := ""
+				WriteToPlayer(player, output)
+			} else if command == "say" {
+				if arglen > 0 {
+					out := fmt.Sprintf("%s says: %s", con.Name, aargs)
+					us := fmt.Sprintf("You say: %s", aargs)
 
-				if p.State == def.CON_STATE_PLAYING {
-					buf = fmt.Sprintf("%d: %s", x, p.Name)
+					WriteToOthers(con, out)
+					WriteToPlayer(player, us)
 				} else {
-					buf = fmt.Sprintf("%d: %s", x, "(Connecting)")
+					WriteToPlayer(player, "But, what do you want to say?")
 				}
-				output = output + buf
-				if x <= glob.ConnectionListMax {
-					output = output + "\r\n"
+			} else if command == "save" {
+				okay := WritePlayer(con.Player, true)
+				if okay == false {
+					WriteToPlayer(con.Player, "Saving character failed!!!")
 				}
-			}
-			WriteToDesc(con, output)
-		} else if command == "say" {
-			if arglen > 0 {
-				out := fmt.Sprintf("%s says: %s", con.Name, aargs)
-				us := fmt.Sprintf("You say: %s", aargs)
 
-				WriteToOthers(con, out)
-				WriteToDesc(con, us)
 			} else {
-				WriteToDesc(con, "But, what do you want to say?")
-			}
-		} else if command == "save" {
-			okay := WritePlayer(con.Player, true)
-			if okay == false {
-				WriteToPlayer(con.Player, "Saving character failed!!!")
+				WriteToPlayer(player, "That isn't a valid command.")
 			}
 
-		} else {
-			WriteToDesc(con, "That isn't a valid command.")
 		}
-
 	}
 	if con.State == def.CON_STATE_DISCONNECTING {
 		con.Desc.Close()
