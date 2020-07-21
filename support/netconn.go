@@ -110,7 +110,7 @@ func ReadConnection(con *glob.ConnectionData) {
 }
 func DescWriteError(c *glob.ConnectionData, err error) {
 	if err != nil {
-		CheckError(err, def.ERROR_NONFATAL)
+		CheckError("DescWriteError", err, def.ERROR_NONFATAL)
 
 		if c.Name != def.STRING_UNKNOWN && c.State == def.CON_STATE_PLAYING {
 			buf := fmt.Sprintf("%s lost their connection.", c.Name)

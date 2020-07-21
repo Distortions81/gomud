@@ -14,12 +14,12 @@ func main() {
 
 	/*Find Network*/
 	addr, err := net.ResolveTCPAddr("tcp", def.DEFAULT_PORT)
-	support.CheckError(err, def.ERROR_FATAL)
+	support.CheckError("main: resolveTCP", err, def.ERROR_FATAL)
 
 	/*Open Listener*/
 	ServerListener, err := net.ListenTCP("tcp", addr)
 	glob.ServerListener = ServerListener
-	support.CheckError(err, def.ERROR_FATAL)
+	support.CheckError("main: ListenTCP", err, def.ERROR_FATAL)
 
 	/*Print Connection*/
 	buf := fmt.Sprintf("Server online at: %s", addr.String())
@@ -43,18 +43,18 @@ func mainLoop() {
 
 			/*Change connections settings*/
 			err := desc.SetLinger(-1)
-			support.CheckError(err, def.ERROR_NONFATAL)
+			support.CheckError("main: SetLinger", err, def.ERROR_NONFATAL)
 			err = desc.SetNoDelay(true)
-			support.CheckError(err, def.ERROR_NONFATAL)
+			support.CheckError("main: SetNoDelay", err, def.ERROR_NONFATAL)
 			err = desc.SetReadBuffer(10000) //10k, 10 seconds of insanely-fast typing
-			support.CheckError(err, def.ERROR_NONFATAL)
+			support.CheckError("main: SetReadBuffer", err, def.ERROR_NONFATAL)
 			err = desc.SetWriteBuffer(12500000) //12.5MB, 10 second buffer at 10mbit
-			support.CheckError(err, def.ERROR_NONFATAL)
+			support.CheckError("main: SetWriteBuffer", err, def.ERROR_NONFATAL)
 
 			//TODO Add full greeting/info
 			/*Respond here, so we don't have to wait for lock*/
 			_, err = desc.Write([]byte(def.VERSION + "\r\nTo create a new character, type: NEW\r\nName: \r\n"))
-			support.CheckError(err, def.ERROR_NONFATAL)
+			support.CheckError("main: desc.Write", err, def.ERROR_NONFATAL)
 
 			go support.NewDescriptor(desc)
 			/* netconn/netconn.go */
