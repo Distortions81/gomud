@@ -110,6 +110,9 @@ func ReadConnection(con *glob.ConnectionData) {
 				con.Player.Valid = false
 				con.Player.Connection = nil
 			}
+			/*--- UNLOCK ---*/
+			glob.ConnectionListLock.Unlock()
+			/*--- UNLOCK ---*/
 			return
 		}
 		/*--- UNLOCK ---*/
