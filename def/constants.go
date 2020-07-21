@@ -8,9 +8,9 @@ const MIN_PLAYER_NAME_LENGTH = 2
 const STRING_UNKNOWN = "unknown"
 
 /*Dir & File*/
+const DATA_DIR = "data/"
 const PLAYER_DIR = "players/"
 
-const DATA_DIR = "data"
 const GREET_FILE = "greet.txt"
 const NEWS_FILE = "news.txt"
 const PFILE_MAXARGS = 10000
