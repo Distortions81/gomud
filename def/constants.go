@@ -1,6 +1,6 @@
 package def
 
-const VERSION = "v0.0.4-7-21-2020-135a"
+const VERSION = "v0.0.4-7-21-2020-145a"
 const DEFAULT_PORT = ":7777"
 const MAX_DESCRIPTORS = 10000
 const PASSWORD_HASH_COST = 14
