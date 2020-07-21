@@ -184,14 +184,15 @@ func interpretInput(con *glob.ConnectionData, input string) {
 					if p.State == def.CON_STATE_PLAYING {
 						idleString := ""
 						connectedString := ""
-						if time.Since(p.IdleTime).Truncate(time.Minute).Round(time.Second) > time.Minute {
-							idleString = " (idle " + time.Since(p.IdleTime).Round(time.Minute).String() + ")"
+
+						if time.Since(p.IdleTime) > time.Minute {
+							idleString = " (idle " + ToDayHourMinute(time.Since(p.IdleTime)) + ")"
 						}
-						if time.Since(p.IdleTime).Truncate(time.Minute).Round(time.Second) > time.Minute {
-							connectedString = "(on " + time.Since(p.ConnectedFor).Round(time.Minute).String() + ")"
+						if time.Since(p.ConnectedFor) > time.Minute {
+							connectedString = " (on " + ToDayHourMinute(time.Since(p.ConnectedFor)) + ")"
 						}
 
-						buf = fmt.Sprintf("%d: %s %s%s", x, player.Name, connectedString, idleString)
+						buf = fmt.Sprintf("%d: %s%s%s", x, player.Name, connectedString, idleString)
 					} else {
 						buf = fmt.Sprintf("%d: %s", x, "(Connecting)")
 					}
