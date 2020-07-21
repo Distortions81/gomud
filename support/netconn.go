@@ -109,9 +109,7 @@ func ReadConnection(con *glob.ConnectionData) {
 			if con.Player != nil && con.Player.Valid {
 				con.Player.Valid = false
 				con.Player.Connection = nil
-				con.Player = nil
 			}
-			con = nil
 			return
 		}
 		/*--- UNLOCK ---*/

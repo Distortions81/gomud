@@ -192,7 +192,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 							connectedString = " (on " + ToDayHourMinute(time.Since(p.ConnectedFor)) + ")"
 						}
 
-						buf = fmt.Sprintf("%d: %s%s%s", x, player.Name, connectedString, idleString)
+						buf = fmt.Sprintf("%d: %s%s%s", x, p.Name, connectedString, idleString)
 					} else {
 						buf = fmt.Sprintf("%d: %s", x, "(Connecting)")
 					}
@@ -201,7 +201,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 						output = output + "\r\n"
 					}
 				}
-				WriteToPlayer(player, output)
+				WriteToPlayer(con.Player, output)
 			} else if command == "say" {
 				if arglen > 0 {
 					out := fmt.Sprintf("%s says: %s", con.Name, aargs)
@@ -223,16 +223,5 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			}
 
 		}
-	}
-	if con.State == def.CON_STATE_DISCONNECTING {
-		con.Desc.Close()
-		con.Valid = false
-		if con.Player != nil && con.Player.Valid {
-			con.Player.Valid = false
-			con.Player.Connection = nil
-			con.Player = nil
-		}
-		con = nil
-		return
 	}
 }
