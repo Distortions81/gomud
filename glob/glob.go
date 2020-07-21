@@ -12,9 +12,14 @@ import (
 var ServerState = def.SERVER_RUNNING
 var ServerListener *net.TCPListener
 
+//Fixed size arrays are faster
 var ConnectionListMax int
-var ConnectionList [def.MAX_DESCRIPTORS + 1]ConnectionData
-var ConnectionListLock sync.Mutex
+var ConnectionList [def.MAX_USERS + 1]ConnectionData
+var ConnectionListLock sync.RWMutex
+
+var PlayerListMax int
+var PlayerList [def.MAX_USERS + 1]PlayerData
+var PlayerListLock sync.RWMutex
 
 type ConnectionData struct {
 	Name    string
@@ -29,9 +34,9 @@ type ConnectionData struct {
 	BytesOut int
 	BytesIn  int
 
-	Temp   string      `json:"-,"`
-	Player *PlayerData `json:"-,"`
-	Valid  bool        `json:"-,"`
+	TempPass string      `json:"-,"`
+	Player   *PlayerData `json:"-,"`
+	Valid    bool        `json:"-,"`
 }
 
 type PlayerData struct {
