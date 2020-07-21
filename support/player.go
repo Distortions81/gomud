@@ -138,3 +138,11 @@ func WritePlayer(player *glob.PlayerData, report bool) bool {
 	}
 	return true
 }
+
+func LinkPlayerConnection(player *glob.PlayerData, con *glob.ConnectionData) {
+
+	if player != nil && player.Valid && con != nil && con.Valid {
+		player.Connection = con
+		con.Player = player
+	}
+}
