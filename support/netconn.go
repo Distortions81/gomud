@@ -127,11 +127,34 @@ func DescWriteError(c *glob.ConnectionData, err error) {
 }
 
 func WriteToDesc(c *glob.ConnectionData, text string) {
+
+	if c == nil {
+
+		log.Println("Attempted to write to invalid ConnectionData.")
+		return
+	}
 	message := fmt.Sprintf("%s\r\n", text)
 	bytes, err := c.Desc.Write([]byte(message))
 	c.BytesOut += bytes
 
 	DescWriteError(c, err)
+}
+
+func WriteToPlayer(player *glob.PlayerData, text string) {
+
+	if player != nil && player.Valid &&
+		player.Connection != nil && player.Connection.Valid &&
+		player.Connection.Desc != nil {
+		message := fmt.Sprintf("%s\r\n", text)
+		bytes, err := player.Connection.Desc.Write([]byte(message))
+		player.Connection.BytesOut += bytes
+
+		DescWriteError(player.Connection, err)
+	} else {
+		log.Println("Attempted to write to invalid or disconnected player.")
+		log.Println(text)
+		return
+	}
 }
 
 func WriteToAll(text string) {

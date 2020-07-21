@@ -2,8 +2,9 @@ package support
 
 import (
 	"fmt"
-	"io/ioutil"
+	"log"
 	"strings"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -30,7 +31,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 	args := strings.Split(msg, " ")
 
 	//If we have arguments
-	if slen > 0 {
+	if msgLen > 0 {
 
 		arglen = len(args)
 		if arglen > 0 {
@@ -50,8 +51,8 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			WriteToDesc(con, "What name would you like to go by?")
 			con.State = def.CON_STATE_NEW_LOGIN
 		} else {
-			_, err := ioutil.ReadFile(def.DATA_DIR + def.PLAYER_DIR + alphaChar)
-			if err != nil {
+			_, found := ReadPlayer(alphaChar, false)
+			if found == false {
 				WriteToDesc(con, "Couldn't find a player by that name.")
 				WriteToDesc(con, "Try again, or type 'NEW' to create a new character.")
 				WriteToDesc(con, "Name:")
@@ -63,13 +64,31 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			}
 		}
 	} else if con.State == def.CON_STATE_PASSWORD {
-		WriteToDesc(con, "Welcome back, "+con.Name+"!")
-		con.State = def.CON_STATE_PLAYING
+		player, _ := ReadPlayer(con.Name, true)
+		con.Player = player
+
+		err := bcrypt.CompareHashAndPassword([]byte(player.Password), []byte(inputc))
+
+		if err == nil {
+			con.Player.Connection = con
+			WriteToDesc(con, "Welcome back, "+player.Name+"!")
+			WriteToAll(player.Name + " has joined.")
+			con.State = def.CON_STATE_PLAYING
+		} else {
+			log.Println("Invalid password attempt: " + player.Name + " ip: " + con.Address)
+			time.Sleep(5 * time.Second)
+			WriteToDesc(con, "Invalid password.")
+			time.Sleep(5 * time.Second)
+			WriteToDesc(con, "Reconnect, and try again...")
+			con.State = def.CON_STATE_DISCONNECTING
+		}
 	} else if con.State == def.CON_STATE_NEW_LOGIN {
-		if alphaCharLen > def.MIN_PLAYER_NAME_LENGTH && alphaCharLen < def.MAX_PLAYER_NAME_LENGTH {
+		if alphaCharLen > def.MIN_PLAYER_NAME_LENGTH &&
+			alphaCharLen < def.MAX_PLAYER_NAME_LENGTH &&
+			alphaChar != def.STRING_UNKNOWN {
 			con.Name = alphaChar
-			_, err := ioutil.ReadFile(def.DATA_DIR + def.PLAYER_DIR + alphaChar)
-			if err != nil {
+			_, found := ReadPlayer(alphaChar, false)
+			if found {
 				WriteToDesc(con, "Player name is already taken! Try again.")
 				WriteToDesc(con, "Name:")
 			} else {
@@ -82,8 +101,9 @@ func interpretInput(con *glob.ConnectionData, input string) {
 
 	} else if con.State == def.CON_STATE_NEW_LOGIN_CONFIRM {
 		if command == "y" || command == "yes" {
-			con.Player = CreatePlayer(con)
-			WriteToDesc(con, "You shall be called "+alphaChar+", then...")
+			con.Player = CreatePlayerFromDesc(con)
+			con.Player.Connection = con
+			WriteToDesc(con, "You shall be called "+con.Name+", then...")
 			WriteToDesc(con, "Passwords must be between 9 and 72 characters long, and contain at least 2 numbers/symbols.")
 			WriteToDesc(con, "Password:")
 			con.State = def.CON_STATE_NEW_PASSWORD
@@ -93,7 +113,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		}
 
 	} else if con.State == def.CON_STATE_NEW_PASSWORD {
-		symbolCount := len(inputc) //Incomplete
+		symbolCount := len(NonAlphaCharOnly(inputc))
 		inputcLen := len(inputc)
 		if inputcLen >= 8 && inputcLen <= 72 && symbolCount >= 2 {
 			con.Temp = inputc
@@ -101,22 +121,28 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			con.State = def.CON_STATE_NEW_PASSWORD_CONFIRM
 		} else {
 			WriteToDesc(con, "That isn't an acceptable password!")
+			debug := fmt.Sprintf("len: %d, sym: %d", inputcLen, symbolCount)
+			log.Println(debug)
 			WriteToDesc(con, "Password:")
 		}
 	} else if con.State == def.CON_STATE_NEW_PASSWORD_CONFIRM {
 
-		/*Check password*/
+		/*Hash password*/
 		if inputc == con.Temp {
-			WriteToDesc(con, "Encrypting password, please wait!")
-			hash, err := bcrypt.GenerateFromPassword([]byte(msg), 17)
+			WriteToDesc(con, "Encrypting password... One second please!")
+			hash, err := bcrypt.GenerateFromPassword([]byte(msg), def.PASSWORD_HASH_COST)
 			if err != nil {
-				checkError("interp: password", err, def.ERROR_NONFATAL)
-				WriteToDesc(con, "Password encrption failed, sorry something is wrong.")
+				CheckError("interp: password hash", err, def.ERROR_NONFATAL)
+				WriteToDesc(con, "Password encryption failed, sorry something is wrong.")
+
+				//TODO disconnect/invalidate and report
+				return
 			}
 			con.Temp = ""
+			con.Player.Password = string(hash)
 			WriteToDesc(con, "Done, logging in!")
 			con.State = def.CON_STATE_PLAYING
-			//support.WritePlayer()
+			WritePlayer(con.Player, true)
 		} else {
 			con.Temp = ""
 			WriteToDesc(con, "Passwords didn't match, try again.")
@@ -128,10 +154,10 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		/*Commands area*/
 		/***************/
 		if command == "quit" {
+			WritePlayer(con.Player, true)
 			WriteToDesc(con, "Goodbye!")
 			buf := fmt.Sprintf("%s has quit.", con.Name)
 			WriteToAll(buf)
-
 			con.State = def.CON_STATE_DISCONNECTING
 		} else if command == "who" {
 			output := "Players online:\n"
@@ -164,21 +190,26 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			} else {
 				WriteToDesc(con, "But, what do you want to say?")
 			}
-		} else if command == "writetest" {
-			if arglen > 0 {
-				WritePlayer(con.Player)
-				WriteToDesc(con, "Wrote test.")
-			} else {
-				WriteToDesc(con, "But, what do you want to say?")
+		} else if command == "save" {
+			okay := WritePlayer(con.Player, true)
+			if okay == false {
+				WriteToPlayer(con.Player, "Saving character failed!!!")
 			}
 
 		} else {
 			WriteToDesc(con, "That isn't a valid command.")
 		}
 
-	} else if con.State == def.CON_STATE_DISCONNECTING {
-		con.Valid = false
+	}
+	if con.State == def.CON_STATE_DISCONNECTING {
 		con.Desc.Close()
+		con.Valid = false
+		if con.Player != nil && con.Player.Valid {
+			con.Player.Valid = false
+			con.Player.Connection = nil
+			con.Player = nil
+		}
+		con = nil
 		return
 	}
 }

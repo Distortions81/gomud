@@ -28,7 +28,7 @@ type ConnectionData struct {
 	BytesOut int
 	BytesIn  int
 
-	temp   string      `json:"-,"`
+	Temp   string      `json:"-,"`
 	Player *PlayerData `json:"-,"`
 	Valid  bool        `json:"-,"`
 }
@@ -55,6 +55,6 @@ type PlayerData struct {
 	Description string
 	Sex         string
 
-	Desc  *net.TCPConn `json:"-,"`
-	Valid bool         `json:"-,"`
+	Connection *ConnectionData `json:"-,"`
+	Valid      bool            `json:"-,"`
 }

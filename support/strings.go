@@ -27,12 +27,12 @@ func AlphaCharOnly(str string) string {
 }
 
 //AlphaCharOnly A-z
-func AlphaCharOnly(str string) string {
+func NonAlphaCharOnly(str string) string {
 	b := make([]byte, len(str))
 	var bl int
 	for i := 0; i < len(str); i++ {
 		c := str[i]
-		if c < 'A' && c > 'z' {
+		if (c < 'A' || c > 'z') && c != '\n' && c != '\r' {
 			b[bl] = c
 			bl++
 		}

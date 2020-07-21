@@ -1,8 +1,9 @@
 package def
 
-const VERSION = "v0.0.3-7-20-2020-213p"
+const VERSION = "v0.0.4-7-21-2020-135a"
 const DEFAULT_PORT = ":7777"
 const MAX_DESCRIPTORS = 10000
+const PASSWORD_HASH_COST = 14
 const MAX_PLAYER_NAME_LENGTH = 25
 const MIN_PLAYER_NAME_LENGTH = 2
 const STRING_UNKNOWN = "unknown"
