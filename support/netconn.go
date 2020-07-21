@@ -46,8 +46,8 @@ func NewDescriptor(desc *net.TCPConn) {
 	}
 
 	/*Generate new descriptor data*/
-	if glob.ConnectionListMax >= def.MAX_DESCRIPTORS-1 {
-		log.Println("MAX_DESCRIPTORS REACHED!")
+	if glob.ConnectionListMax >= def.MAX_USERS-1 {
+		log.Println("Create ConnectionData: MAX_USERS REACHED!")
 		desc.Write([]byte("Sorry, something has gone wrong (MAX_DESCRIPTORS)!\r\nGoodbye!\r\n"))
 		return
 	}
@@ -103,6 +103,17 @@ func ReadConnection(con *glob.ConnectionData) {
 
 		interpretInput(con, input)
 
+		if con.State == def.CON_STATE_DISCONNECTING {
+			con.Desc.Close()
+			con.Valid = false
+			if con.Player != nil && con.Player.Valid {
+				con.Player.Valid = false
+				con.Player.Connection = nil
+				con.Player = nil
+			}
+			con = nil
+			return
+		}
 		/*--- UNLOCK ---*/
 		glob.ConnectionListLock.Unlock()
 		/*--- UNLOCK ---*/
