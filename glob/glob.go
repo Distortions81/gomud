@@ -28,6 +28,7 @@ type ConnectionData struct {
 	BytesOut int
 	BytesIn  int
 
+	temp   string      `json:"-,"`
 	Player *PlayerData `json:"-,"`
 	Valid  bool        `json:"-,"`
 }

@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"../def"
 	"../glob"
 )
@@ -14,13 +16,13 @@ func interpretInput(con *glob.ConnectionData, input string) {
 	/*Clean up user input*/
 	alphaChar := AlphaCharOnly(input)
 	alphaCharLen := len(alphaChar)
-	message := StripCtlAndExtFromBytes(input)
-	msg := strings.ReplaceAll(message, "\n", "")
-	msg = strings.ReplaceAll(msg, "\r", "")
-	msg = strings.ReplaceAll(msg, "\t", "")
-	msg = strings.TrimSpace(msg)
+	inputc := strings.ReplaceAll(input, "\n", "")
+	inputc = strings.ReplaceAll(inputc, "\r", "")
+	inputc = strings.ReplaceAll(inputc, "\t", "")
+	inputc = strings.TrimSpace(inputc)
+	msg := StripCtlAndExtFromBytes(inputc)
 
-	slen := len(msg)
+	msgLen := len(msg)
 	command := ""
 	aargs := ""
 	arglen := -1
@@ -82,6 +84,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		if command == "y" || command == "yes" {
 			con.Player = CreatePlayer(con)
 			WriteToDesc(con, "You shall be called "+alphaChar+", then...")
+			WriteToDesc(con, "Passwords must be between 9 and 72 characters long, and contain at least 2 numbers/symbols.")
 			WriteToDesc(con, "Password:")
 			con.State = def.CON_STATE_NEW_PASSWORD
 		} else {
@@ -90,16 +93,32 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		}
 
 	} else if con.State == def.CON_STATE_NEW_PASSWORD {
-		WriteToDesc(con, "Type again to confirm:")
-		con.State = def.CON_STATE_NEW_PASSWORD_CONFIRM
+		symbolCount := len(inputc) //Incomplete
+		inputcLen := len(inputc)
+		if inputcLen >= 8 && inputcLen <= 72 && symbolCount >= 2 {
+			con.Temp = inputc
+			WriteToDesc(con, "Type again to confirm:")
+			con.State = def.CON_STATE_NEW_PASSWORD_CONFIRM
+		} else {
+			WriteToDesc(con, "That isn't an acceptable password!")
+			WriteToDesc(con, "Password:")
+		}
 	} else if con.State == def.CON_STATE_NEW_PASSWORD_CONFIRM {
 
 		/*Check password*/
-		if 1 == 1 {
-			WriteToDesc(con, "Password confirmed, logging in!")
+		if inputc == con.Temp {
+			WriteToDesc(con, "Encrypting password, please wait!")
+			hash, err := bcrypt.GenerateFromPassword([]byte(msg), 17)
+			if err != nil {
+				checkError("interp: password", err, def.ERROR_NONFATAL)
+				WriteToDesc(con, "Password encrption failed, sorry something is wrong.")
+			}
+			con.Temp = ""
+			WriteToDesc(con, "Done, logging in!")
 			con.State = def.CON_STATE_PLAYING
 			//support.WritePlayer()
 		} else {
+			con.Temp = ""
 			WriteToDesc(con, "Passwords didn't match, try again.")
 			WriteToDesc(con, "Password:")
 		}

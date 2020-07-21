@@ -26,6 +26,20 @@ func AlphaCharOnly(str string) string {
 	return string(b[:bl])
 }
 
+//AlphaCharOnly A-z
+func AlphaCharOnly(str string) string {
+	b := make([]byte, len(str))
+	var bl int
+	for i := 0; i < len(str); i++ {
+		c := str[i]
+		if c < 'A' && c > 'z' {
+			b[bl] = c
+			bl++
+		}
+	}
+	return string(b[:bl])
+}
+
 //StripCtlAndExtFromBytes Strip all specials
 func StripCtlAndExtFromBytes(str string) string {
 	b := make([]byte, len(str))
