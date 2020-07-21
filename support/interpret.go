@@ -121,8 +121,6 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			con.State = def.CON_STATE_NEW_PASSWORD_CONFIRM
 		} else {
 			WriteToDesc(con, "That isn't an acceptable password!")
-			debug := fmt.Sprintf("len: %d, sym: %d", inputcLen, symbolCount)
-			log.Println(debug)
 			WriteToDesc(con, "Password:")
 		}
 	} else if con.State == def.CON_STATE_NEW_PASSWORD_CONFIRM {
