@@ -1,6 +1,7 @@
 package support
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -11,7 +12,7 @@ import (
 	"../glob"
 )
 
-func CreatePlayer(desc *glob.ConnectionData) glob.PlayerData {
+func CreatePlayer(desc *glob.ConnectionData) *glob.PlayerData {
 	player := glob.PlayerData{
 		Name:        desc.Name,
 		Password:    "",
@@ -32,10 +33,10 @@ func CreatePlayer(desc *glob.ConnectionData) glob.PlayerData {
 		Description: "",
 		Sex:         "",
 
-		Desc:  desc,
+		Desc:  desc.Desc,
 		Valid: true,
 	}
-	return player
+	return &player
 }
 
 func ReadPlayer(name string, load bool) (*glob.PlayerData, bool) {
@@ -54,18 +55,26 @@ func ReadPlayer(name string, load bool) (*glob.PlayerData, bool) {
 }
 
 func WritePlayer(player *glob.PlayerData) bool {
-	writer := os.Stdout
-	enc := json.NewEncoder(writer)
+	outbuf := new(bytes.Buffer)
+	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
 
 	if err := enc.Encode(&player); err != nil {
-		log.Println(err)
+		CheckError("WritePlayer: enc.Encode", err, def.ERROR_NONFATAL)
 		return false
 	}
-	fo, err := os.Create(def.DATA_DIR + def.PLAYER_DIR + name)
+	_, err := os.Create(def.DATA_DIR + def.PLAYER_DIR + player.Name)
 
 	if err != nil {
 		CheckError("WritePlayer: os.Create", err, def.ERROR_NONFATAL)
+		return false
+	}
+
+	err = ioutil.WriteFile(def.DATA_DIR+def.PLAYER_DIR+player.Name, []byte(outbuf.String()), 0644)
+
+	if err != nil {
+		CheckError("WritePlayer: WriteFile", err, def.ERROR_NONFATAL)
+		return false
 	}
 	return true
 }

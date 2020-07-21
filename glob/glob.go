@@ -54,6 +54,6 @@ type PlayerData struct {
 	Description string
 	Sex         string
 
-	Desc  *net.Conn `json:"-,"`
-	Valid bool      `json:"-,"`
+	Desc  *net.TCPConn `json:"-,"`
+	Valid bool         `json:"-,"`
 }

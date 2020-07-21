@@ -147,7 +147,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			}
 		} else if command == "writetest" {
 			if arglen > 0 {
-				WriteDesc(con)
+				WritePlayer(con.Player)
 				WriteToDesc(con, "Wrote test.")
 			} else {
 				WriteToDesc(con, "But, what do you want to say?")
