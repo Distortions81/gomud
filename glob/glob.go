@@ -17,7 +17,7 @@ var ConnectionList [def.MAX_USERS]ConnectionData
 var ConnectionListLock sync.Mutex
 
 var PlayerListEnd int
-var PlayerList [def.MAX_USERS]PlayerData
+var PlayerList [def.MAX_USERS]*PlayerData
 var PlayerListLock sync.Mutex
 
 var SectorsListEnd int
@@ -94,9 +94,11 @@ type PlayerData struct {
 	Room       int
 	RoomLink   *RoomData `json:"-"`
 
-	Created     time.Time
-	LastSeen    time.Time
-	TimePlayed  int
+	Created      time.Time
+	LastSeen     time.Time
+	TimePlayed   int
+	UnlinkedTime time.Time `json:"-"`
+
 	Connections map[string]int
 	BytesIn     map[string]int
 	BytesOut    map[string]int
