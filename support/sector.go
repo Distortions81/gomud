@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 
 	"../def"
@@ -19,8 +18,7 @@ func WriteSector(sector *glob.SectorData) bool {
 
 	sector.Version = def.SECTOR_VERSION
 
-	if sector == nil {
-		log.Println("WriteSector: nil sector")
+	if sector == nil && !sector.Valid {
 		return false
 	}
 
