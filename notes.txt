@@ -14,3 +14,8 @@ races/classes/skills/spells/commands scripting language, lower barrier to entry.
 probably handle disconnected/deleted players/items/states at all times (via dedicated functions)
 
 online quest editor
+
+
+
+exits:
+any word, enter/exit, custom enter/exit/action messages.
