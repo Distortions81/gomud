@@ -226,7 +226,7 @@ func WriteToRoom(player *glob.PlayerData, text string) {
 
 	if player.RoomLink != nil {
 		for _, target := range player.RoomLink.Players {
-			if target != nil {
+			if target != nil && target != player {
 				WriteToPlayer(target, text)
 			}
 		}
