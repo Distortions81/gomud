@@ -78,9 +78,8 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		err := bcrypt.CompareHashAndPassword([]byte(player.Password), []byte(inputc))
 
 		if err == nil {
-			LinkPlayerConnection(con.Player, con)
+			LinkPlayerConnection(player, con)
 			WriteToDesc(con, "Welcome back, "+player.Name+"!")
-			WriteToAll(player.Name + " has joined.")
 			con.State = def.CON_STATE_PLAYING
 		} else {
 			log.Println("Invalid password attempt: " + player.Name + " ip: " + con.Address)
@@ -166,19 +165,19 @@ func interpretInput(con *glob.ConnectionData, input string) {
 
 	} else if con.State == def.CON_STATE_PLAYING {
 		/***************/
-		/*Commands area*/
+		/*Commands area*/ //TODO make into nice list with separate functions
 		/***************/
 		if con.Player != nil && con.Player.Valid {
 			var player *glob.PlayerData
 			player = con.Player
 
 			if command == "quit" {
-				okay := WritePlayer(con.Player)
+				okay := WritePlayer(player)
 				if okay == false {
-					WriteToPlayer(con.Player, "Saving character failed!!!")
+					WriteToPlayer(player, "Saving character failed!!!")
 					return
 				} else {
-					WriteToPlayer(con.Player, "Character saved.")
+					WriteToPlayer(player, "Character saved.")
 				}
 				buf := fmt.Sprintf("%s has quit.", con.Name)
 				WriteToAll(buf)
@@ -213,30 +212,30 @@ func interpretInput(con *glob.ConnectionData, input string) {
 						output = output + "\r\n"
 					}
 				}
-				WriteToPlayer(con.Player, output)
+				WriteToPlayer(player, output)
 			} else if command == "say" {
 				if arglen > 0 {
 					out := fmt.Sprintf("%s says: %s", con.Name, aargs)
 					us := fmt.Sprintf("You say: %s", aargs)
 
-					WriteToOthers(con, out)
+					WriteToOthers(player, out)
 					WriteToPlayer(player, us)
 				} else {
 					WriteToPlayer(player, "But, what do you want to say?")
 				}
 			} else if command == "save" {
-				okay := WritePlayer(con.Player)
+				okay := WritePlayer(player)
 				if okay == false {
-					WriteToPlayer(con.Player, "Saving character failed!!!")
+					WriteToPlayer(player, "Saving character failed!!!")
 				} else {
-					WriteToPlayer(con.Player, "Character saved.")
+					WriteToPlayer(player, "Character saved.")
 				}
 			} else if command == "asave" {
 				okay := WriteSector(&glob.SectorsList[0])
 				if okay == false {
-					WriteToPlayer(con.Player, "Saving sector failed!!!")
+					WriteToPlayer(player, "Saving sector failed!!!")
 				} else {
-					WriteToPlayer(con.Player, "Sector saved.")
+					WriteToPlayer(player, "Sector saved.")
 				}
 
 			} else if command == "look" {
@@ -250,6 +249,20 @@ func interpretInput(con *glob.ConnectionData, input string) {
 						buf := fmt.Sprintf("%s:\r\n%s", roomName, roomDesc)
 						WriteToPlayer(player, buf)
 						err = false
+					}
+
+					if player.RoomLink != nil {
+						names := ""
+						for _, target := range player.RoomLink.Players {
+							if target != nil && target != player {
+								names = names + fmt.Sprintf("%s is here.\r\n", target.Name)
+							}
+						}
+						//Newline if there are players here.
+						if names != "" {
+							names = "\r\n" + names
+						}
+						WriteToPlayer(player, names)
 					}
 				}
 				if err {
