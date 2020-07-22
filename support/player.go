@@ -15,10 +15,13 @@ import (
 )
 
 func SetupNewCharacter(player *glob.PlayerData) {
+	if player == nil && !player.Valid {
+		return
+	}
 	player.Sector = def.PLAYER_START_SECTOR
 	player.Room = def.PLAYER_START_ROOM
 	player.Fingerprint = MakeFingerprint(player.Name)
-	WriteToPlayer(player, "Welcome! Type LOOK to see around you, and HELP to see more commands.")
+	WriteToPlayer(player, "Welcome! Type LOOK to see around you, and WHO to see who is online.")
 	WriteToAll("A newcomer has arrived, their name is " + player.Name + "...")
 }
 
@@ -119,8 +122,7 @@ func WritePlayer(player *glob.PlayerData) bool {
 
 	player.Version = def.PFILE_VERSION
 
-	if player == nil {
-		log.Println("WritePlayer: nil player")
+	if player == nil && !player.Valid {
 		return false
 	}
 
@@ -147,59 +149,91 @@ func WritePlayer(player *glob.PlayerData) bool {
 
 func LinkPlayerConnection(player *glob.PlayerData, con *glob.ConnectionData) {
 
-	if player != nil && player.Valid && con != nil && con.Valid {
-		for x := 0; x < def.MAX_USERS; x++ {
-			if glob.PlayerList[x].Fingerprint == player.Fingerprint && glob.PlayerList[x].Name == player.Name {
-				con.Player = player //Replace pfile data with live
-				player.Connection = con
-
-				buf := fmt.Sprintf("%s reconnects to their body.", player.Name)
-				PlayerToRoom(player, player.Sector, player.Room)
-				WriteToRoom(player, buf)
-				return
-			}
-		}
-
-		if player.Connections == nil {
-			player.Connections = make(map[string]int)
-		}
-		player.Connections[con.Address]++
-		player.Connection = con
-
-		PlayerToRoom(player, player.Sector, player.Room)
-		con.Player = player
-		con.State = def.CON_STATE_PLAYING
+	if player == nil || !player.Valid || con == nil || !con.Valid {
+		return
 	}
+	/*If player is already in the world, re-use*/
+	for x := 0; x <= glob.PlayerListEnd; x++ {
+		if glob.PlayerList[x] != nil && glob.PlayerList[x].Valid == false &&
+			glob.PlayerList[x].Name == player.Name {
+
+			/*Get rid of previous character from login*/
+			con.Player.Valid = false
+			con.Player = nil
+
+			con.Player = player //Replace pfile data with live
+			player.Connection = con
+
+			/*Re-activate old body*/
+			player.UnlinkedTime = time.Time{}
+			player.Valid = true
+
+			PlayerToRoom(player, player.Sector, player.Room)
+			buf := fmt.Sprintf("%s reconnects to their body.", player.Name)
+			WriteToRoom(player, buf)
+			WriteToPlayer(player, "You reconnect to your body.")
+			return
+		}
+	}
+
+	if player.Connections == nil {
+		player.Connections = make(map[string]int)
+	}
+	player.Connections[con.Address]++
+
+	/*Link to each other*/
+	player.Connection = con
+	con.Player = player
+
+	/*Add to global player list*/
+	glob.PlayerListEnd++
+	glob.PlayerList[glob.PlayerListEnd] = player
+
+	PlayerToRoom(player, player.Sector, player.Room)
+
+	buf := fmt.Sprintf("%s suddenly appears.", player.Name)
+	WriteToRoom(player, buf)
 }
 
 func PlayerToRoom(player *glob.PlayerData, sectorID int, roomID int) {
 
+	if player == nil && !player.Valid {
+		return
+	}
 	//Remove player from room, if they are in one
 	if player.RoomLink != nil {
-		buf := fmt.Sprintf("%s left.", player.Name)
-		WriteToRoom(player, buf)
-
 		room := player.RoomLink
 		delete(room.Players, player.Fingerprint)
 	}
 
-	//Add player to room, add error handling
-	glob.SectorsList[sectorID].Rooms[roomID].Players[player.Fingerprint] = player
-	room := glob.SectorsList[sectorID].Rooms[roomID]
-	player.RoomLink = &room
-	player.Sector = sectorID
-	player.Room = roomID
+	if sectorID != 0 && roomID != 0 {
+		//Add player to room, add error handling
+		glob.SectorsList[sectorID].Rooms[roomID].Players[player.Fingerprint] = player
+		room := glob.SectorsList[sectorID].Rooms[roomID]
+		player.RoomLink = &room
+		player.Sector = sectorID
+		player.Room = roomID
+	}
 
-	//Send to message handler.
-	buf := fmt.Sprintf("%s has arrived.", player.Name)
-	WriteToRoom(player, buf)
 }
 
 func TrackBytesPlayer(con *glob.ConnectionData, player *glob.PlayerData) {
 
-	if player != nil && player.Valid && con != nil && con.Valid {
-		player.BytesOut[con.Address] += con.BytesOut
-		player.BytesIn[con.Address] += con.BytesIn
+	if player == nil || !player.Valid || con == nil || !con.Valid {
+		return
 	}
+	player.BytesOut[con.Address] += con.BytesOut
+	player.BytesIn[con.Address] += con.BytesIn
 
+}
+
+func RemovePlayerWorld(player *glob.PlayerData) {
+	if player == nil && !player.Valid {
+		return
+	}
+	PlayerToRoom(player, 0, 0)
+	player.Valid = false
+
+	buf := fmt.Sprintf("%v invalidated, end: %v", player.Name, glob.PlayerListEnd)
+	log.Println(buf)
 }
