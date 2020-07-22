@@ -8,73 +8,57 @@ import (
 	"../def"
 )
 
+/*The big dataset*/
 var ServerState = def.SERVER_RUNNING
 var ServerListener *net.TCPListener
 
-//Fixed size arrays are faster
-var ConnectionListMax int
-var ConnectionList [def.MAX_USERS + 1]ConnectionData
+var ConnectionListEnd int
+var ConnectionList [def.MAX_USERS]ConnectionData
 var ConnectionListLock sync.Mutex
 
-var PlayerListMax int
-var PlayerList [def.MAX_USERS + 1]PlayerData
+var PlayerListEnd int
+var PlayerList [def.MAX_USERS]PlayerData
 var PlayerListLock sync.Mutex
 
-var SectorsListMax int
-var SectorsList [def.MAX_SECTORS + 1]SectorsData
-
-type BuilderData struct {
-	Builders []string
-	Modified []time.Time
-
-	CreatedBy string
-	Created   Time.time
-
-	Valid bool
-}
+var SectorsListEnd int
+var SectorsList [def.MAX_SECTORS]SectorData
 
 type DirectionData struct {
-	ToRoom       *RoomData
-	ToRoomID     int
-	ToRoomSector int
+	Name         string
+	ToRoom       *RoomData `json:"-,"`
+	ToRoomID     int       `json:",omitempty"`
+	ToRoomSector int       `json:",omitempty"`
 
-	Closed bool
-	Hidden bool
-	Keyed  bool
+	Closed bool `json:",omitempty"`
+	Hidden bool `json:",omitempty"`
+	Keyed  bool `json:",omitempty"`
 
-	Builders BuilderData
+	Builders map[string]time.Time `json:",omitempty"`
 
 	Valid bool
 }
 
 type RoomData struct {
-	RoomID   int
-	SectorID int
+	Name        string `json:",omitempty"`
+	Description string `json:",omitempty"`
 
-	Name        string
-	Description string
+	//Convert to map?
+	Exits map[string]DirectionData `json:",omitempty"`
 
-	North DirectionData
-	South DirectionData
-	East  DirectionData
-	West  DirectionData
-	Up    DirectionData
-	Down  DirectionData
-
-	Builders BuilderData
+	Builders map[string]time.Time `json:",omitempty"`
 
 	Valid bool
 }
 
-type SectorsData struct {
-	ID    string
-	Group string
+type SectorData struct {
+	Version string
 
-	Name        string
-	Description string
+	ID          int
+	Name        string `json:",omitempty"`
+	Area        string `json:",omitempty"`
+	Description string `json:",omitempty"`
 
-	NumRooms int
-	Rooms    [def.MAX_ROOMS_PER_SECTOR]RoomData
+	Rooms map[int]RoomData `json:",omitempty"`
 
 	Valid bool
 }
@@ -87,38 +71,38 @@ type ConnectionData struct {
 	State        int
 	ConnectedFor time.Time
 	IdleTime     time.Time
-	ID           int
 
 	BytesOut int
 	BytesIn  int
 
 	TempPass string      `json:"-,"`
 	Player   *PlayerData `json:"-,"`
-	Valid    bool        `json:"-,"`
+	Valid    bool
 }
 
 type PlayerData struct {
-	Name     string
-	Password string
+	Version     string
+	Fingerprint string
+	Name        string
+	Password    string
 
 	PlayerType int
 	Level      int
 	State      int
 	Sector     int
-	Vnum       int
+	Room       int
 
 	Created     time.Time
 	LastSeen    time.Time
-	Seconds     int
-	IPs         []string
-	Connections []int
-	BytesIn     []int
-	BytesOut    []int
-	Email       string
+	TimePlayed  int
+	Connections map[string]int
+	BytesIn     map[string]int
+	BytesOut    map[string]int
+	Email       string `json:",omitempty"`
 
-	Description string
-	Sex         string
+	Description string `json:",omitempty"`
+	Sex         string `json:",omitempty"`
 
 	Connection *ConnectionData `json:"-,"`
-	Valid      bool            `json:"-,"`
+	Valid      bool
 }
