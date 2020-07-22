@@ -13,6 +13,14 @@ import (
 	"../glob"
 )
 
+func SetupNewCharacter(player *glob.PlayerData) {
+	player.Sector = def.PLAYER_START_SECTOR
+	player.Room = def.PLAYER_START_ROOM
+	player.Fingerprint = MakeFingerprint()
+	WriteToPlayer(player, "Welcome! Type LOOK to see around you, and HELP to see more commands.")
+	WriteToAll("A newcomer has arrived, their name is " + player.Name + "...")
+}
+
 func CreatePlayer() *glob.PlayerData {
 	player := glob.PlayerData{
 		Name:        def.STRING_UNKNOWN,
@@ -21,14 +29,13 @@ func CreatePlayer() *glob.PlayerData {
 		Level:       0,
 		State:       def.PLAYER_ALIVE,
 		Sector:      0,
-		Vnum:        0,
+		Room:        0,
 		Created:     time.Now(),
 		LastSeen:    time.Now(),
-		Seconds:     0,
-		IPs:         []string{},
-		Connections: []int{},
-		BytesIn:     []int{},
-		BytesOut:    []int{},
+		TimePlayed:  0,
+		Connections: nil,
+		BytesIn:     nil,
+		BytesOut:    nil,
 		Email:       "",
 
 		Description: "",
@@ -48,14 +55,13 @@ func CreatePlayerFromDesc(conn *glob.ConnectionData) *glob.PlayerData {
 		Level:       0,
 		State:       def.PLAYER_ALIVE,
 		Sector:      0,
-		Vnum:        0,
+		Room:        0,
 		Created:     time.Now(),
 		LastSeen:    time.Now(),
-		Seconds:     0,
-		IPs:         []string{},
-		Connections: []int{},
-		BytesIn:     []int{},
-		BytesOut:    []int{},
+		TimePlayed:  0,
+		Connections: nil,
+		BytesIn:     nil,
+		BytesOut:    nil,
 		Email:       "",
 
 		Description: "",
@@ -105,18 +111,16 @@ func ReadPlayer(name string, load bool) (*glob.PlayerData, bool) {
 	}
 }
 
-func WritePlayer(player *glob.PlayerData, report bool) bool {
+func WritePlayer(player *glob.PlayerData) bool {
 	outbuf := new(bytes.Buffer)
 	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
 
+	player.Version = def.PFILE_VERSION
+
 	if player == nil {
 		log.Println("WritePlayer: nil player")
 		return false
-	}
-
-	if report {
-		WriteToPlayer(player, "Character saved.")
 	}
 
 	if err := enc.Encode(&player); err != nil {
@@ -136,13 +140,34 @@ func WritePlayer(player *glob.PlayerData, report bool) bool {
 		CheckError("WritePlayer: WriteFile", err, def.ERROR_NONFATAL)
 		return false
 	}
+
 	return true
 }
 
 func LinkPlayerConnection(player *glob.PlayerData, con *glob.ConnectionData) {
 
 	if player != nil && player.Valid && con != nil && con.Valid {
+		for x := 0; x < def.MAX_USERS; x++ {
+			if glob.PlayerList[x].Fingerprint == player.Fingerprint && glob.PlayerList[x].Name == player.Name {
+
+			}
+		}
+
+		if player.Connections == nil {
+			player.Connections = make(map[string]int)
+		}
+		player.Connections[con.Address]++
 		player.Connection = con
 		con.Player = player
+		con.State = def.CON_STATE_PLAYING
 	}
+}
+
+func TrackBytesPlayer(con *glob.ConnectionData, player *glob.PlayerData) {
+
+	if player != nil && player.Valid && con != nil && con.Valid {
+		player.BytesOut[con.Address] += con.BytesOut
+		player.BytesIn[con.Address] += con.BytesIn
+	}
+
 }
