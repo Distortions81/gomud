@@ -3,6 +3,7 @@ package support
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -16,7 +17,7 @@ import (
 func SetupNewCharacter(player *glob.PlayerData) {
 	player.Sector = def.PLAYER_START_SECTOR
 	player.Room = def.PLAYER_START_ROOM
-	player.Fingerprint = MakeFingerprint()
+	player.Fingerprint = MakeFingerprint(player.Name)
 	WriteToPlayer(player, "Welcome! Type LOOK to see around you, and HELP to see more commands.")
 	WriteToAll("A newcomer has arrived, their name is " + player.Name + "...")
 }
@@ -105,7 +106,7 @@ func ReadPlayer(name string, load bool) (*glob.PlayerData, bool) {
 		} else {
 			//If we are just checking if player exists,
 			//don't bother to actually load the file.
-			log.Println("Player found: " + name)
+			//log.Println("Player found: " + name)
 			return nil, true
 		}
 	}
@@ -149,7 +150,13 @@ func LinkPlayerConnection(player *glob.PlayerData, con *glob.ConnectionData) {
 	if player != nil && player.Valid && con != nil && con.Valid {
 		for x := 0; x < def.MAX_USERS; x++ {
 			if glob.PlayerList[x].Fingerprint == player.Fingerprint && glob.PlayerList[x].Name == player.Name {
+				con.Player = player //Replace pfile data with live
+				player.Connection = con
 
+				buf := fmt.Sprintf("%s reconnects to their body.", player.Name)
+				PlayerToRoom(player, player.Sector, player.Room)
+				WriteToRoom(player, buf)
+				return
 			}
 		}
 
@@ -158,9 +165,34 @@ func LinkPlayerConnection(player *glob.PlayerData, con *glob.ConnectionData) {
 		}
 		player.Connections[con.Address]++
 		player.Connection = con
+
+		PlayerToRoom(player, player.Sector, player.Room)
 		con.Player = player
 		con.State = def.CON_STATE_PLAYING
 	}
+}
+
+func PlayerToRoom(player *glob.PlayerData, sectorID int, roomID int) {
+
+	//Remove player from room, if they are in one
+	if player.RoomLink != nil {
+		buf := fmt.Sprintf("%s left.", player.Name)
+		WriteToRoom(player, buf)
+
+		room := player.RoomLink
+		delete(room.Players, player.Fingerprint)
+	}
+
+	//Add player to room, add error handling
+	glob.SectorsList[sectorID].Rooms[roomID].Players[player.Fingerprint] = player
+	room := glob.SectorsList[sectorID].Rooms[roomID]
+	player.RoomLink = &room
+	player.Sector = sectorID
+	player.Room = roomID
+
+	//Send to message handler.
+	buf := fmt.Sprintf("%s has arrived.", player.Name)
+	WriteToRoom(player, buf)
 }
 
 func TrackBytesPlayer(con *glob.ConnectionData, player *glob.PlayerData) {
