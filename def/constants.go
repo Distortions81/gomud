@@ -2,9 +2,12 @@ package def
 
 const VERSION = "v0.0.4-7-21-2020-145a"
 const DEFAULT_PORT = ":7777"
-const MAX_USERS = 10000
 const MAX_SECTORS = 10000
-const MAX_ROOMS_PER_SECTOR = 10000
+const MAX_USERS = 10000
+const PLAYER_START_ROOM = 0
+const PLAYER_START_SECTOR = 0
+const PFILE_VERSION = "0.0.1"
+const SECTOR_VERSION = "0.0.1"
 
 const PASSWORD_HASH_COST = 10
 const MAX_PLAYER_NAME_LENGTH = 25
@@ -14,6 +17,9 @@ const STRING_UNKNOWN = "unknown"
 /*Dir & File*/
 const DATA_DIR = "data/"
 const PLAYER_DIR = "players/"
+const SECTOR_DIR = "sectors/"
+const SECTOR_PREFIX = "sec-"
+const FILE_SUFFIX = ".dat"
 
 const GREET_FILE = "greet.txt"
 const NEWS_FILE = "news.txt"
@@ -34,6 +40,7 @@ const CON_STATE_WELCOME = 0
 const CON_STATE_PASSWORD = 100
 
 const CON_STATE_NEWS = 200
+const CON_STATE_RECONNECT = 300
 const CON_STATE_PLAYING = 1000
 
 /*New Users*/
