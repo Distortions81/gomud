@@ -31,8 +31,8 @@ func main() {
 	defaultRoom.Players = make(map[string]*glob.PlayerData)
 	defaultSector.Rooms = make(map[int]glob.RoomData)
 
-	glob.SectorsList[0] = defaultSector
-	glob.SectorsList[0].Rooms[0] = defaultRoom
+	glob.SectorsList[1] = defaultSector
+	glob.SectorsList[1].Rooms[1] = defaultRoom
 
 	/*Find Network*/
 	addr, err := net.ResolveTCPAddr("tcp", def.DEFAULT_PORT)
