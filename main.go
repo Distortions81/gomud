@@ -12,6 +12,26 @@ import (
 
 func main() {
 
+	var defaultSector SectorsData = 
+		ID: 0,
+		Group: "Default",
+
+		Name: "Default",
+		Description: "Default sector"
+
+		Rooms: nil,
+		Valid: true,
+	}
+
+	defaultSector.Rooms[0] RoomData = {
+		VNUM: nil,
+		Name: "Default room",
+		Description: "This is the default room.",
+		Valid: true,
+	}
+
+	defaultSector.Rooms[0].VNUM
+
 	/*Find Network*/
 	addr, err := net.ResolveTCPAddr("tcp", def.DEFAULT_PORT)
 	support.CheckError("main: resolveTCP", err, def.ERROR_FATAL)

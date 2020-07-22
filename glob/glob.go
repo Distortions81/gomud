@@ -20,6 +20,65 @@ var PlayerListMax int
 var PlayerList [def.MAX_USERS + 1]PlayerData
 var PlayerListLock sync.Mutex
 
+var SectorsListMax int
+var SectorsList [def.MAX_SECTORS + 1]SectorsData
+
+type BuilderData struct {
+	Builders []string
+	Modified []time.Time
+
+	CreatedBy string
+	Created   Time.time
+
+	Valid bool
+}
+
+type DirectionData struct {
+	ToRoom       *RoomData
+	ToRoomID     int
+	ToRoomSector int
+
+	Closed bool
+	Hidden bool
+	Keyed  bool
+
+	Builders BuilderData
+
+	Valid bool
+}
+
+type RoomData struct {
+	RoomID   int
+	SectorID int
+
+	Name        string
+	Description string
+
+	North DirectionData
+	South DirectionData
+	East  DirectionData
+	West  DirectionData
+	Up    DirectionData
+	Down  DirectionData
+
+	Builders BuilderData
+
+	Valid bool
+}
+
+type SectorsData struct {
+	ID    string
+	Group string
+
+	Name        string
+	Description string
+
+	NumRooms int
+	Rooms    [def.MAX_ROOMS_PER_SECTOR]RoomData
+
+	Valid bool
+}
+
 type ConnectionData struct {
 	Name    string
 	Desc    *net.TCPConn `json:"-,"`
@@ -28,7 +87,7 @@ type ConnectionData struct {
 	State        int
 	ConnectedFor time.Time
 	IdleTime     time.Time
-	Id           int
+	ID           int
 
 	BytesOut int
 	BytesIn  int
