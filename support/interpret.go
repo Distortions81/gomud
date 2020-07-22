@@ -141,20 +141,27 @@ func interpretInput(con *glob.ConnectionData, input string) {
 				CheckError("interp: password hash", err, def.ERROR_NONFATAL)
 				WriteToDesc(con, "Password encryption failed, sorry something is wrong.")
 
-				//TODO disconnect/invalidate and report
+				con.State = def.CON_STATE_DISCONNECTING
 				return
 			}
 			con.TempPass = ""
 			con.Player.Password = string(hash)
 			WriteToDesc(con, "Done, logging in!")
-			con.State = def.CON_STATE_PLAYING
+			SetupNewCharacter(con.Player)
 			LinkPlayerConnection(con.Player, con)
-			//LinkToGame(con.Player)
-			WritePlayer(con.Player, true)
+
+			okay := WritePlayer(con.Player)
+			if okay == false {
+				WriteToPlayer(con.Player, "Saving character failed!!!")
+			} else {
+				WriteToPlayer(con.Player, "Character saved.")
+			}
+
 		} else {
 			con.TempPass = ""
 			WriteToDesc(con, "Passwords didn't match, try again.")
 			WriteToDesc(con, "Password:")
+			con.State = def.CON_STATE_NEW_PASSWORD
 		}
 
 	} else if con.State == def.CON_STATE_PLAYING {
@@ -166,15 +173,20 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			player = con.Player
 
 			if command == "quit" {
-				WritePlayer(player, true)
-				WriteToPlayer(player, "Goodbye!")
+				okay := WritePlayer(con.Player)
+				if okay == false {
+					WriteToPlayer(con.Player, "Saving character failed!!!")
+					return
+				} else {
+					WriteToPlayer(con.Player, "Character saved.")
+				}
 				buf := fmt.Sprintf("%s has quit.", con.Name)
 				WriteToAll(buf)
 				con.State = def.CON_STATE_DISCONNECTING
 			} else if command == "who" {
 				output := "Players online:\n"
 
-				for x := 0; x <= glob.ConnectionListMax; x++ {
+				for x := 0; x <= glob.ConnectionListEnd; x++ {
 					var p *glob.ConnectionData = &glob.ConnectionList[x]
 					if p.Valid == false {
 						continue
@@ -186,10 +198,10 @@ func interpretInput(con *glob.ConnectionData, input string) {
 						connectedString := ""
 
 						if time.Since(p.IdleTime) > time.Minute {
-							idleString = " (idle " + ToDayHourMinute(time.Since(p.IdleTime)) + ")"
+							idleString = " (idle " + ToHourMinute(time.Since(p.IdleTime)) + ")"
 						}
 						if time.Since(p.ConnectedFor) > time.Minute {
-							connectedString = " (on " + ToDayHourMinute(time.Since(p.ConnectedFor)) + ")"
+							connectedString = " (on " + ToHourMinute(time.Since(p.ConnectedFor)) + ")"
 						}
 
 						buf = fmt.Sprintf("%d: %s%s%s", x, p.Name, connectedString, idleString)
@@ -197,7 +209,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 						buf = fmt.Sprintf("%d: %s", x, "(Connecting)")
 					}
 					output = output + buf
-					if x <= glob.ConnectionListMax {
+					if x <= glob.ConnectionListEnd {
 						output = output + "\r\n"
 					}
 				}
@@ -213,9 +225,35 @@ func interpretInput(con *glob.ConnectionData, input string) {
 					WriteToPlayer(player, "But, what do you want to say?")
 				}
 			} else if command == "save" {
-				okay := WritePlayer(con.Player, true)
+				okay := WritePlayer(con.Player)
 				if okay == false {
 					WriteToPlayer(con.Player, "Saving character failed!!!")
+				} else {
+					WriteToPlayer(con.Player, "Character saved.")
+				}
+			} else if command == "asave" {
+				okay := WriteSector(&glob.SectorsList[0])
+				if okay == false {
+					WriteToPlayer(con.Player, "Saving sector failed!!!")
+				} else {
+					WriteToPlayer(con.Player, "Sector saved.")
+				}
+
+			} else if command == "look" {
+				err := true
+				if glob.SectorsList[player.Sector].Valid {
+					sector := glob.SectorsList[player.Sector]
+					if sector.Rooms[player.Room].Valid {
+						room := sector.Rooms[player.Room]
+						roomName := room.Name
+						roomDesc := room.Description
+						buf := fmt.Sprintf("%s:\r\n%s", roomName, roomDesc)
+						WriteToPlayer(player, buf)
+						err = false
+					}
+				}
+				if err {
+					WriteToPlayer(player, "You are in the VOID...")
 				}
 
 			} else {
