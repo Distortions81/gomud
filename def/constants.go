@@ -1,6 +1,6 @@
 package def
 
-const VERSION = "v0.0.5 7-22-2020-836a"
+const VERSION = "v0.0.6 7-22-2020-1141a"
 const DEFAULT_PORT = ":7777"
 const MAX_SECTORS = 10000
 const MAX_USERS = 10000
