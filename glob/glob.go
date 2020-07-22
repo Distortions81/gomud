@@ -25,7 +25,7 @@ var SectorsList [def.MAX_SECTORS]SectorData
 
 type DirectionData struct {
 	Name         string
-	ToRoom       *RoomData `json:"-,"`
+	ToRoom       *RoomData `json:"-"`
 	ToRoomID     int       `json:",omitempty"`
 	ToRoomSector int       `json:",omitempty"`
 
@@ -41,7 +41,7 @@ type DirectionData struct {
 type RoomData struct {
 	Name        string                 `json:",omitempty"`
 	Description string                 `json:",omitempty"`
-	Players     map[string]*PlayerData `json:"-,"`
+	Players     map[string]*PlayerData `json:"-"`
 
 	//Convert to map?
 	Exits map[string]DirectionData `json:",omitempty"`
@@ -66,7 +66,7 @@ type SectorData struct {
 
 type ConnectionData struct {
 	Name    string
-	Desc    *net.TCPConn `json:"-,"`
+	Desc    *net.TCPConn `json:"-"`
 	Address string
 
 	State        int
@@ -76,8 +76,8 @@ type ConnectionData struct {
 	BytesOut int
 	BytesIn  int
 
-	TempPass string      `json:"-,"`
-	Player   *PlayerData `json:"-,"`
+	TempPass string      `json:"-"`
+	Player   *PlayerData `json:"-"`
 	Valid    bool
 }
 
@@ -92,7 +92,7 @@ type PlayerData struct {
 	State      int
 	Sector     int
 	Room       int
-	RoomLink   *RoomData `json:"-,"`
+	RoomLink   *RoomData `json:"-"`
 
 	Created     time.Time
 	LastSeen    time.Time
@@ -105,6 +105,6 @@ type PlayerData struct {
 	Description string `json:",omitempty"`
 	Sex         string `json:",omitempty"`
 
-	Connection *ConnectionData `json:"-,"`
+	Connection *ConnectionData `json:"-"`
 	Valid      bool
 }
