@@ -18,7 +18,7 @@ func NewDescriptor(desc *net.TCPConn) {
 	defer glob.ConnectionListLock.Unlock()
 	/*--- LOCK ---*/
 
-	for x := 1; x <= glob.ConnectionListMax; x++ {
+	for x := 1; x <= glob.ConnectionListEnd; x++ {
 		var con *glob.ConnectionData
 		con = &glob.ConnectionList[x]
 		if con.Valid == true {
@@ -31,7 +31,6 @@ func NewDescriptor(desc *net.TCPConn) {
 			con.State = def.CON_STATE_WELCOME
 			con.ConnectedFor = time.Now()
 			con.IdleTime = time.Now()
-			con.Id = x
 			con.BytesOut = 0
 			con.BytesIn = 0
 			con.Player = nil
@@ -46,14 +45,14 @@ func NewDescriptor(desc *net.TCPConn) {
 	}
 
 	/*Generate new descriptor data*/
-	if glob.ConnectionListMax >= def.MAX_USERS-1 {
+	if glob.ConnectionListEnd >= def.MAX_USERS-1 {
 		log.Println("Create ConnectionData: MAX_USERS REACHED!")
 		desc.Write([]byte("Sorry, something has gone wrong (MAX_DESCRIPTORS)!\r\nGoodbye!\r\n"))
 		return
 	}
 
 	/*Create*/
-	glob.ConnectionListMax++
+	glob.ConnectionListEnd++
 	newConnection := glob.ConnectionData{
 		Name:         def.STRING_UNKNOWN,
 		Desc:         desc,
@@ -61,16 +60,15 @@ func NewDescriptor(desc *net.TCPConn) {
 		State:        def.CON_STATE_WELCOME,
 		ConnectedFor: time.Now(),
 		IdleTime:     time.Now(),
-		Id:           glob.ConnectionListMax,
 		BytesOut:     0,
 		BytesIn:      0,
 		Player:       nil,
 		Valid:        true}
-	glob.ConnectionList[glob.ConnectionListMax] = newConnection
-	buf := fmt.Sprintf("Created new connection #%d.", glob.ConnectionListMax)
+	glob.ConnectionList[glob.ConnectionListEnd] = newConnection
+	buf := fmt.Sprintf("Created new connection #%d.", glob.ConnectionListEnd)
 	log.Println(buf)
 
-	go ReadConnection(&glob.ConnectionList[glob.ConnectionListMax])
+	go ReadConnection(&glob.ConnectionList[glob.ConnectionListEnd])
 	return
 
 }
@@ -104,8 +102,11 @@ func ReadConnection(con *glob.ConnectionData) {
 		interpretInput(con, input)
 
 		if con.State == def.CON_STATE_DISCONNECTING {
+			WriteToDesc(con, "\r\n\r\n *** Goodbye! ***")
 			con.Desc.Close()
 			con.Valid = false
+
+			//TODO Remove this, remove player after idle for some time, not instantly.
 			if con.Player != nil && con.Player.Valid {
 				con.Player.Valid = false
 				con.Player.Connection = nil
@@ -115,6 +116,7 @@ func ReadConnection(con *glob.ConnectionData) {
 			/*--- UNLOCK ---*/
 			return
 		}
+
 		/*--- UNLOCK ---*/
 		glob.ConnectionListLock.Unlock()
 		/*--- UNLOCK ---*/
@@ -171,7 +173,7 @@ func WriteToPlayer(player *glob.PlayerData, text string) {
 
 func WriteToAll(text string) {
 
-	for x := 0; x <= glob.ConnectionListMax; x++ {
+	for x := 0; x <= glob.ConnectionListEnd; x++ {
 		var con *glob.ConnectionData
 		con = &glob.ConnectionList[x]
 		if con.Valid == false {
@@ -190,7 +192,7 @@ func WriteToAll(text string) {
 
 func WriteToOthers(c *glob.ConnectionData, text string) {
 
-	for x := 0; x <= glob.ConnectionListMax; x++ {
+	for x := 0; x <= glob.ConnectionListEnd; x++ {
 		var con *glob.ConnectionData
 		con = &glob.ConnectionList[x]
 		if con.Valid == false {
