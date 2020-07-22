@@ -13,6 +13,10 @@ import (
 
 func NewDescriptor(desc *net.TCPConn) {
 
+	if desc == nil {
+		return
+	}
+
 	/*--- LOCK ---*/
 	glob.ConnectionListLock.Lock()
 	defer glob.ConnectionListLock.Unlock()
@@ -48,6 +52,7 @@ func NewDescriptor(desc *net.TCPConn) {
 	if glob.ConnectionListEnd >= def.MAX_USERS-1 {
 		log.Println("Create ConnectionData: MAX_USERS REACHED!")
 		desc.Write([]byte("Sorry, something has gone wrong (MAX_DESCRIPTORS)!\r\nGoodbye!\r\n"))
+		desc.Close()
 		return
 	}
 
@@ -74,6 +79,10 @@ func NewDescriptor(desc *net.TCPConn) {
 }
 
 func ReadConnection(con *glob.ConnectionData) {
+
+	if con == nil || !con.Valid {
+		return
+	}
 
 	/*--- LOCK ---*/
 	glob.ConnectionListLock.Lock()
@@ -103,8 +112,10 @@ func ReadConnection(con *glob.ConnectionData) {
 
 		if con.State == def.CON_STATE_DISCONNECTING {
 			WriteToDesc(con, "\r\n\r\n *** Goodbye! ***")
-			con.Desc.Close()
+
+			con.State = def.CON_STATE_DISCONNECTED
 			con.Valid = false
+			con.Desc.Close()
 
 			//TODO Remove this, remove player after idle for some time, not instantly.
 			if con.Player != nil && con.Player.Valid {
@@ -126,27 +137,29 @@ func DescWriteError(c *glob.ConnectionData, err error) {
 	if err != nil {
 		CheckError("DescWriteError", err, def.ERROR_NONFATAL)
 
-		if c.Name != def.STRING_UNKNOWN && c.State == def.CON_STATE_PLAYING {
-			if c.Player != nil && c.Player.Valid {
-				buf := fmt.Sprintf("%s lost their connection.", c.Player.Name)
-				WriteToRoom(c.Player, buf)
+		if c != nil {
+			if c.Valid && c.Name != def.STRING_UNKNOWN && c.State == def.CON_STATE_PLAYING {
+				if c.Player != nil && c.Player.Valid {
+					buf := fmt.Sprintf("%s lost their connection.", c.Player.Name)
+					c.Player.UnlinkedTime = time.Now()
+					WriteToRoom(c.Player, buf)
+					c.Player.Valid = false
+				}
+			} else {
+				buf := fmt.Sprintf("%s disconnected.", c.Address)
+				log.Println(buf)
 			}
-		} else {
-			buf := fmt.Sprintf("%s disconnected.", c.Address)
-			log.Println(buf)
-		}
 
-		c.State = def.CON_STATE_DISCONNECTED
-		c.Valid = false
-		c.Desc.Close()
+			c.State = def.CON_STATE_DISCONNECTED
+			c.Valid = false
+			c.Desc.Close()
+		}
 	}
 }
 
 func WriteToDesc(c *glob.ConnectionData, text string) {
 
-	if c == nil {
-
-		log.Println("Attempted to write to invalid ConnectionData.")
+	if c == nil || !c.Valid {
 		return
 	}
 	message := fmt.Sprintf("%s\r\n", text)
@@ -158,22 +171,21 @@ func WriteToDesc(c *glob.ConnectionData, text string) {
 
 func WriteToPlayer(player *glob.PlayerData, text string) {
 
-	if player != nil && player.Valid &&
-		player.Connection != nil && player.Connection.Valid &&
-		player.Connection.Desc != nil {
-		message := fmt.Sprintf("%s\r\n", text)
-		bytes, err := player.Connection.Desc.Write([]byte(message))
-		player.Connection.BytesOut += bytes
-
-		DescWriteError(player.Connection, err)
-	} else {
-		log.Println("Attempted to write to invalid or disconnected player.")
-		log.Println(text)
+	if player == nil || !player.Valid || player.Connection == nil || !player.Connection.Valid {
 		return
 	}
+
+	message := fmt.Sprintf("%s\r\n", text)
+	bytes, err := player.Connection.Desc.Write([]byte(message))
+	player.Connection.BytesOut += bytes
+
+	DescWriteError(player.Connection, err)
 }
 
 func WriteToAll(text string) {
+	if text == "" {
+		return
+	}
 
 	for x := 0; x <= glob.ConnectionListEnd; x++ {
 		var con *glob.ConnectionData
@@ -193,11 +205,9 @@ func WriteToAll(text string) {
 }
 
 func WriteToOthers(player *glob.PlayerData, text string) {
-	if player == nil || player.Connection == nil {
-		//Error message
+	if player == nil || !player.Valid || text == "" {
 		return
 	}
-	//WriteDebug("WriteToOthers", player, text)
 
 	pc := player.Connection
 
@@ -219,10 +229,9 @@ func WriteToOthers(player *glob.PlayerData, text string) {
 }
 
 func WriteToRoom(player *glob.PlayerData, text string) {
-	if player == nil {
+	if player == nil || !player.Valid || text == "" {
 		return
 	}
-	//WriteDebug("WriteToRoom", player, text)
 
 	if player.RoomLink != nil {
 		for _, target := range player.RoomLink.Players {
@@ -230,10 +239,8 @@ func WriteToRoom(player *glob.PlayerData, text string) {
 				WriteToPlayer(target, text)
 			}
 		}
+	} else {
+		buf := fmt.Sprintf("WriteToRoom: %v is not in a room.", player.Name)
+		log.Println(buf)
 	}
-}
-
-func WriteDebug(source string, player *glob.PlayerData, text string) {
-	buf := fmt.Sprintf("%s: %s: %s", source, player.Name, text)
-	log.Println(buf)
 }
