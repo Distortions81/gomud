@@ -3,6 +3,7 @@ package support
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"time"
 )
@@ -17,7 +18,7 @@ func CheckError(source string, err error, fatal bool) {
 	}
 }
 
-func ToDayHourMinute(time time.Duration) string {
+func ToHourMinute(time time.Duration) string {
 	out := ""
 
 	if int(time.Hours()) > 0 {
@@ -27,4 +28,9 @@ func ToDayHourMinute(time time.Duration) string {
 		out = out + fmt.Sprintf("%dm", int(time.Minutes()))
 	}
 	return out
+}
+
+func MakeFingerprint() string {
+	fingerprint := fmt.Sprintf("%v-%v", time.Now().UnixNano(), rand.Uint64())
+	return fingerprint
 }
