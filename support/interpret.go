@@ -14,6 +14,19 @@ import (
 
 func interpretInput(con *glob.ConnectionData, input string) {
 
+	for x := 0; x <= glob.PlayerListEnd; x++ {
+		if glob.PlayerList[x] != nil && glob.PlayerList[x].Valid == false {
+			player := glob.PlayerList[x]
+			if player.UnlinkedTime.IsZero() == false && time.Since(player.UnlinkedTime) > (2*time.Minute) {
+				WriteToRoom(player, "fades into nothing...")
+				RemovePlayerWorld(player)
+			}
+		}
+	}
+	if con == nil && !con.Valid {
+		return
+	}
+
 	/*Clean up user input*/
 	alphaChar := AlphaCharOnly(input)
 	alphaCharLen := len(alphaChar)
@@ -59,16 +72,29 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			WriteToDesc(con, "What name would you like to go by?")
 			con.State = def.CON_STATE_NEW_LOGIN
 		} else {
-			_, found := ReadPlayer(alphaChar, false)
-			if found == false {
-				WriteToDesc(con, "Couldn't find a player by that name.")
-				WriteToDesc(con, "Try again, or type 'NEW' to create a new character.")
-				WriteToDesc(con, "Name:")
+			if alphaCharLen > def.MIN_PLAYER_NAME_LENGTH &&
+				alphaCharLen < def.MAX_PLAYER_NAME_LENGTH &&
+				alphaChar != def.STRING_UNKNOWN {
+				_, found := ReadPlayer(alphaChar, false)
+				if found == false {
+					WriteToDesc(con, "Couldn't find a player by that name.")
+					WriteToDesc(con, "Try again, or type 'NEW' to create a new character.")
+					WriteToDesc(con, "Name:")
+				} else {
+					/* Login check goes here alphaChar*/
+					con.State = def.CON_STATE_PASSWORD
+					con.Name = alphaChar
+					WriteToDesc(con, "Password:")
+				}
 			} else {
-				/* Login check goes here alphaChar*/
-				con.State = def.CON_STATE_PASSWORD
-				con.Name = alphaChar
-				WriteToDesc(con, "Password:")
+				if con != nil && con.Valid {
+					buf := fmt.Sprintf("InvalidName login attempt by %v", con.Address)
+					log.Println(buf)
+
+					con.State = def.CON_STATE_DISCONNECTED
+					con.Valid = false
+					con.Desc.Close()
+				}
 			}
 		}
 	} else if con.State == def.CON_STATE_PASSWORD {
@@ -78,9 +104,10 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		err := bcrypt.CompareHashAndPassword([]byte(player.Password), []byte(inputc))
 
 		if err == nil {
+			con.State = def.CON_STATE_PLAYING
+
 			LinkPlayerConnection(player, con)
 			WriteToDesc(con, "Welcome back, "+player.Name+"!")
-			con.State = def.CON_STATE_PLAYING
 		} else {
 			log.Println("Invalid password attempt: " + player.Name + " ip: " + con.Address)
 			time.Sleep(5 * time.Second)
@@ -145,9 +172,13 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			}
 			con.TempPass = ""
 			con.Player.Password = string(hash)
-			WriteToDesc(con, "Done, logging in!")
+
 			SetupNewCharacter(con.Player)
+			con.State = def.CON_STATE_PLAYING
 			LinkPlayerConnection(con.Player, con)
+
+			buf := fmt.Sprintf("%s has just arrived to the world.", con.Player.Name)
+			WriteToRoom(con.Player, buf)
 
 			okay := WritePlayer(con.Player)
 			if okay == false {
@@ -182,6 +213,8 @@ func interpretInput(con *glob.ConnectionData, input string) {
 				buf := fmt.Sprintf("%s has quit.", con.Name)
 				WriteToAll(buf)
 				con.State = def.CON_STATE_DISCONNECTING
+				RemovePlayerWorld(player)
+				return
 			} else if command == "who" {
 				output := "Players online:\n"
 
@@ -213,6 +246,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 					}
 				}
 				WriteToPlayer(player, output)
+				return
 			} else if command == "say" {
 				if arglen > 0 {
 					out := fmt.Sprintf("%s says: %s", con.Name, aargs)
@@ -223,6 +257,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 				} else {
 					WriteToPlayer(player, "But, what do you want to say?")
 				}
+				return
 			} else if command == "save" {
 				okay := WritePlayer(player)
 				if okay == false {
@@ -230,6 +265,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 				} else {
 					WriteToPlayer(player, "Character saved.")
 				}
+				return
 			} else if command == "asave" {
 				okay := WriteSector(&glob.SectorsList[0])
 				if okay == false {
@@ -237,7 +273,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 				} else {
 					WriteToPlayer(player, "Sector saved.")
 				}
-
+				return
 			} else if command == "look" {
 				err := true
 				if glob.SectorsList[player.Sector].Valid {
@@ -266,11 +302,14 @@ func interpretInput(con *glob.ConnectionData, input string) {
 					}
 				}
 				if err {
-					WriteToPlayer(player, "You are in the VOID...")
+					WriteToPlayer(player, "You are floating in the VOID...")
 				}
 
+				return
 			} else {
+
 				WriteToPlayer(player, "That isn't a valid command.")
+				return
 			}
 
 		}
