@@ -39,8 +39,9 @@ type DirectionData struct {
 }
 
 type RoomData struct {
-	Name        string `json:",omitempty"`
-	Description string `json:",omitempty"`
+	Name        string                 `json:",omitempty"`
+	Description string                 `json:",omitempty"`
+	Players     map[string]*PlayerData `json:"-,"`
 
 	//Convert to map?
 	Exits map[string]DirectionData `json:",omitempty"`
@@ -91,6 +92,7 @@ type PlayerData struct {
 	State      int
 	Sector     int
 	Room       int
+	RoomLink   *RoomData `json:"-,"`
 
 	Created     time.Time
 	LastSeen    time.Time
