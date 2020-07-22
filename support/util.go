@@ -18,14 +18,14 @@ func CheckError(source string, err error, fatal bool) {
 	}
 }
 
-func ToHourMinute(time time.Duration) string {
+func ToHourMinute(t time.Duration) string {
 	out := ""
 
-	if int(time.Hours()) > 0 {
-		out = out + fmt.Sprintf("%dh", int(time.Hours()))
+	if int(t.Hours()) > 0 {
+		out = out + fmt.Sprintf("%dh", int(t.Hours()))
 	}
-	if int(time.Minutes()) > 0 {
-		out = out + fmt.Sprintf("%dm", int(time.Minutes()))
+	if int(t.Minutes()) > 0 {
+		out = out + fmt.Sprintf("%dm", int(t.Minutes()))
 	}
 	return out
 }
