@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
+	"time"
 
 	"./def"
 	"./glob"
@@ -12,25 +14,23 @@ import (
 
 func main() {
 
-	var defaultSector SectorsData = 
-		ID: 0,
-		Group: "Default",
+	defaultSector := glob.SectorData{
+		Area: "Default",
 
-		Name: "Default",
-		Description: "Default sector"
-
-		Rooms: nil,
-		Valid: true,
+		Name:        "Default",
+		Description: "Default sector",
+		Valid:       true,
 	}
 
-	defaultSector.Rooms[0] RoomData = {
-		VNUM: nil,
-		Name: "Default room",
+	defaultRoom := glob.RoomData{
+		Name:        "Default room",
 		Description: "This is the default room.",
-		Valid: true,
+		Valid:       true,
 	}
 
-	defaultSector.Rooms[0].VNUM
+	glob.SectorsList[0] = defaultSector
+	glob.SectorsList[0].Rooms = make(map[int]glob.RoomData)
+	glob.SectorsList[0].Rooms[0] = defaultRoom
 
 	/*Find Network*/
 	addr, err := net.ResolveTCPAddr("tcp", def.DEFAULT_PORT)
@@ -51,6 +51,7 @@ func main() {
 }
 
 func mainLoop() {
+	rand.Seed(time.Now().UTC().UnixNano())
 
 	/*separate thread, wait for new connections*/
 	for glob.ServerState == def.SERVER_RUNNING {
