@@ -28,8 +28,10 @@ func main() {
 		Valid:       true,
 	}
 
+	defaultRoom.Players = make(map[string]*glob.PlayerData)
+	defaultSector.Rooms = make(map[int]glob.RoomData)
+
 	glob.SectorsList[0] = defaultSector
-	glob.SectorsList[0].Rooms = make(map[int]glob.RoomData)
 	glob.SectorsList[0].Rooms[0] = defaultRoom
 
 	/*Find Network*/
