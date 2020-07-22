@@ -30,7 +30,7 @@ func ToHourMinute(time time.Duration) string {
 	return out
 }
 
-func MakeFingerprint() string {
-	fingerprint := fmt.Sprintf("%v-%v", time.Now().UnixNano(), rand.Uint64())
+func MakeFingerprint(prefix string) string {
+	fingerprint := fmt.Sprintf("%v%v-%v", prefix, time.Now().UnixNano(), rand.Uint64())
 	return fingerprint
 }
