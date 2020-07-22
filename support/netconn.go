@@ -127,8 +127,10 @@ func DescWriteError(c *glob.ConnectionData, err error) {
 		CheckError("DescWriteError", err, def.ERROR_NONFATAL)
 
 		if c.Name != def.STRING_UNKNOWN && c.State == def.CON_STATE_PLAYING {
-			buf := fmt.Sprintf("%s lost their connection.", c.Name)
-			WriteToOthers(c, buf)
+			if c.Player != nil && c.Player.Valid {
+				buf := fmt.Sprintf("%s lost their connection.", c.Player.Name)
+				WriteToRoom(c.Player, buf)
+			}
 		} else {
 			buf := fmt.Sprintf("%s disconnected.", c.Address)
 			log.Println(buf)
@@ -190,7 +192,14 @@ func WriteToAll(text string) {
 	log.Println(text)
 }
 
-func WriteToOthers(c *glob.ConnectionData, text string) {
+func WriteToOthers(player *glob.PlayerData, text string) {
+	if player == nil || player.Connection == nil {
+		//Error message
+		return
+	}
+	//WriteDebug("WriteToOthers", player, text)
+
+	pc := player.Connection
 
 	for x := 0; x <= glob.ConnectionListEnd; x++ {
 		var con *glob.ConnectionData
@@ -198,13 +207,33 @@ func WriteToOthers(c *glob.ConnectionData, text string) {
 		if con.Valid == false {
 			continue
 		}
-		if con.Desc != c.Desc && con.State == def.CON_STATE_PLAYING {
+		if con.Desc != pc.Desc && con.State == def.CON_STATE_PLAYING {
 			message := fmt.Sprintf("%s\r\n", text)
 			bytes, err := con.Desc.Write([]byte(message))
 			con.BytesOut += bytes
 
-			DescWriteError(c, err)
+			DescWriteError(con, err)
 		}
 	}
 	log.Println(text)
+}
+
+func WriteToRoom(player *glob.PlayerData, text string) {
+	if player == nil {
+		return
+	}
+	//WriteDebug("WriteToRoom", player, text)
+
+	if player.RoomLink != nil {
+		for _, target := range player.RoomLink.Players {
+			if target != nil {
+				WriteToPlayer(target, text)
+			}
+		}
+	}
+}
+
+func WriteDebug(source string, player *glob.PlayerData, text string) {
+	buf := fmt.Sprintf("%s: %s: %s", source, player.Name, text)
+	log.Println(buf)
 }
