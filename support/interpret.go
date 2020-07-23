@@ -219,7 +219,8 @@ func interpretInput(con *glob.ConnectionData, input string) {
 
 func showHelp(player *glob.PlayerData) {
 	WriteToPlayer(player, "Commands:")
-	WriteToPlayer(player, "look       (you are here)")
+	WriteToPlayer(player, "help       (you are here)")
+	WriteToPlayer(player, "bytes      (bandwidth use)")
 	WriteToPlayer(player, "look       (shows room)")
 	WriteToPlayer(player, "who        (shows all online)")
 	WriteToPlayer(player, "say <text> (Speaks)")
@@ -282,6 +283,33 @@ func PlayerCommand(player *glob.PlayerData, command string, args string) {
 			}
 			WriteToPlayer(player, output)
 			return
+		} else if command == "bytes" {
+			output := ""
+
+			for x := 0; x <= glob.ConnectionListEnd; x++ {
+				var p *glob.ConnectionData = &glob.ConnectionList[x]
+				if p.Valid == false {
+					continue
+				}
+				buf := ""
+
+				if p.Player != nil {
+					output = "Connections:\r\nname: ip(count), in/out kb\r\n"
+					for key, value := range player.Connections {
+						buf = buf + fmt.Sprintf("%32v: %16v(%4v) %v/%v\r\n", player.Name, key, value, player.BytesIn[key]/1024, player.BytesOut[key]/1024)
+					}
+				} else {
+					output = "Connections:\r\nname: in/out bytes\r\n"
+					buf = buf + fmt.Sprintf("%32v %v/%v\r\n", p.Name, p.BytesIn, p.BytesOut)
+				}
+
+				output = output + buf
+				if x <= glob.ConnectionListEnd {
+					output = output + "\r\n"
+				}
+			}
+			WriteToPlayer(player, output)
+			return
 		} else if command == "say" {
 			if len(args) > 0 {
 				out := fmt.Sprintf("%s says: %s", player.Name, args)
@@ -309,6 +337,7 @@ func PlayerCommand(player *glob.PlayerData, command string, args string) {
 				WriteToPlayer(player, "Sector saved.")
 			}
 			return
+
 		} else if command == "look" {
 			err := true
 			if glob.SectorsList[player.Sector].Valid {

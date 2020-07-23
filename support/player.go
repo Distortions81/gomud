@@ -48,6 +48,11 @@ func CreatePlayer() *glob.PlayerData {
 		Connection: nil,
 		Valid:      true,
 	}
+
+	player.Connections = make(map[string]int)
+	player.BytesIn = make(map[string]int)
+	player.BytesOut = make(map[string]int)
+
 	return &player
 }
 
@@ -74,6 +79,11 @@ func CreatePlayerFromDesc(conn *glob.ConnectionData) *glob.PlayerData {
 		Connection: conn,
 		Valid:      true,
 	}
+
+	player.Connections = make(map[string]int)
+	player.BytesIn = make(map[string]int)
+	player.BytesOut = make(map[string]int)
+
 	return &player
 }
 
@@ -98,6 +108,16 @@ func ReadPlayer(name string, load bool) (*glob.PlayerData, bool) {
 				err := json.Unmarshal([]byte(file), &player)
 				if err != nil {
 					CheckError("ReadPlayer: Unmashal", err, def.ERROR_NONFATAL)
+				}
+
+				if player.Connections == nil {
+					player.Connections = make(map[string]int)
+				}
+				if player.BytesIn == nil {
+					player.BytesIn = make(map[string]int)
+				}
+				if player.BytesOut == nil {
+					player.BytesOut = make(map[string]int)
 				}
 
 				log.Println("Player loaded: " + player.Name)
@@ -214,16 +234,6 @@ func PlayerToRoom(player *glob.PlayerData, sectorID int, roomID int) {
 		player.Sector = sectorID
 		player.Room = roomID
 	}
-
-}
-
-func TrackBytesPlayer(con *glob.ConnectionData, player *glob.PlayerData) {
-
-	if player == nil || !player.Valid || con == nil || !con.Valid {
-		return
-	}
-	player.BytesOut[con.Address] += con.BytesOut
-	player.BytesIn[con.Address] += con.BytesIn
 
 }
 

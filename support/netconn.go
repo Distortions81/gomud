@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
 	"time"
 
 	"../def"
@@ -28,10 +29,17 @@ func NewDescriptor(desc *net.TCPConn) {
 		if con.Valid == true {
 			continue
 		} else {
-			/*Replace*/
+
+			/*Remove port number*/
+			addr := desc.RemoteAddr().String()
+			addrp := strings.Split(addr, ":")
+			if len(addrp) > 0 {
+				addr = addrp[0]
+			}
+
 			con.Name = def.STRING_UNKNOWN
 			con.Desc = desc
-			con.Address = desc.LocalAddr().String()
+			con.Address = addr
 			con.State = def.CON_STATE_WELCOME
 			con.ConnectedFor = time.Now()
 			con.IdleTime = time.Now()
@@ -58,10 +66,15 @@ func NewDescriptor(desc *net.TCPConn) {
 
 	/*Create*/
 	glob.ConnectionListEnd++
+	addr := desc.RemoteAddr().String()
+	addrp := strings.Split(addr, ":")
+	if len(addrp) > 0 {
+		addr = addrp[0]
+	}
 	newConnection := glob.ConnectionData{
 		Name:         def.STRING_UNKNOWN,
 		Desc:         desc,
-		Address:      desc.RemoteAddr().String(),
+		Address:      addr,
 		State:        def.CON_STATE_WELCOME,
 		ConnectedFor: time.Now(),
 		IdleTime:     time.Now(),
@@ -95,6 +108,10 @@ func ReadConnection(con *glob.ConnectionData) {
 	for {
 
 		input, err := reader.ReadString('\n')
+		bIn := len(input)
+
+		con.BytesIn += bIn
+		trackBytesIn(con)
 
 		/*Connection died*/
 		if err != nil {
@@ -143,6 +160,28 @@ func HandleReadConnection(con *glob.ConnectionData, input string) {
 	/*--- UNLOCK ---*/
 }
 
+func trackBytesOut(con *glob.ConnectionData) {
+
+	player := con.Player
+
+	if player == nil || !player.Valid || con == nil || !con.Valid {
+		return
+	}
+	player.BytesOut[con.Address] += (con.BytesOut - con.BytesOutRecorded)
+	con.BytesOutRecorded = con.BytesOut
+}
+
+func trackBytesIn(con *glob.ConnectionData) {
+
+	player := con.Player
+
+	if player == nil || !player.Valid || con == nil || !con.Valid {
+		return
+	}
+	player.BytesIn[con.Address] += (con.BytesIn - con.BytesInRecorded)
+	con.BytesInRecorded = con.BytesIn
+}
+
 func DescWriteError(c *glob.ConnectionData, err error) {
 	if err != nil {
 		CheckError("DescWriteError", err, def.ERROR_NONFATAL)
@@ -174,6 +213,7 @@ func WriteToDesc(c *glob.ConnectionData, text string) {
 	message := fmt.Sprintf("%s\r\n", text)
 	bytes, err := c.Desc.Write([]byte(message))
 	c.BytesOut += bytes
+	trackBytesOut(c)
 
 	DescWriteError(c, err)
 }
@@ -187,6 +227,7 @@ func WriteToPlayer(player *glob.PlayerData, text string) {
 	message := fmt.Sprintf("%s\r\n", text)
 	bytes, err := player.Connection.Desc.Write([]byte(message))
 	player.Connection.BytesOut += bytes
+	trackBytesOut(player.Connection)
 
 	DescWriteError(player.Connection, err)
 }
@@ -206,6 +247,7 @@ func WriteToAll(text string) {
 			message := fmt.Sprintf("%s\r\n", text)
 			bytes, err := con.Desc.Write([]byte(message))
 			con.BytesOut += bytes
+			trackBytesOut(con)
 
 			DescWriteError(con, err)
 		}
@@ -230,6 +272,7 @@ func WriteToOthers(player *glob.PlayerData, text string) {
 			message := fmt.Sprintf("%s\r\n", text)
 			bytes, err := con.Desc.Write([]byte(message))
 			con.BytesOut += bytes
+			trackBytesOut(con)
 
 			DescWriteError(con, err)
 		}
