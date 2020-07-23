@@ -12,6 +12,21 @@ import (
 	"../glob"
 )
 
+func ReadSectorList() {
+	files, err := ioutil.ReadDir(def.DATA_DIR + def.SECTOR_DIR)
+	if err != nil {
+		CheckError("ReadSectorList:", err, def.ERROR_NONFATAL)
+	}
+
+	for _, file := range files {
+		ReadSector(file.Name())
+	}
+}
+
+func ReloadSector() {
+
+}
+
 func WriteSector(sector *glob.SectorData) bool {
 	outbuf := new(bytes.Buffer)
 	enc := json.NewEncoder(outbuf)
@@ -46,4 +61,40 @@ func WriteSector(sector *glob.SectorData) bool {
 	buf := fmt.Sprintf("Wrote %v, %v.", fileName, ScaleBytes(len(outbuf.String())))
 	log.Println(buf)
 	return true
+}
+
+func ReadSector(name string) *glob.SectorData {
+
+	_, err := os.Stat(def.DATA_DIR + def.SECTOR_DIR + name)
+	notfound := os.IsNotExist(err)
+
+	if notfound {
+		CheckError("ReadSector: os.Stat", err, def.ERROR_NONFATAL)
+		return nil
+
+	} else {
+
+		file, err := ioutil.ReadFile(def.DATA_DIR + def.SECTOR_DIR + name)
+
+		if file != nil && err == nil {
+			sector := CreateSector()
+
+			err := json.Unmarshal([]byte(file), &sector)
+			if err != nil {
+				CheckError("ReadSector: Unmashal", err, def.ERROR_NONFATAL)
+			}
+
+			log.Println("Sector loaded: " + sector.Name)
+			return sector
+		} else {
+			CheckError("ReadSector: ReadFile", err, def.ERROR_NONFATAL)
+			return nil
+		}
+
+	}
+}
+
+func CreateSector() *glob.SectorData {
+
+	return nil
 }
