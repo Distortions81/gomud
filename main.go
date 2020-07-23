@@ -52,11 +52,55 @@ func main() {
 	ServerListener.Close()
 }
 
+func NewRound() (wait <-chan struct{}) {
+	ch := make(chan struct{})
+	go func() {
+		time.Sleep(def.INPUT_THROTTLE * time.Millisecond)
+		close(ch) // Broadcast to all receivers.
+	}()
+	return ch
+}
+
 func mainLoop() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	/*separate thread, wait for new connections*/
+	/* Player rounds */
+	go func() {
+		for {
+			glob.Round = NewRound()
+		}
+	}()
+
+	/*Background tasks*/
+	go func() {
+		for {
+			time.Sleep(time.Minute)
+
+			/*--- LOCK ---*/
+			glob.ConnectionListLock.Lock()
+			/*--- LOCK ---*/
+
+			for x := 0; x <= glob.PlayerListEnd; x++ {
+				if glob.PlayerList[x] != nil && glob.PlayerList[x].Valid == false {
+					player := glob.PlayerList[x]
+					if player.UnlinkedTime.IsZero() == false && time.Since(player.UnlinkedTime) > (2*time.Minute) {
+						support.WriteToRoom(player, "fades into nothing...")
+						support.RemovePlayerWorld(player)
+					}
+				}
+			}
+
+			/*--- UNLOCK ---*/
+			glob.ConnectionListLock.Unlock()
+			/*--- UNLOCK ---*/
+		}
+	}()
+
+	/*Wait for new connections*/
 	for glob.ServerState == def.SERVER_RUNNING {
+		/*Create throttle*/
+		startTime := time.Now()
+
 		/*Check for new connections*/
 		desc, err := glob.ServerListener.AcceptTCP()
 
@@ -83,5 +127,18 @@ func mainLoop() {
 			/* netconn/netconn.go */
 		}
 
+		/* Limit to this speed.
+		 * But don't sleep unless needed,
+		 * so we stay responsive */
+		sleepFor := time.Until(startTime.Add(def.CONNECT_THROTTLE * time.Millisecond))
+		ranFor := time.Since(startTime)
+
+		buf := fmt.Sprintf("connect: ran for %v", ranFor.String())
+		log.Println(buf)
+
+		buf = fmt.Sprintf("connect: sleeping for %v", sleepFor.String())
+		log.Println(buf)
+
+		time.Sleep(sleepFor)
 	}
 }

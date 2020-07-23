@@ -11,6 +11,7 @@ import (
 /*The big dataset*/
 var ServerState = def.SERVER_RUNNING
 var ServerListener *net.TCPListener
+var Round <-chan struct{}
 
 var ConnectionListEnd int
 var ConnectionList [def.MAX_USERS]ConnectionData

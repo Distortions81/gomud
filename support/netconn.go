@@ -88,6 +88,7 @@ func ReadConnection(con *glob.ConnectionData) {
 	glob.ConnectionListLock.Lock()
 	/*Create reader*/
 	reader := bufio.NewReader(con.Desc)
+	/*Create reader*/
 	glob.ConnectionListLock.Unlock()
 	/*--- UNLOCK ---*/
 
@@ -95,6 +96,7 @@ func ReadConnection(con *glob.ConnectionData) {
 
 		input, err := reader.ReadString('\n')
 
+		/*Connection died*/
 		if err != nil {
 			glob.ConnectionListLock.Lock()
 			DescWriteError(con, err)
@@ -102,37 +104,44 @@ func ReadConnection(con *glob.ConnectionData) {
 			return
 		}
 
-		//Move all this to handlers, to get rid of if/elseif mess,
-		//and to enable autocomplete and shortcuts/aliases.
-		/*--- LOCK ---*/
-		glob.ConnectionListLock.Lock()
-		/*--- LOCK ---*/
+		<-glob.Round
+		go DoReadConnection(con, input)
+	}
+}
 
-		interpretInput(con, input)
+func DoReadConnection(con *glob.ConnectionData, input string) {
+	/*--- LOCK ---*/
+	glob.ConnectionListLock.Lock()
+	/*--- LOCK ---*/
 
-		if con.State == def.CON_STATE_DISCONNECTING {
-			WriteToDesc(con, "\r\n\r\n *** Goodbye! ***")
+	/*Handles all user input*/
+	interpretInput(con, input)
 
-			con.State = def.CON_STATE_DISCONNECTED
-			con.Valid = false
-			con.Desc.Close()
+	/*Handle players marked for disconnection*/
+	/*Doing this at the end is cleaner*/
+	if con.State == def.CON_STATE_DISCONNECTING {
+		WriteToDesc(con, "\r\n\r\n *** Goodbye! ***")
 
-			//TODO Remove this, remove player after idle for some time, not instantly.
-			if con.Player != nil && con.Player.Valid {
-				con.Player.Valid = false
-				con.Player.Connection = nil
-			}
-			/*--- UNLOCK ---*/
-			glob.ConnectionListLock.Unlock()
-			/*--- UNLOCK ---*/
-			return
+		con.State = def.CON_STATE_DISCONNECTED
+		con.Valid = false
+
+		/*Invalidate player's connection*/
+		if con.Player != nil && con.Player.Valid &&
+			con.Player.Connection != nil {
+			con.Player.Connection.Valid = false
 		}
 
+		con.Desc.Close()
 		/*--- UNLOCK ---*/
 		glob.ConnectionListLock.Unlock()
 		/*--- UNLOCK ---*/
 	}
+
+	/*--- UNLOCK ---*/
+	glob.ConnectionListLock.Unlock()
+	/*--- UNLOCK ---*/
 }
+
 func DescWriteError(c *glob.ConnectionData, err error) {
 	if err != nil {
 		CheckError("DescWriteError", err, def.ERROR_NONFATAL)
