@@ -9,7 +9,8 @@ const MAX_USERS = 10000
 const MAX_INPUT_LENGTH = 4096
 const MAX_OUTPUT_LENGTH = 16384
 
-const INPUT_THROTTLE = 249 //+1 sleep in ReadConnection
+const INPUT_THROTTLE = 240 //+SYNC_DELAY
+const SYNC_DELAY = 10
 const CONNECT_THROTTLE = 10
 
 const PLAYER_START_ROOM = 1
