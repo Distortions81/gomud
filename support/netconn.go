@@ -61,7 +61,7 @@ func NewDescriptor(desc *net.TCPConn) {
 	newConnection := glob.ConnectionData{
 		Name:         def.STRING_UNKNOWN,
 		Desc:         desc,
-		Address:      desc.LocalAddr().String(),
+		Address:      desc.RemoteAddr().String(),
 		State:        def.CON_STATE_WELCOME,
 		ConnectedFor: time.Now(),
 		IdleTime:     time.Now(),
