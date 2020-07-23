@@ -205,6 +205,8 @@ func interpretInput(con *glob.ConnectionData, input string) {
 				WriteToPlayer(con.Player, "Character saved.")
 			}
 
+			showHelp(con.Player)
+
 		} else {
 			con.TempPass = ""
 			WriteToDesc(con, "Passwords didn't match, try again.")
@@ -215,13 +217,27 @@ func interpretInput(con *glob.ConnectionData, input string) {
 	}
 }
 
+func showHelp(player *glob.PlayerData) {
+	WriteToPlayer(player, "Commands:")
+	WriteToPlayer(player, "look       (you are here)")
+	WriteToPlayer(player, "look       (shows room)")
+	WriteToPlayer(player, "who        (shows all online)")
+	WriteToPlayer(player, "say <text> (Speaks)")
+	WriteToPlayer(player, "save       (saves character)")
+	WriteToPlayer(player, "quit       (leave game)")
+	return
+}
+
 func PlayerCommand(player *glob.PlayerData, command string, args string) {
 	/***************/
 	/*Commands area*/ //TODO make into nice list with separate functions
 	/***************/
 	if player != nil && player.Valid {
 
-		if command == "quit" {
+		if command == "help" {
+			showHelp(player)
+			return
+		} else if command == "quit" {
 			okay := WritePlayer(player)
 			if okay == false {
 				WriteToPlayer(player, "Saving character failed!!!")
@@ -308,9 +324,13 @@ func PlayerCommand(player *glob.PlayerData, command string, args string) {
 
 				if player.RoomLink != nil {
 					names := ""
+					unlinked := ""
 					for _, target := range player.RoomLink.Players {
 						if target != nil && target != player {
-							names = names + fmt.Sprintf("%s is here.\r\n", target.Name)
+							if target.Connection != nil && target.Connection.Valid == false {
+								unlinked = " (lost connection)"
+							}
+							names = names + fmt.Sprintf("%s is here.%s\r\n", target.Name, unlinked)
 						}
 					}
 					//Newline if there are players here.
@@ -328,6 +348,7 @@ func PlayerCommand(player *glob.PlayerData, command string, args string) {
 		} else {
 
 			WriteToPlayer(player, "That isn't a valid command.")
+			showHelp(player)
 			return
 		}
 
