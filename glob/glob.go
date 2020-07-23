@@ -24,6 +24,8 @@ var PlayerListLock sync.Mutex
 var SectorsListEnd int
 var SectorsList [def.MAX_SECTORS]SectorData
 
+var QuickHelp string
+
 type DirectionData struct {
 	Name         string
 	ToRoom       *RoomData `json:"-"`

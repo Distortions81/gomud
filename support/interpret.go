@@ -12,20 +12,61 @@ import (
 	"../glob"
 )
 
-type Commands struct {
-	CommandList []Command
-}
-
 type Command struct {
-	name    string
-	Command func()
-	Level   int
+	Name  string
+	Cmd   func(player *glob.PlayerData, args string)
+	Admin bool
+	Help  string
 }
 
-var CL Commands
+const FOR_ADMIN = true
+const FOR_USER = false
 
-func AddCommands() {
+var CommandList = []Command{
+	{Name: "bytes", Cmd: CmdBytes, Admin: FOR_ADMIN,
+		Help: "See bandwidth usage"},
+	{Name: "asave", Cmd: CmdAsave, Admin: FOR_ADMIN,
+		Help: "Save game areas"},
 
+	{Name: "help", Cmd: CmdHelp, Admin: FOR_USER,
+		Help: "You are here"},
+	{Name: "who", Cmd: CmdWho, Admin: FOR_USER,
+		Help: "See who is online"},
+	{Name: "look", Cmd: CmdLook, Admin: FOR_USER,
+		Help: "Look around the room"},
+	{Name: "say", Cmd: CmdSay, Admin: FOR_USER,
+		Help: "Talk to other people in the room"},
+	{Name: "save", Cmd: CmdSave, Admin: FOR_USER,
+		Help: "Talk to other people in the room"},
+	{Name: "quit", Cmd: CmdQuit, Admin: FOR_USER,
+		Help: "Quit the game"},
+}
+
+func MakeQuickHelp() {
+	buf := "Commands:\r\n"
+
+	for _, cmd := range CommandList {
+		admin := ""
+		if cmd.Admin {
+			admin = " (admin)"
+		}
+		buf = buf + fmt.Sprintf("%12v : %-56v%8v\r\n", cmd.Name, cmd.Help, admin)
+	}
+	glob.QuickHelp = buf
+}
+
+func PlayerCommand(player *glob.PlayerData, command string, args string) {
+
+	if player != nil && player.Valid {
+		for _, cmd := range CommandList {
+			if strings.ToLower(cmd.Name) == strings.ToLower(command) {
+				cmd.Cmd(player, args)
+				return
+			}
+		}
+		WriteToPlayer(player, "Invalid command.")
+		CmdHelp(player, "")
+	}
 }
 
 func interpretInput(con *glob.ConnectionData, input string) {
@@ -85,6 +126,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 	alphaChar := AlphaOnly(input)
 	alphaCharLen := len(alphaChar)
 
+	/*Inital connection*/
 	if con.State == def.CON_STATE_WELCOME {
 		if command == "new" {
 			buf := fmt.Sprintf("Names must be between %d and %d letters long, A-z only.", def.MIN_PLAYER_NAME_LENGTH, def.MAX_PLAYER_NAME_LENGTH)
@@ -92,6 +134,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			WriteToDesc(con, "What name would you like to go by?")
 			con.State = def.CON_STATE_NEW_LOGIN
 		} else {
+			/*Login Name */
 			if alphaCharLen > def.MIN_PLAYER_NAME_LENGTH &&
 				alphaCharLen < def.MAX_PLAYER_NAME_LENGTH &&
 				alphaChar != def.STRING_UNKNOWN {
@@ -118,6 +161,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 				}
 			}
 		}
+		/* Player's password */
 	} else if con.State == def.CON_STATE_PASSWORD {
 		player, _ := ReadPlayer(con.Name, true)
 		con.Player = player
@@ -134,6 +178,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			WriteToDesc(con, "Invalid password.")
 			con.State = def.CON_STATE_DISCONNECTING
 		}
+		/*New player*/
 	} else if con.State == def.CON_STATE_NEW_LOGIN {
 		if alphaCharLen > def.MIN_PLAYER_NAME_LENGTH &&
 			alphaCharLen < def.MAX_PLAYER_NAME_LENGTH &&
@@ -150,7 +195,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		} else {
 			WriteToDesc(con, "That isn't a acceptable name... Try again:")
 		}
-
+		/*Confirm new player*/
 	} else if con.State == def.CON_STATE_NEW_LOGIN_CONFIRM {
 		if command == "y" || command == "yes" {
 			con.Player = CreatePlayerFromDesc(con)
@@ -164,6 +209,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			WriteToDesc(con, "What name would you like to go by then?")
 		}
 
+		/*New player password*/
 	} else if con.State == def.CON_STATE_NEW_PASSWORD {
 		symbolCount := len(NonAlpha(input))
 		inputLen := len(input)
@@ -175,6 +221,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			WriteToDesc(con, "That isn't an acceptable password!")
 			WriteToDesc(con, "Password:")
 		}
+		/*Confirm new player password */
 	} else if con.State == def.CON_STATE_NEW_PASSWORD_CONFIRM {
 
 		/*Hash password*/
@@ -205,7 +252,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 				WriteToPlayer(con.Player, "Character saved.")
 			}
 
-			showHelp(con.Player)
+			CmdHelp(con.Player, "")
 
 		} else {
 			con.TempPass = ""
@@ -217,162 +264,142 @@ func interpretInput(con *glob.ConnectionData, input string) {
 	}
 }
 
-func showHelp(player *glob.PlayerData) {
-	WriteToPlayer(player, "Commands:")
-	WriteToPlayer(player, "help       (you are here)")
-	WriteToPlayer(player, "bytes      (bandwidth use)")
-	WriteToPlayer(player, "look       (shows room)")
-	WriteToPlayer(player, "who        (shows all online)")
-	WriteToPlayer(player, "say <text> (Speaks)")
-	WriteToPlayer(player, "save       (saves character)")
-	WriteToPlayer(player, "quit       (leave game)")
-	return
+func CmdHelp(player *glob.PlayerData, args string) {
+	WriteToPlayer(player, glob.QuickHelp)
 }
 
-func PlayerCommand(player *glob.PlayerData, command string, args string) {
-	/***************/
-	/*Commands area*/ //TODO make into nice list with separate functions
-	/***************/
-	if player != nil && player.Valid {
+func CmdQuit(player *glob.PlayerData, args string) {
+	okay := WritePlayer(player)
+	if okay == false {
+		WriteToPlayer(player, "Saving character failed!!!")
+		return
+	} else {
+		WriteToPlayer(player, "Character saved.")
+	}
+	buf := fmt.Sprintf("%s has quit.", player.Name)
+	WriteToAll(buf)
+	player.Connection.State = def.CON_STATE_DISCONNECTING
+	RemovePlayerWorld(player)
+}
 
-		if command == "help" {
-			showHelp(player)
-			return
-		} else if command == "quit" {
-			okay := WritePlayer(player)
-			if okay == false {
-				WriteToPlayer(player, "Saving character failed!!!")
-				return
-			} else {
-				WriteToPlayer(player, "Character saved.")
+func CmdWho(player *glob.PlayerData, args string) {
+	output := "Players online:\n"
+
+	for x := 0; x <= glob.ConnectionListEnd; x++ {
+		var p *glob.ConnectionData = &glob.ConnectionList[x]
+		if p.Valid == false {
+			continue
+		}
+		buf := ""
+
+		if p.State == def.CON_STATE_PLAYING {
+			idleString := ""
+			connectedString := ""
+
+			if time.Since(p.IdleTime) > time.Minute {
+				idleString = " (idle " + ToHourMinute(time.Since(p.IdleTime)) + ")"
 			}
-			buf := fmt.Sprintf("%s has quit.", player.Name)
-			WriteToAll(buf)
-			player.Connection.State = def.CON_STATE_DISCONNECTING
-			RemovePlayerWorld(player)
-			return
-		} else if command == "who" {
-			output := "Players online:\n"
-
-			for x := 0; x <= glob.ConnectionListEnd; x++ {
-				var p *glob.ConnectionData = &glob.ConnectionList[x]
-				if p.Valid == false {
-					continue
-				}
-				buf := ""
-
-				if p.State == def.CON_STATE_PLAYING {
-					idleString := ""
-					connectedString := ""
-
-					if time.Since(p.IdleTime) > time.Minute {
-						idleString = " (idle " + ToHourMinute(time.Since(p.IdleTime)) + ")"
-					}
-					if time.Since(p.ConnectedFor) > time.Minute {
-						connectedString = " (on " + ToHourMinute(time.Since(p.ConnectedFor)) + ")"
-					}
-
-					buf = fmt.Sprintf("%d: %s%s%s", x, p.Name, connectedString, idleString)
-				} else {
-					buf = fmt.Sprintf("%d: %s", x, "(Connecting)")
-				}
-				output = output + buf
-				if x <= glob.ConnectionListEnd {
-					output = output + "\r\n"
-				}
-			}
-			WriteToPlayer(player, output)
-			return
-		} else if command == "bytes" {
-			output := ""
-
-			for x := 1; x <= glob.ConnectionListEnd; x++ {
-				con := &glob.ConnectionList[x]
-				target := con.Player
-				buf := ""
-
-				if target != nil {
-					for key, value := range target.Connections {
-						buf = buf + fmt.Sprintf("%32v: %16v(%4v) %v/%v\r\n", target.Name, key, value, ScaleBytes(target.BytesIn[key]), ScaleBytes(target.BytesOut[key]))
-					}
-				} else if con != nil {
-					buf = buf + fmt.Sprintf("%32v: %16v(%4v) %v/%v\r\n", con.Name, "", "", ScaleBytes(con.BytesIn), ScaleBytes(con.BytesOut))
-				}
-
-				output = output + buf
-			}
-			WriteToPlayer(player, output)
-			return
-		} else if command == "say" {
-			if len(args) > 0 {
-				out := fmt.Sprintf("%s says: %s", player.Name, args)
-				us := fmt.Sprintf("You say: %s", args)
-
-				WriteToOthers(player, out)
-				WriteToPlayer(player, us)
-			} else {
-				WriteToPlayer(player, "But, what do you want to say?")
-			}
-			return
-		} else if command == "save" {
-			okay := WritePlayer(player)
-			if okay == false {
-				WriteToPlayer(player, "Saving character failed!!!")
-			} else {
-				WriteToPlayer(player, "Character saved.")
-			}
-			return
-		} else if command == "asave" {
-			okay := WriteSector(&glob.SectorsList[0])
-			if okay == false {
-				WriteToPlayer(player, "Saving sector failed!!!")
-			} else {
-				WriteToPlayer(player, "Sector saved.")
-			}
-			return
-
-		} else if command == "look" {
-			err := true
-			if glob.SectorsList[player.Sector].Valid {
-				sector := glob.SectorsList[player.Sector]
-				if sector.Rooms[player.Room].Valid {
-					room := sector.Rooms[player.Room]
-					roomName := room.Name
-					roomDesc := room.Description
-					buf := fmt.Sprintf("%s:\r\n%s", roomName, roomDesc)
-					WriteToPlayer(player, buf)
-					err = false
-				}
-
-				if player.RoomLink != nil {
-					names := ""
-					unlinked := ""
-					for _, target := range player.RoomLink.Players {
-						if target != nil && target != player {
-							if target.Connection != nil && target.Connection.Valid == false {
-								unlinked = " (lost connection)"
-							}
-							names = names + fmt.Sprintf("%s is here.%s\r\n", target.Name, unlinked)
-						}
-					}
-					//Newline if there are players here.
-					if names != "" {
-						names = "\r\n" + names
-					}
-					WriteToPlayer(player, names)
-				}
-			}
-			if err {
-				WriteToPlayer(player, "You are floating in the VOID...")
+			if time.Since(p.ConnectedFor) > time.Minute {
+				connectedString = " (on " + ToHourMinute(time.Since(p.ConnectedFor)) + ")"
 			}
 
-			return
+			buf = fmt.Sprintf("%d: %s%s%s", x, p.Name, connectedString, idleString)
 		} else {
+			buf = fmt.Sprintf("%d: %s", x, "(Connecting)")
+		}
+		output = output + buf
+		if x <= glob.ConnectionListEnd {
+			output = output + "\r\n"
+		}
+	}
+	WriteToPlayer(player, output)
+}
 
-			WriteToPlayer(player, "That isn't a valid command.")
-			showHelp(player)
-			return
+func CmdBytes(player *glob.PlayerData, args string) {
+	output := ""
+
+	for x := 1; x <= glob.ConnectionListEnd; x++ {
+		con := &glob.ConnectionList[x]
+		target := con.Player
+		buf := ""
+
+		if target != nil {
+			for key, value := range target.Connections {
+				buf = buf + fmt.Sprintf("%32v: %16v(%4v) %v/%v\r\n", target.Name, key, value, ScaleBytes(target.BytesIn[key]), ScaleBytes(target.BytesOut[key]))
+			}
+		} else if con != nil {
+			buf = buf + fmt.Sprintf("%32v: %16v(%4v) %v/%v\r\n", con.Name, "", "", ScaleBytes(con.BytesIn), ScaleBytes(con.BytesOut))
 		}
 
+		output = output + buf
 	}
+	WriteToPlayer(player, output)
+}
+
+func CmdSay(player *glob.PlayerData, args string) {
+	if len(args) > 0 {
+		out := fmt.Sprintf("%s says: %s", player.Name, args)
+		us := fmt.Sprintf("You say: %s", args)
+
+		WriteToOthers(player, out)
+		WriteToPlayer(player, us)
+	} else {
+		WriteToPlayer(player, "But, what do you want to say?")
+	}
+}
+
+func CmdSave(player *glob.PlayerData, args string) {
+	okay := WritePlayer(player)
+	if okay == false {
+		WriteToPlayer(player, "Saving character failed!!!")
+	} else {
+		WriteToPlayer(player, "Character saved.")
+	}
+}
+
+func CmdAsave(player *glob.PlayerData, args string) {
+	okay := WriteSector(&glob.SectorsList[0])
+	if okay == false {
+		WriteToPlayer(player, "Saving sector failed!!!")
+	} else {
+		WriteToPlayer(player, "Sector saved.")
+	}
+}
+
+func CmdLook(player *glob.PlayerData, args string) {
+
+	err := true
+	if glob.SectorsList[player.Sector].Valid {
+		sector := glob.SectorsList[player.Sector]
+		if sector.Rooms[player.Room].Valid {
+			room := sector.Rooms[player.Room]
+			roomName := room.Name
+			roomDesc := room.Description
+			buf := fmt.Sprintf("%s:\r\n%s", roomName, roomDesc)
+			WriteToPlayer(player, buf)
+			err = false
+		}
+
+		if player.RoomLink != nil {
+			names := ""
+			unlinked := ""
+			for _, target := range player.RoomLink.Players {
+				if target != nil && target != player {
+					if target.Connection != nil && target.Connection.Valid == false {
+						unlinked = " (lost connection)"
+					}
+					names = names + fmt.Sprintf("%s is here.%s\r\n", target.Name, unlinked)
+				}
+			}
+			//Newline if there are players here.
+			if names != "" {
+				names = "\r\n" + names
+			}
+			WriteToPlayer(player, names)
+		}
+	}
+	if err {
+		WriteToPlayer(player, "You are floating in the VOID...")
+	}
+
 }

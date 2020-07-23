@@ -14,6 +14,8 @@ import (
 
 func main() {
 
+	support.MakeQuickHelp()
+
 	defaultSector := glob.SectorData{
 		Area: "Default",
 
