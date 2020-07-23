@@ -12,6 +12,17 @@ import (
 	"../glob"
 )
 
+func autoResolveAddress(con *glob.ConnectionData) {
+
+	addr := con.Desc.RemoteAddr().String()
+	addrp := strings.Split(addr, ":")
+	addrLen := len(addrp)
+	if addrLen > 0 && addrLen < 3 {
+		addr = addrp[0]
+	}
+	con.Address = addr
+}
+
 func NewDescriptor(desc *net.TCPConn) {
 
 	if desc == nil {
@@ -26,20 +37,12 @@ func NewDescriptor(desc *net.TCPConn) {
 	for x := 1; x <= glob.ConnectionListEnd; x++ {
 		var con *glob.ConnectionData
 		con = &glob.ConnectionList[x]
+
 		if con.Valid == true {
 			continue
 		} else {
-
-			/*Remove port number*/
-			addr := desc.RemoteAddr().String()
-			addrp := strings.Split(addr, ":")
-			if len(addrp) > 0 {
-				addr = addrp[0]
-			}
-
 			con.Name = def.STRING_UNKNOWN
 			con.Desc = desc
-			con.Address = addr
 			con.State = def.CON_STATE_WELCOME
 			con.ConnectedFor = time.Now()
 			con.IdleTime = time.Now()
@@ -47,6 +50,7 @@ func NewDescriptor(desc *net.TCPConn) {
 			con.BytesIn = 0
 			con.Player = nil
 			con.Valid = true
+			autoResolveAddress(con)
 
 			buf := fmt.Sprintf("Recycling connection #%d.", x)
 			log.Println(buf)
@@ -66,15 +70,10 @@ func NewDescriptor(desc *net.TCPConn) {
 
 	/*Create*/
 	glob.ConnectionListEnd++
-	addr := desc.RemoteAddr().String()
-	addrp := strings.Split(addr, ":")
-	if len(addrp) > 0 {
-		addr = addrp[0]
-	}
 	newConnection := glob.ConnectionData{
 		Name:         def.STRING_UNKNOWN,
 		Desc:         desc,
-		Address:      addr,
+		Address:      "",
 		State:        def.CON_STATE_WELCOME,
 		ConnectedFor: time.Now(),
 		IdleTime:     time.Now(),
@@ -82,6 +81,7 @@ func NewDescriptor(desc *net.TCPConn) {
 		BytesIn:      0,
 		Player:       nil,
 		Valid:        true}
+	autoResolveAddress(&newConnection)
 	glob.ConnectionList[glob.ConnectionListEnd] = newConnection
 	buf := fmt.Sprintf("Created new connection #%d.", glob.ConnectionListEnd)
 	log.Println(buf)
@@ -122,7 +122,7 @@ func ReadConnection(con *glob.ConnectionData) {
 		}
 
 		<-glob.Round
-		time.Sleep(1 * time.Millisecond)
+		time.Sleep(def.SYNC_DELAY * time.Millisecond)
 		go HandleReadConnection(con, input)
 	}
 }
@@ -207,6 +207,12 @@ func WriteToDesc(c *glob.ConnectionData, text string) {
 	if c == nil || !c.Valid {
 		return
 	}
+	text, overflow := TruncateString(text, def.MAX_OUTPUT_LENGTH)
+	if overflow {
+		cstring := " Name: " + c.Name + ", Addr:" + c.Address
+		log.Println("WriteToDesc: string too large, Truncated!" + cstring)
+	}
+
 	message := fmt.Sprintf("%s\r\n", text)
 	bytes, err := c.Desc.Write([]byte(message))
 	c.BytesOut += bytes
