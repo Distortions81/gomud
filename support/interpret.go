@@ -286,27 +286,20 @@ func PlayerCommand(player *glob.PlayerData, command string, args string) {
 		} else if command == "bytes" {
 			output := ""
 
-			for x := 0; x <= glob.ConnectionListEnd; x++ {
-				var p *glob.ConnectionData = &glob.ConnectionList[x]
-				if p.Valid == false {
-					continue
-				}
+			for x := 1; x <= glob.ConnectionListEnd; x++ {
+				con := &glob.ConnectionList[x]
+				target := con.Player
 				buf := ""
 
-				if p.Player != nil {
-					output = "Connections:\r\nname: ip(count), in/out kb\r\n"
-					for key, value := range player.Connections {
-						buf = buf + fmt.Sprintf("%32v: %16v(%4v) %v/%v\r\n", player.Name, key, value, player.BytesIn[key]/1024, player.BytesOut[key]/1024)
+				if target != nil {
+					for key, value := range target.Connections {
+						buf = buf + fmt.Sprintf("%32v: %16v(%4v) %v/%v\r\n", target.Name, key, value, target.BytesIn[key]/1024, target.BytesOut[key]/1024)
 					}
-				} else {
-					output = "Connections:\r\nname: in/out bytes\r\n"
-					buf = buf + fmt.Sprintf("%32v %v/%v\r\n", p.Name, p.BytesIn, p.BytesOut)
+				} else if con != nil {
+					buf = buf + fmt.Sprintf("%32v %v/%v\r\n", con.Name, con.BytesIn, con.BytesOut)
 				}
 
 				output = output + buf
-				if x <= glob.ConnectionListEnd {
-					output = output + "\r\n"
-				}
 			}
 			WriteToPlayer(player, output)
 			return

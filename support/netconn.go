@@ -150,9 +150,6 @@ func HandleReadConnection(con *glob.ConnectionData, input string) {
 		}
 
 		con.Desc.Close()
-		/*--- UNLOCK ---*/
-		glob.ConnectionListLock.Unlock()
-		/*--- UNLOCK ---*/
 	}
 
 	/*--- UNLOCK ---*/
