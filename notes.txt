@@ -25,3 +25,8 @@ player aliases:
 aliases := map[string]string
 
 aliases[shortcutName] = output
+
+ANSI color
+make a connect list, track number of connections
+max connections/minute per ip, autoban
+ip/dns banning
