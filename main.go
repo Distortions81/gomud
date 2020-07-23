@@ -68,6 +68,7 @@ func mainLoop() {
 	go func() {
 		for {
 			glob.Round = NewRound()
+			<-glob.Round
 		}
 	}()
 

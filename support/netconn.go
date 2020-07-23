@@ -61,7 +61,7 @@ func NewDescriptor(desc *net.TCPConn) {
 	newConnection := glob.ConnectionData{
 		Name:         def.STRING_UNKNOWN,
 		Desc:         desc,
-		Address:      desc.LocalAddr().String(),
+		Address:      desc.RemoteAddr().String(),
 		State:        def.CON_STATE_WELCOME,
 		ConnectedFor: time.Now(),
 		IdleTime:     time.Now(),
@@ -105,11 +105,12 @@ func ReadConnection(con *glob.ConnectionData) {
 		}
 
 		<-glob.Round
-		go DoReadConnection(con, input)
+		time.Sleep(50 * time.Millisecond)
+		go HandleReadConnection(con, input)
 	}
 }
 
-func DoReadConnection(con *glob.ConnectionData, input string) {
+func HandleReadConnection(con *glob.ConnectionData, input string) {
 	/*--- LOCK ---*/
 	glob.ConnectionListLock.Lock()
 	/*--- LOCK ---*/
