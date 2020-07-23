@@ -105,7 +105,7 @@ func ReadConnection(con *glob.ConnectionData) {
 		}
 
 		<-glob.Round
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(1 * time.Millisecond)
 		go HandleReadConnection(con, input)
 	}
 }
@@ -150,10 +150,9 @@ func DescWriteError(c *glob.ConnectionData, err error) {
 		if c != nil {
 			if c.Valid && c.Name != def.STRING_UNKNOWN && c.State == def.CON_STATE_PLAYING {
 				if c.Player != nil && c.Player.Valid {
-					buf := fmt.Sprintf("%s lost their connection.", c.Player.Name)
+					buf := fmt.Sprintf("%s lost their network connection.", c.Player.Name)
 					c.Player.UnlinkedTime = time.Now()
 					WriteToRoom(c.Player, buf)
-					c.Player.Valid = false
 				}
 			} else {
 				buf := fmt.Sprintf("%s disconnected.", c.Address)
