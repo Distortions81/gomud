@@ -139,14 +139,6 @@ func mainLoop() {
 		 * But don't sleep unless needed,
 		 * so we stay responsive */
 		sleepFor := time.Until(startTime.Add(def.CONNECT_THROTTLE * time.Millisecond))
-		ranFor := time.Since(startTime)
-
-		buf := fmt.Sprintf("connect: ran for %v", ranFor.String())
-		log.Println(buf)
-
-		buf = fmt.Sprintf("connect: sleeping for %v", sleepFor.String())
-		log.Println(buf)
-
 		time.Sleep(sleepFor)
 	}
 }
