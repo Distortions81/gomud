@@ -128,7 +128,7 @@ func mainLoop() {
 
 			//TODO Add full greeting/info
 			/*Respond here, so we don't have to wait for lock*/
-			_, err = desc.Write([]byte(def.VERSION + "\r\nTo create a new character, type: NEW\r\nName: \r\n"))
+			_, err = desc.Write([]byte("GoMud: " + def.VERSION + "\r\nTo create a new character, type: NEW\r\n\r\nName: \r\n"))
 			support.CheckError("main: desc.Write", err, def.ERROR_NONFATAL)
 
 			go support.NewDescriptor(desc)

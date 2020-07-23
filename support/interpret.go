@@ -171,8 +171,8 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		if err == nil {
 			con.State = def.CON_STATE_PLAYING
 
-			LinkPlayerConnection(player, con)
 			WriteToDesc(con, "Welcome back, "+player.Name+"!")
+			LinkPlayerConnection(player, con)
 		} else {
 			log.Println("Invalid password attempt: " + player.Name + " ip: " + con.Address)
 			WriteToDesc(con, "Invalid password.")
@@ -201,7 +201,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 			con.Player = CreatePlayerFromDesc(con)
 
 			WriteToDesc(con, "You shall be called "+con.Name+", then...")
-			WriteToDesc(con, "Passwords must be between 9 and 72 characters long, and contain at least 2 numbers/symbols.")
+			WriteToDesc(con, "Passwords must be between 9 and 72 characters long,\r\nand contain at least 2 numbers/symbols.")
 			WriteToDesc(con, "Password:")
 			con.State = def.CON_STATE_NEW_PASSWORD
 		} else {
@@ -226,7 +226,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 
 		/*Hash password*/
 		if input == con.TempPass {
-			WriteToDesc(con, "Hashing password... One second please!")
+			WriteToDesc(con, "Hashing password...")
 			hash, err := bcrypt.GenerateFromPassword([]byte(input), def.PASSWORD_HASH_COST)
 			if err != nil {
 				CheckError("interp: password hash", err, def.ERROR_NONFATAL)
@@ -235,15 +235,14 @@ func interpretInput(con *glob.ConnectionData, input string) {
 				con.State = def.CON_STATE_DISCONNECTING
 				return
 			}
+			WriteToDesc(con, "...done! Welcome to GoMud!")
+
 			con.TempPass = ""
 			con.Player.Password = string(hash)
 
 			SetupNewCharacter(con.Player)
 			con.State = def.CON_STATE_PLAYING
 			LinkPlayerConnection(con.Player, con)
-
-			buf := fmt.Sprintf("%s has just arrived to the world.", con.Player.Name)
-			WriteToRoom(con.Player, buf)
 
 			okay := WritePlayer(con.Player)
 			if okay == false {

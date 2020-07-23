@@ -241,7 +241,7 @@ func WriteToAll(text string) {
 			continue
 		}
 		if con.State == def.CON_STATE_PLAYING {
-			message := fmt.Sprintf("%s\r\n", text)
+			message := fmt.Sprintf("[Global] %s\r\n", text)
 			bytes, err := con.Desc.Write([]byte(message))
 			con.BytesOut += bytes
 			trackBytesOut(con)
@@ -266,7 +266,7 @@ func WriteToOthers(player *glob.PlayerData, text string) {
 			continue
 		}
 		if con.Desc != pc.Desc && con.State == def.CON_STATE_PLAYING {
-			message := fmt.Sprintf("%s\r\n", text)
+			message := fmt.Sprintf("[Global] %s\r\n", text)
 			bytes, err := con.Desc.Write([]byte(message))
 			con.BytesOut += bytes
 			trackBytesOut(con)
@@ -285,7 +285,7 @@ func WriteToRoom(player *glob.PlayerData, text string) {
 	if player.RoomLink != nil {
 		for _, target := range player.RoomLink.Players {
 			if target != nil && target != player {
-				WriteToPlayer(target, text)
+				WriteToPlayer(target, "[Room] "+text)
 			}
 		}
 	} else {

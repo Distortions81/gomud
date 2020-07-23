@@ -21,7 +21,6 @@ func SetupNewCharacter(player *glob.PlayerData) {
 	player.Sector = def.PLAYER_START_SECTOR
 	player.Room = def.PLAYER_START_ROOM
 	player.Fingerprint = MakeFingerprint(player.Name)
-	WriteToPlayer(player, "Welcome! Type LOOK to see around you, and WHO to see who is online.")
 	WriteToAll("A newcomer has arrived, their name is " + player.Name + "...")
 }
 
@@ -175,10 +174,12 @@ func LinkPlayerConnection(player *glob.PlayerData, con *glob.ConnectionData) {
 	if player == nil || !player.Valid || con == nil || !con.Valid {
 		return
 	}
+
 	/*If player is already in the world, re-use*/
 	for x := 0; x <= glob.PlayerListEnd; x++ {
 		if glob.PlayerList[x] != nil && glob.PlayerList[x].Valid == false &&
-			glob.PlayerList[x].Name == player.Name {
+			glob.PlayerList[x].Name == player.Name &&
+			glob.PlayerList[x].Fingerprint == player.Fingerprint {
 
 			/*Get rid of previous character from login*/
 			con.Player.Valid = false
@@ -191,10 +192,16 @@ func LinkPlayerConnection(player *glob.PlayerData, con *glob.ConnectionData) {
 			player.UnlinkedTime = time.Time{}
 			player.Valid = true
 
+			/* MOTD message here */
+			WriteToPlayer(player, "\r\n")
+
 			PlayerToRoom(player, player.Sector, player.Room)
 			buf := fmt.Sprintf("%s reconnects to their body.", player.Name)
 			WriteToRoom(player, buf)
 			WriteToPlayer(player, "You reconnect to your body.")
+
+			CmdWho(player, "")
+			CmdLook(player, "")
 			return
 		}
 	}
@@ -212,10 +219,16 @@ func LinkPlayerConnection(player *glob.PlayerData, con *glob.ConnectionData) {
 	glob.PlayerListEnd++
 	glob.PlayerList[glob.PlayerListEnd] = player
 
+	/* MOTD message here */
+	WriteToPlayer(player, "\r\n")
+
 	PlayerToRoom(player, player.Sector, player.Room)
 
 	buf := fmt.Sprintf("%s suddenly appears.", player.Name)
 	WriteToRoom(player, buf)
+
+	CmdWho(player, "")
+	CmdLook(player, "")
 }
 
 func PlayerToRoom(player *glob.PlayerData, sectorID int, roomID int) {
