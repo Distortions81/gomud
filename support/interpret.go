@@ -293,10 +293,10 @@ func PlayerCommand(player *glob.PlayerData, command string, args string) {
 
 				if target != nil {
 					for key, value := range target.Connections {
-						buf = buf + fmt.Sprintf("%32v: %16v(%4v) %v/%v\r\n", target.Name, key, value, target.BytesIn[key]/1024, target.BytesOut[key]/1024)
+						buf = buf + fmt.Sprintf("%32v: %16v(%4v) %v/%v\r\n", target.Name, key, value, ScaleBytes(target.BytesIn[key]), ScaleBytes(target.BytesOut[key]))
 					}
 				} else if con != nil {
-					buf = buf + fmt.Sprintf("%32v %v/%v\r\n", con.Name, con.BytesIn, con.BytesOut)
+					buf = buf + fmt.Sprintf("%32v: %16v(%4v) %v/%v\r\n", con.Name, "", "", ScaleBytes(con.BytesIn), ScaleBytes(con.BytesOut))
 				}
 
 				output = output + buf

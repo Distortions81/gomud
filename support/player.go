@@ -141,6 +141,7 @@ func WritePlayer(player *glob.PlayerData) bool {
 	enc.SetIndent("", "\t")
 
 	player.Version = def.PFILE_VERSION
+	fileName := def.DATA_DIR + def.PLAYER_DIR + strings.ToLower(player.Name)
 
 	if player == nil && !player.Valid {
 		return false
@@ -150,20 +151,22 @@ func WritePlayer(player *glob.PlayerData) bool {
 		CheckError("WritePlayer: enc.Encode", err, def.ERROR_NONFATAL)
 		return false
 	}
-	_, err := os.Create(def.DATA_DIR + def.PLAYER_DIR + strings.ToLower(player.Name))
+	_, err := os.Create(fileName)
 
 	if err != nil {
 		CheckError("WritePlayer: os.Create", err, def.ERROR_NONFATAL)
 		return false
 	}
 
-	err = ioutil.WriteFile(def.DATA_DIR+def.PLAYER_DIR+strings.ToLower(player.Name), []byte(outbuf.String()), 0644)
+	err = ioutil.WriteFile(fileName, []byte(outbuf.String()), 0644)
 
 	if err != nil {
 		CheckError("WritePlayer: WriteFile", err, def.ERROR_NONFATAL)
 		return false
 	}
 
+	buf := fmt.Sprintf("Wrote %v, %v.", fileName, ScaleBytes(len(outbuf.String())))
+	log.Println(buf)
 	return true
 }
 

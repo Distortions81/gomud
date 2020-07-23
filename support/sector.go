@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"../def"
@@ -41,5 +42,8 @@ func WriteSector(sector *glob.SectorData) bool {
 		CheckError("WriteSector: WriteFile", err, def.ERROR_NONFATAL)
 		return false
 	}
+
+	buf := fmt.Sprintf("Wrote %v, %v.", fileName, ScaleBytes(len(outbuf.String())))
+	log.Println(buf)
 	return true
 }
