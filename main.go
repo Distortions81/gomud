@@ -82,10 +82,15 @@ func mainLoop() {
 			/*--- LOCK ---*/
 
 			for x := 0; x <= glob.PlayerListEnd; x++ {
-				if glob.PlayerList[x] != nil && glob.PlayerList[x].Valid == false {
-					player := glob.PlayerList[x]
+				player := glob.PlayerList[x]
+
+				if player != nil &&
+					player.Valid &&
+					player.RoomLink != nil {
+
 					if player.UnlinkedTime.IsZero() == false && time.Since(player.UnlinkedTime) > (2*time.Minute) {
-						support.WriteToRoom(player, "fades into nothing...")
+						player.UnlinkedTime = time.Time{}
+						support.WriteToRoom(player, fmt.Sprintf("%s fades into nothing...", player.Name))
 						support.RemovePlayerWorld(player)
 					}
 				}
