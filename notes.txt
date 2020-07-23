@@ -19,3 +19,9 @@ online quest editor
 
 exits:
 any word, enter/exit, custom enter/exit/action messages.
+
+
+player aliases:
+aliases := map[string]string
+
+aliases[shortcutName] = output

@@ -12,6 +12,22 @@ import (
 	"../glob"
 )
 
+type Commands struct {
+	CommandList []Command
+}
+
+type Command struct {
+	name    string
+	Command func()
+	Level   int
+}
+
+var CL Commands
+
+func AddCommands() {
+
+}
+
 func interpretInput(con *glob.ConnectionData, input string) {
 
 	for x := 0; x <= glob.PlayerListEnd; x++ {
