@@ -11,6 +11,7 @@ import (
 /*The big dataset*/
 var ServerState = def.SERVER_RUNNING
 var ServerListener *net.TCPListener
+var ServerListenerSSL net.Listener
 var Round <-chan struct{}
 
 var ConnectionListEnd int
@@ -58,19 +59,23 @@ type SectorData struct {
 	Version string
 
 	ID          int
+	Fingerprint string `json:",omitempty"`
+
 	Name        string `json:",omitempty"`
 	Area        string `json:",omitempty"`
 	Description string `json:",omitempty"`
 
 	Rooms map[int]RoomData `json:",omitempty"`
 
-	Valid bool
+	Valid    bool
+	FileName string `json:"-"`
 }
 
 type ConnectionData struct {
 	Name    string
-	Desc    *net.TCPConn `json:"-"`
+	Desc    net.Conn `json:"-"`
 	Address string
+	SSL     bool
 
 	State        int
 	ConnectedFor time.Time
