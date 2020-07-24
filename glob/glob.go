@@ -27,17 +27,27 @@ var SectorsList [def.MAX_SECTORS]SectorData
 
 var QuickHelp string
 
-type DirectionData struct {
-	Name     string
-	ToRoom   LocationData
-	RoomLink *RoomData
+type DoorData struct {
+	Door bool
 
-	Closed bool `json:",omitempty"`
-	Hidden bool `json:",omitempty"`
-	Keyed  bool `json:",omitempty"`
+	Closed    bool
+	AutoOpen  bool
+	AutoClose bool
+
+	Hidden bool
+	Keyed  bool
+}
+
+type ExitData struct {
+	Name   string
+	ToRoom LocationData
+
+	Door DoorData `json:",omitempty"`
 
 	Builders map[string]time.Time `json:",omitempty"`
 
+	//function to print
+	//fucntion to parse
 	Valid bool
 }
 
@@ -48,8 +58,8 @@ type RoomData struct {
 	Players     map[string]*PlayerData `json:"-"`
 
 	//Convert to map?
-	Exits    map[string]DirectionData `json:",omitempty"`
-	Builders map[string]time.Time     `json:",omitempty"`
+	Exits    map[string]ExitData  `json:",omitempty"`
+	Builders map[string]time.Time `json:",omitempty"`
 
 	Valid bool
 }
@@ -101,7 +111,6 @@ type PlayerData struct {
 	Level      int
 	State      int
 	Location   LocationData
-	RoomLink   *RoomData `json:"-"`
 
 	OLCEdit OLCEdit `json:",omitempty"`
 
@@ -145,4 +154,9 @@ type OLCEdit struct {
 type LocationData struct {
 	Sector int
 	ID     int
+
+	RoomLink *RoomData `json:"-"`
+	Valid    bool
+	//Function to print
+	//Function to parse
 }
