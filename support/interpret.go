@@ -360,19 +360,15 @@ func CmdSave(player *glob.PlayerData, args string) {
 }
 
 func CmdAsave(player *glob.PlayerData, args string) {
-	okay := WriteSector(&glob.SectorsList[0])
-	if okay == false {
-		WriteToPlayer(player, "Saving sector failed!!!")
-	} else {
-		WriteToPlayer(player, "Sector saved.")
-	}
+	WriteSectorList()
+	WriteToPlayer(player, "All sectors saving.")
 }
 
 func CmdLook(player *glob.PlayerData, args string) {
 
 	err := true
-	if glob.SectorsList[player.Sector].Valid {
-		sector := glob.SectorsList[player.Sector]
+	sector := glob.SectorsList[player.Sector]
+	if sector.Valid {
 		if sector.Rooms[player.Room].Valid {
 			room := sector.Rooms[player.Room]
 			roomName := room.Name
