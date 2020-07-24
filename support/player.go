@@ -242,15 +242,28 @@ func PlayerToRoom(player *glob.PlayerData, sectorID int, roomID int) {
 		delete(room.Players, player.Fingerprint)
 	}
 
-	if sectorID != 0 && roomID != 0 {
-		//Add player to room, add error handling
-		glob.SectorsList[sectorID].Rooms[roomID].Players[player.Fingerprint] = player
+	//Add player to room, add error handling
+	//Automatically generate "players" map if it doesn't exist
+	if glob.SectorsList[sectorID].Valid &&
+		glob.SectorsList[sectorID].Rooms != nil {
+
 		room := glob.SectorsList[sectorID].Rooms[roomID]
+		if room.Players == nil {
+			room.Players = make(map[string]*glob.PlayerData)
+		}
+		room.Players[player.Name] = player
+
+		glob.SectorsList[sectorID].Rooms[roomID] = room
+
 		player.RoomLink = &room
 		player.Sector = sectorID
 		player.Room = roomID
-	}
 
+	} else {
+		log.Println("PlayerToRoom: That sector or room is not valid.")
+		log.Println(fmt.Sprintf("Sector: %v, Room: %v, Player: %v", sectorID, roomID, player.Name))
+
+	}
 }
 
 func RemovePlayerWorld(player *glob.PlayerData) {
