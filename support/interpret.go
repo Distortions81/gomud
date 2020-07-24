@@ -69,7 +69,7 @@ func PlayerCommand(player *glob.PlayerData, command string, args string) {
 	}
 }
 
-func interpretInput(con *glob.ConnectionData, input string) {
+func interpretInput(con *glob.ConnectionData, inputOrig string) {
 
 	if con == nil && !con.Valid {
 		return
@@ -80,7 +80,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 	/*********************/
 	overflow := false
 
-	input = strings.TrimSpace(input)
+	input := strings.TrimSpace(inputOrig)
 	input = StripControl(input)
 	input, overflow = TruncateString(input, def.MAX_INPUT_LENGTH)
 	inputLen := len(input)
@@ -129,6 +129,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 	if alphaCharLen <= 0 {
 		return
 	}
+
 	/*Inital connection*/
 	if con.State == def.CON_STATE_WELCOME {
 		if command == "new" {
@@ -154,15 +155,8 @@ func interpretInput(con *glob.ConnectionData, input string) {
 					WriteToDesc(con, "Password:")
 				}
 			} else {
-				if con != nil && con.Valid {
-					buf := fmt.Sprintf("Illegal characters or length: login attempt by %v", con.Address)
-					log.Println(buf)
-					con.State = def.CON_STATE_DISCONNECTING
-				} else {
-					buf := fmt.Sprintf("Illegal characters or length: login attempt by unknown.")
-					log.Println(buf)
-					con.State = def.CON_STATE_DISCONNECTING
-				}
+				WriteToDesc(con, "...That isn't a valid name, try again.")
+				WriteToDesc(con, "Name:")
 			}
 		}
 		/* Player's password */
