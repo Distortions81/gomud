@@ -241,8 +241,8 @@ func PlayerToRoom(player *glob.PlayerData, sectorID int, roomID int) {
 		return
 	}
 	//Remove player from room, if they are in one
-	if player.RoomLink != nil {
-		room := player.RoomLink
+	if player.Location.RoomLink != nil {
+		room := player.Location.RoomLink
 		delete(room.Players, player.Fingerprint)
 	}
 
@@ -259,7 +259,7 @@ func PlayerToRoom(player *glob.PlayerData, sectorID int, roomID int) {
 
 		glob.SectorsList[sectorID].Rooms[roomID] = room
 
-		player.RoomLink = &room
+		player.Location.RoomLink = &room
 		player.Location.Sector = sectorID
 		player.Location.ID = roomID
 
