@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"log"
 	"math/rand"
@@ -12,9 +13,57 @@ import (
 	"./support"
 )
 
+func setupSSL() {
+	//openssl ecparam -genkey -name prime256v1 -out server.key
+	//openssl req -new -x509 -key server.key -out server.pem -days 3650
+	cert, err := tls.LoadX509KeyPair(def.DATA_DIR+def.SSL_PEM, def.DATA_DIR+def.SSL_KEY)
+	if err != nil {
+		log.Fatal("Error loading certificate. ", err)
+	}
+
+	tlsCfg := &tls.Config{Certificates: []tls.Certificate{cert}}
+
+	/*Open Listener*/
+	listener, err := tls.Listen("tcp4", def.DEFAULT_PORT_SSL, tlsCfg)
+	glob.ServerListenerSSL = listener
+	support.CheckError("setupSSL: tls.listen", err, def.ERROR_FATAL)
+
+	/*Print Connection*/
+	buf := fmt.Sprintf("SSL Server online at: %s", def.DEFAULT_PORT_SSL)
+	log.Println(buf)
+
+	go listenSSL()
+}
+
+func listenSSL() {
+
+	for {
+		conn, err := glob.ServerListenerSSL.Accept()
+		if err != nil {
+			support.CheckError("listenSSL Accept():", err, def.ERROR_NONFATAL)
+			conn.Close()
+		} else {
+			buf := fmt.Sprintf("New connection from %s.", conn.LocalAddr().String())
+			log.Println(buf)
+
+			//TODO Add full greeting/info
+			/*Respond here, so we don't have to wait for lock*/
+			_, err = conn.Write([]byte(
+				"You have connected to GOMud: " + def.VERSION + ", port " + def.DEFAULT_PORT_SSL + " (With SSL!)\r\n" +
+					"To create a new character, type: NEW\r\n\r\nName: \r\n"))
+			support.CheckError("main: desc.Write", err, def.ERROR_NONFATAL)
+
+			go support.NewDescriptor(conn, true)
+		}
+	}
+
+	glob.ServerListenerSSL.Close()
+}
+
 func main() {
 
 	support.MakeQuickHelp()
+	setupSSL()
 
 	defaultSector := glob.SectorData{
 		Area: "Default",
@@ -37,12 +86,12 @@ func main() {
 	glob.SectorsList[1].Rooms[1] = defaultRoom
 
 	/*Find Network*/
-	addr, err := net.ResolveTCPAddr("tcp", def.DEFAULT_PORT)
+	addr, err := net.ResolveTCPAddr("tcp4", def.DEFAULT_PORT)
 	support.CheckError("main: resolveTCP", err, def.ERROR_FATAL)
 
 	/*Open Listener*/
-	ServerListener, err := net.ListenTCP("tcp", addr)
-	glob.ServerListener = ServerListener
+	listener, err := net.ListenTCP("tcp4", addr)
+	glob.ServerListener = listener
 	support.CheckError("main: ListenTCP", err, def.ERROR_FATAL)
 
 	/*Print Connection*/
@@ -51,7 +100,7 @@ func main() {
 
 	/*Listen for connections*/
 	mainLoop()
-	ServerListener.Close()
+	listener.Close()
 }
 
 func NewRound() (wait <-chan struct{}) {
@@ -110,28 +159,21 @@ func mainLoop() {
 		startTime := time.Now()
 
 		/*Check for new connections*/
-		desc, err := glob.ServerListener.AcceptTCP()
+		desc, err := glob.ServerListener.Accept()
 
 		if err == nil {
 			buf := fmt.Sprintf("New connection from %s.", desc.LocalAddr().String())
 			log.Println(buf)
 
-			/*Change connections settings*/
-			err := desc.SetLinger(-1)
-			support.CheckError("main: SetLinger", err, def.ERROR_NONFATAL)
-			err = desc.SetNoDelay(true)
-			support.CheckError("main: SetNoDelay", err, def.ERROR_NONFATAL)
-			err = desc.SetReadBuffer(10000) //10k, 10 seconds of insanely-fast typing
-			support.CheckError("main: SetReadBuffer", err, def.ERROR_NONFATAL)
-			err = desc.SetWriteBuffer(12500000) //12.5MB, 10 second buffer at 10mbit
-			support.CheckError("main: SetWriteBuffer", err, def.ERROR_NONFATAL)
-
 			//TODO Add full greeting/info
 			/*Respond here, so we don't have to wait for lock*/
-			_, err = desc.Write([]byte("GoMud: " + def.VERSION + "\r\nTo create a new character, type: NEW\r\n\r\nName: \r\n"))
+			_, err = desc.Write([]byte(
+				"You have connected to GOMud: " + def.VERSION + ", port " + def.DEFAULT_PORT + " (insecure telnet)\r\n" +
+					"If your client supports it, please use port " + def.DEFAULT_PORT_SSL + ", for AES-256 encryption!\r\n" +
+					"To create a new character, type: NEW\r\n\r\nName: \r\n"))
 			support.CheckError("main: desc.Write", err, def.ERROR_NONFATAL)
 
-			go support.NewDescriptor(desc)
+			go support.NewDescriptor(desc, false)
 			/* netconn/netconn.go */
 		}
 
