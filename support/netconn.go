@@ -23,7 +23,7 @@ func autoResolveAddress(con *glob.ConnectionData) {
 	con.Address = addr
 }
 
-func NewDescriptor(desc *net.TCPConn) {
+func NewDescriptor(desc net.Conn, ssl bool) {
 
 	if desc == nil {
 		return
@@ -35,22 +35,24 @@ func NewDescriptor(desc *net.TCPConn) {
 	/*--- LOCK ---*/
 
 	for x := 1; x <= glob.ConnectionListEnd; x++ {
-		var con *glob.ConnectionData
-		con = &glob.ConnectionList[x]
 
-		if con.Valid == true {
+		if glob.ConnectionList[x].Valid == true {
 			continue
 		} else {
-			con.Name = def.STRING_UNKNOWN
-			con.Desc = desc
-			con.State = def.CON_STATE_WELCOME
-			con.ConnectedFor = time.Now()
-			con.IdleTime = time.Now()
-			con.BytesOut = 0
-			con.BytesIn = 0
-			con.Player = nil
-			con.Valid = true
-			autoResolveAddress(con)
+			newConnection := glob.ConnectionData{
+				Name:         def.STRING_UNKNOWN,
+				Desc:         desc,
+				Address:      "",
+				SSL:          ssl,
+				State:        def.CON_STATE_WELCOME,
+				ConnectedFor: time.Now(),
+				IdleTime:     time.Now(),
+				BytesOut:     0,
+				BytesIn:      0,
+				Player:       nil,
+				Valid:        true}
+			glob.ConnectionList[x] = newConnection
+			autoResolveAddress(&newConnection)
 
 			buf := fmt.Sprintf("Recycling connection #%d.", x)
 			log.Println(buf)
@@ -74,6 +76,7 @@ func NewDescriptor(desc *net.TCPConn) {
 		Name:         def.STRING_UNKNOWN,
 		Desc:         desc,
 		Address:      "",
+		SSL:          ssl,
 		State:        def.CON_STATE_WELCOME,
 		ConnectedFor: time.Now(),
 		IdleTime:     time.Now(),
