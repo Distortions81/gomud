@@ -296,8 +296,8 @@ func WriteToRoom(player *glob.PlayerData, text string) {
 		return
 	}
 
-	if player.RoomLink != nil {
-		for _, target := range player.RoomLink.Players {
+	if player.Location.RoomLink != nil {
+		for _, target := range player.Location.RoomLink.Players {
 			if target != nil && target != player {
 				WriteToPlayer(target, "[Room] "+text)
 			}
