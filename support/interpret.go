@@ -69,7 +69,7 @@ func PlayerCommand(player *glob.PlayerData, command string, args string) {
 	}
 }
 
-func interpretInput(con *glob.ConnectionData, inputOrig string) {
+func interpretInput(con *glob.ConnectionData, input string) {
 
 	if con == nil && !con.Valid {
 		return
@@ -80,7 +80,7 @@ func interpretInput(con *glob.ConnectionData, inputOrig string) {
 	/*********************/
 	overflow := false
 
-	input := strings.TrimSpace(inputOrig)
+	input = strings.TrimSpace(input)
 	input = StripControl(input)
 	input, overflow = TruncateString(input, def.MAX_INPUT_LENGTH)
 	inputLen := len(input)
