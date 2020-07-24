@@ -30,3 +30,8 @@ ANSI color
 make a connect list, track number of connections
 max connections/minute per ip, autoban
 ip/dns banning
+
+with timestamps
+logfile
+chat log
+input log --skip password
