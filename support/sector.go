@@ -13,13 +13,18 @@ import (
 )
 
 func ReadSectorList() {
+
 	files, err := ioutil.ReadDir(def.DATA_DIR + def.SECTOR_DIR)
 	if err != nil {
 		CheckError("ReadSectorList:", err, def.ERROR_NONFATAL)
 	}
 
 	for _, file := range files {
-		ReadSector(file.Name())
+		sector := ReadSector(file.Name())
+		if glob.SectorsList[sector.ID].Valid {
+			buf := fmt.Sprint("%v has same sector ID as %v! Skipping!", sector.Name, glob.SectorsList[sector.ID].Name)
+			log.Println(buf)
+		}
 	}
 }
 
@@ -82,8 +87,17 @@ func ReadSector(name string) *glob.SectorData {
 			err := json.Unmarshal([]byte(file), &sector)
 			if err != nil {
 				CheckError("ReadSector: Unmashal", err, def.ERROR_NONFATAL)
+				return nil
 			}
 
+			prefix := ""
+			if sector.Fingerprint == "" {
+				if sector.Name != "" {
+					prefix = sector.Name + "-"
+				}
+				log.Println(sector.Name + " assigned fingerprint.")
+				sector.Fingerprint = MakeFingerprint(prefix)
+			}
 			log.Println("Sector loaded: " + sector.Name)
 			return sector
 		} else {
