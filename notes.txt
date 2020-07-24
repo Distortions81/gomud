@@ -1,5 +1,8 @@
 Dream list
 CONSTs need number-to-name lookup map?
+Better use of locks, automated with functions,
+similar to chatwire. Tester per-character or per-descriptor locks
+
 
 world->areas->sectors aka 1.1.10
 aka north link 5-10
