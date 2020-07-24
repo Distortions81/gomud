@@ -126,6 +126,9 @@ func interpretInput(con *glob.ConnectionData, input string) {
 	alphaChar := AlphaOnly(input)
 	alphaCharLen := len(alphaChar)
 
+	if alphaCharLen <= 0 {
+		return
+	}
 	/*Inital connection*/
 	if con.State == def.CON_STATE_WELCOME {
 		if command == "new" {
@@ -158,6 +161,7 @@ func interpretInput(con *glob.ConnectionData, input string) {
 				} else {
 					buf := fmt.Sprintf("Illegal characters or length: login attempt by unknown.")
 					log.Println(buf)
+					con.State = def.CON_STATE_DISCONNECTING
 				}
 			}
 		}
