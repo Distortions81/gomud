@@ -1,4 +1,5 @@
 Dream list
+CONSTs need number-to-name lookup map?
 
 world->areas->sectors aka 1.1.10
 aka north link 5-10
@@ -50,6 +51,14 @@ olc object
 olc trigger
 olc mobile
 olc quest
+
+sub edits:
+name
+description
+exit(rooms)
+trigger(rooms)
+flags
+type(trigger/object)
 
 List commands should also allow search results
 olc list areas (rename area in all matching sectors)

@@ -103,7 +103,7 @@ type PlayerData struct {
 	Location   LocationData
 	RoomLink   *RoomData `json:"-"`
 
-	OLCEdit *OLCEdit
+	OLCEdit OLCEdit `json:",omitempty"`
 
 	Created      time.Time
 	LastSeen     time.Time
@@ -123,8 +123,10 @@ type PlayerData struct {
 }
 
 type OLCEdit struct {
-	Active bool
-	Mode   int
+	Active   bool
+	Mode     int
+	EditDesc bool
+	AutoDig  bool
 
 	/*Current selection & past selections*/
 	Sector int
