@@ -37,7 +37,7 @@ func setupSSL() {
 
 func listenSSL() {
 
-	for {
+	for glob.ServerState == def.SERVER_RUNNING {
 		conn, err := glob.ServerListenerSSL.Accept()
 		if err != nil {
 			support.CheckError("listenSSL Accept():", err, def.ERROR_NONFATAL)
@@ -63,27 +63,35 @@ func listenSSL() {
 func main() {
 
 	support.MakeQuickHelp()
+	support.ReadSectorList()
 	setupSSL()
 
-	defaultSector := glob.SectorData{
-		Area: "Default",
+	//Disabled, for creating inital sector and room
+	if 1 == 2 {
+		defaultSector := glob.SectorData{
 
-		Name:        "Default",
-		Description: "Default sector",
-		Valid:       true,
+			ID:          1,
+			Fingerprint: support.MakeFingerprint("Default-"),
+			Area:        "Default",
+			Name:        "Default",
+			Description: "Default sector",
+			Valid:       true,
+		}
+
+		defaultRoom := glob.RoomData{
+			Name:        "Default room",
+			Description: "This is the default room.",
+			Valid:       true,
+		}
+
+		defaultRoom.Players = make(map[string]*glob.PlayerData)
+		defaultSector.Rooms = make(map[int]glob.RoomData)
+
+		glob.SectorsList[1] = defaultSector
+		glob.SectorsList[1].Rooms[1] = defaultRoom
+
+		glob.SectorsListEnd++
 	}
-
-	defaultRoom := glob.RoomData{
-		Name:        "Default room",
-		Description: "This is the default room.",
-		Valid:       true,
-	}
-
-	defaultRoom.Players = make(map[string]*glob.PlayerData)
-	defaultSector.Rooms = make(map[int]glob.RoomData)
-
-	glob.SectorsList[1] = defaultSector
-	glob.SectorsList[1].Rooms[1] = defaultRoom
 
 	/*Find Network*/
 	addr, err := net.ResolveTCPAddr("tcp4", def.DEFAULT_PORT)
