@@ -145,7 +145,7 @@ func mainLoop() {
 
 				if player != nil &&
 					player.Valid &&
-					player.RoomLink != nil {
+					player.Location.RoomLink != nil {
 
 					if player.UnlinkedTime.IsZero() == false && time.Since(player.UnlinkedTime) > (2*time.Minute) {
 						player.UnlinkedTime = time.Time{}
