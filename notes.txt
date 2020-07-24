@@ -36,3 +36,4 @@ logfile
 chat log
 input log --skip password
 
+Check/Handle Character deallocation

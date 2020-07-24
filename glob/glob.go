@@ -28,10 +28,9 @@ var SectorsList [def.MAX_SECTORS]SectorData
 var QuickHelp string
 
 type DirectionData struct {
-	Name         string
-	ToRoom       *RoomData `json:"-"`
-	ToRoomID     int       `json:",omitempty"`
-	ToRoomSector int       `json:",omitempty"`
+	Name     string
+	ToRoom   LocationData
+	RoomLink *RoomData
 
 	Closed bool `json:",omitempty"`
 	Hidden bool `json:",omitempty"`
@@ -43,14 +42,14 @@ type DirectionData struct {
 }
 
 type RoomData struct {
+	Location    LocationData
 	Name        string                 `json:",omitempty"`
 	Description string                 `json:",omitempty"`
 	Players     map[string]*PlayerData `json:"-"`
 
 	//Convert to map?
-	Exits map[string]DirectionData `json:",omitempty"`
-
-	Builders map[string]time.Time `json:",omitempty"`
+	Exits    map[string]DirectionData `json:",omitempty"`
+	Builders map[string]time.Time     `json:",omitempty"`
 
 	Valid bool
 }
@@ -101,9 +100,10 @@ type PlayerData struct {
 	PlayerType int
 	Level      int
 	State      int
-	Sector     int
-	Room       int
+	Location   LocationData
 	RoomLink   *RoomData `json:"-"`
+
+	OLCEdit *OLCEdit
 
 	Created      time.Time
 	LastSeen     time.Time
@@ -120,4 +120,27 @@ type PlayerData struct {
 
 	Connection *ConnectionData `json:"-"`
 	Valid      bool
+}
+
+type OLCEdit struct {
+	Active bool
+	Mode   int
+
+	/*Current selection & past selections*/
+	Sector int
+
+	Room    LocationData
+	Object  LocationData
+	Trigger LocationData
+	Mobile  LocationData
+	Quest   LocationData
+
+	Description string
+
+	Exit string
+}
+
+type LocationData struct {
+	Sector int
+	ID     int
 }

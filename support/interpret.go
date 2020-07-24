@@ -27,6 +27,8 @@ var CommandList = []Command{
 		Help: "See bandwidth usage"},
 	{Name: "asave", Cmd: CmdAsave, Admin: FOR_ADMIN,
 		Help: "Save game areas"},
+	{Name: "olc", Cmd: CmdOlc, Admin: FOR_ADMIN,
+		Help: "Edit sectors and rooms"},
 
 	{Name: "help", Cmd: CmdHelp, Admin: FOR_USER,
 		Help: "You are here"},
@@ -414,10 +416,10 @@ func CmdAsave(player *glob.PlayerData, args string) {
 func CmdLook(player *glob.PlayerData, args string) {
 
 	err := true
-	sector := glob.SectorsList[player.Sector]
+	sector := glob.SectorsList[player.Location.Sector]
 	if sector.Valid {
-		if sector.Rooms[player.Room].Valid {
-			room := sector.Rooms[player.Room]
+		if sector.Rooms[player.Location.ID].Valid {
+			room := sector.Rooms[player.Location.ID]
 			roomName := room.Name
 			roomDesc := room.Description
 			buf := fmt.Sprintf("%s:\r\n%s", roomName, roomDesc)
@@ -446,5 +448,9 @@ func CmdLook(player *glob.PlayerData, args string) {
 	if err {
 		WriteToPlayer(player, "You are floating in the VOID...")
 	}
+
+}
+
+func CmdOlc(player *glob.PlayerData, args string) {
 
 }

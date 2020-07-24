@@ -29,6 +29,7 @@ func ReadSectorList() {
 					log.Println(buf)
 				} else {
 					glob.SectorsList[sector.ID] = *sector
+					glob.SectorsListEnd++
 				}
 			} else {
 				log.Println("Invalid sector file: " + file.Name())

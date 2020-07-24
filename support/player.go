@@ -18,21 +18,22 @@ func SetupNewCharacter(player *glob.PlayerData) {
 	if player == nil && !player.Valid {
 		return
 	}
-	player.Sector = def.PLAYER_START_SECTOR
-	player.Room = def.PLAYER_START_ROOM
+	player.Location.Sector = def.PLAYER_START_SECTOR
+	player.Location.ID = def.PLAYER_START_ROOM
 	player.Fingerprint = MakeFingerprint(player.Name)
 	WriteToAll("A newcomer has arrived, their name is " + player.Name + "...")
 }
 
 func CreatePlayer() *glob.PlayerData {
+	loc := glob.LocationData{Sector: def.PLAYER_START_SECTOR, ID: def.PLAYER_START_ROOM}
+
 	player := glob.PlayerData{
 		Name:        def.STRING_UNKNOWN,
 		Password:    "",
 		PlayerType:  def.PLAYER_TYPE_NEW,
 		Level:       0,
 		State:       def.PLAYER_ALIVE,
-		Sector:      0,
-		Room:        0,
+		Location:    loc,
 		Created:     time.Now(),
 		LastSeen:    time.Now(),
 		TimePlayed:  0,
@@ -56,14 +57,14 @@ func CreatePlayer() *glob.PlayerData {
 }
 
 func CreatePlayerFromDesc(conn *glob.ConnectionData) *glob.PlayerData {
+	loc := glob.LocationData{Sector: def.PLAYER_START_SECTOR, ID: def.PLAYER_START_ROOM}
 	player := glob.PlayerData{
 		Name:        conn.Name,
 		Password:    "",
 		PlayerType:  def.PLAYER_TYPE_NEW,
 		Level:       0,
 		State:       def.PLAYER_ALIVE,
-		Sector:      0,
-		Room:        0,
+		Location:    loc,
 		Created:     time.Now(),
 		LastSeen:    time.Now(),
 		TimePlayed:  0,
@@ -142,6 +143,8 @@ func WritePlayer(player *glob.PlayerData) bool {
 	player.Version = def.PFILE_VERSION
 	fileName := def.DATA_DIR + def.PLAYER_DIR + strings.ToLower(player.Name)
 
+	player.LastSeen = time.Now()
+
 	if player == nil && !player.Valid {
 		return false
 	}
@@ -196,7 +199,7 @@ func LinkPlayerConnection(player *glob.PlayerData, con *glob.ConnectionData) {
 			/* MOTD message here */
 			WriteToPlayer(player, "\r\n")
 
-			PlayerToRoom(player, player.Sector, player.Room)
+			PlayerToRoom(player, player.Location.Sector, player.Location.ID)
 			buf := fmt.Sprintf("%s reconnects to their body.", player.Name)
 			WriteToRoom(player, buf)
 			WriteToPlayer(player, "You reconnect to your body.")
@@ -223,7 +226,7 @@ func LinkPlayerConnection(player *glob.PlayerData, con *glob.ConnectionData) {
 	/* MOTD message here */
 	WriteToPlayer(player, "\r\n")
 
-	PlayerToRoom(player, player.Sector, player.Room)
+	PlayerToRoom(player, player.Location.Sector, player.Location.ID)
 
 	buf := fmt.Sprintf("%s suddenly appears.", player.Name)
 	WriteToRoom(player, buf)
@@ -257,8 +260,8 @@ func PlayerToRoom(player *glob.PlayerData, sectorID int, roomID int) {
 		glob.SectorsList[sectorID].Rooms[roomID] = room
 
 		player.RoomLink = &room
-		player.Sector = sectorID
-		player.Room = roomID
+		player.Location.Sector = sectorID
+		player.Location.ID = roomID
 
 	} else {
 		log.Println("PlayerToRoom: That sector or room is not valid.")
