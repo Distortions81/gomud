@@ -180,7 +180,9 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		}
 	} else if con.State == def.CON_STATE_RECONNECT_CONFIRM {
 		if command == "y" || command == "yes" {
-			WriteToDesc(con, "Incoming login attempt for your character!")
+			if con.TempPlayer != nil {
+				WriteToPlayer(con.TempPlayer, "Incoming login attempt for your character!")
+			}
 			WriteToDesc(con, "Password:")
 			con.Name = con.TempPlayer.Name
 			con.State = def.CON_STATE_PASSWORD
