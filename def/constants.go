@@ -2,6 +2,10 @@ package def
 
 const VERSION = "v0.0.7 7-23-2020-224"
 const DEFAULT_PORT = ":7777"
+const DEFAULT_PORT_SSL = ":7778"
+
+const SSL_PEM = "server.pem"
+const SSL_KEY = "server.key"
 
 const MAX_SECTORS = 10000
 const MAX_USERS = 10000
