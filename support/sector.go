@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"../def"
 	"../glob"
@@ -20,16 +21,34 @@ func ReadSectorList() {
 	}
 
 	for _, file := range files {
-		sector := ReadSector(file.Name())
-		if glob.SectorsList[sector.ID].Valid {
-			buf := fmt.Sprint("%v has same sector ID as %v! Skipping!", sector.Name, glob.SectorsList[sector.ID].Name)
-			log.Println(buf)
+		if strings.HasSuffix(file.Name(), def.FILE_SUFFIX) {
+			sector := ReadSector(file.Name())
+			if sector != nil {
+				if glob.SectorsList[sector.ID].Valid {
+					buf := fmt.Sprintf("%v has same sector ID as %v! Skipping!", sector.Name, glob.SectorsList[sector.ID].Name)
+					log.Println(buf)
+				} else {
+					glob.SectorsList[sector.ID] = *sector
+				}
+			} else {
+				log.Println("Invalid sector file: " + file.Name())
+			}
 		}
 	}
 }
 
 func ReloadSector() {
 
+	//reload sector, handle future load handles, fix player pointers
+}
+
+func WriteSectorList() {
+	for x := 1; x <= glob.SectorsListEnd; x++ {
+		if glob.SectorsList[x].Valid {
+			glob.SectorsList[x].ID = x
+			WriteSector(&glob.SectorsList[x])
+		}
+	}
 }
 
 func WriteSector(sector *glob.SectorData) bool {
@@ -90,6 +109,15 @@ func ReadSector(name string) *glob.SectorData {
 				return nil
 			}
 
+			if sector.Rooms == nil {
+				sector.Rooms = make(map[int]glob.RoomData)
+			}
+			for key, _ := range sector.Rooms {
+				p := make(map[string]*glob.PlayerData)
+				room := sector.Rooms[key]
+				room.Players = p
+			}
+
 			prefix := ""
 			if sector.Fingerprint == "" {
 				if sector.Name != "" {
@@ -109,6 +137,23 @@ func ReadSector(name string) *glob.SectorData {
 }
 
 func CreateSector() *glob.SectorData {
+	sector := glob.SectorData{
+		Fingerprint: "",
+		Name:        "",
+		Area:        "",
+		Description: "",
+		Rooms:       nil,
 
-	return nil
+		Valid: true,
+	}
+
+	if sector.Rooms == nil {
+		sector.Rooms = make(map[int]glob.RoomData)
+	}
+
+	for _, value := range sector.Rooms {
+		value.Players = make(map[string]*glob.PlayerData)
+	}
+
+	return &sector
 }
