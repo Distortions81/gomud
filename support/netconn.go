@@ -12,12 +12,12 @@ import (
 	"../glob"
 )
 
-func autoResolveAddress(con *glob.ConnectionData) {
+func AutoResolveAddress(con *glob.ConnectionData) {
 
 	addr := con.Desc.RemoteAddr().String()
 	addrp := strings.Split(addr, ":")
 	addrLen := len(addrp)
-	if addrLen > 0 && addrLen < 3 {
+	if addrLen > 0 {
 		addr = addrp[0]
 	}
 	con.Address = addr
@@ -52,7 +52,7 @@ func NewDescriptor(desc net.Conn, ssl bool) {
 				Player:       nil,
 				Valid:        true}
 			glob.ConnectionList[x] = newConnection
-			autoResolveAddress(&newConnection)
+			AutoResolveAddress(&newConnection)
 
 			buf := fmt.Sprintf("Recycling connection #%d.", x)
 			log.Println(buf)
@@ -84,7 +84,7 @@ func NewDescriptor(desc net.Conn, ssl bool) {
 		BytesIn:      0,
 		Player:       nil,
 		Valid:        true}
-	autoResolveAddress(&newConnection)
+	AutoResolveAddress(&newConnection)
 	glob.ConnectionList[glob.ConnectionListEnd] = newConnection
 	buf := fmt.Sprintf("Created new connection #%d.", glob.ConnectionListEnd)
 	log.Println(buf)
@@ -144,7 +144,6 @@ func HandleReadConnection(con *glob.ConnectionData, input string) {
 		WriteToDesc(con, "\r\n\r\n *** Goodbye! ***")
 
 		con.State = def.CON_STATE_DISCONNECTED
-		con.Valid = false
 
 		/*Invalidate player's connection*/
 		if con.Player != nil && con.Player.Valid &&
@@ -153,6 +152,9 @@ func HandleReadConnection(con *glob.ConnectionData, input string) {
 		}
 
 		con.Desc.Close()
+		con.State = def.CON_STATE_DISCONNECTED
+		con.Player = nil
+		con.Valid = false
 	}
 
 	/*--- UNLOCK ---*/
@@ -191,6 +193,8 @@ func DescWriteError(c *glob.ConnectionData, err error) {
 				if c.Player != nil && c.Player.Valid {
 					buf := fmt.Sprintf("%s lost their network connection.", c.Player.Name)
 					c.Player.UnlinkedTime = time.Now()
+					c.Player.Connection.Valid = false
+
 					WriteToRoom(c.Player, buf)
 				}
 			} else {
@@ -199,8 +203,9 @@ func DescWriteError(c *glob.ConnectionData, err error) {
 			}
 
 			c.State = def.CON_STATE_DISCONNECTED
-			c.Valid = false
 			c.Desc.Close()
+			c.Valid = false
+			c.Player = nil
 		}
 	}
 }

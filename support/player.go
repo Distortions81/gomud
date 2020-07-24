@@ -191,6 +191,7 @@ func LinkPlayerConnection(player *glob.PlayerData, con *glob.ConnectionData) {
 			/*Re-activate old body*/
 			player.UnlinkedTime = time.Time{}
 			player.Valid = true
+			player.Connection.Valid = true
 
 			/* MOTD message here */
 			WriteToPlayer(player, "\r\n")
@@ -272,6 +273,7 @@ func RemovePlayerWorld(player *glob.PlayerData) {
 	}
 	PlayerToRoom(player, 0, 0)
 	player.Valid = false
+	player.Connection.Valid = false
 
 	buf := fmt.Sprintf("%v invalidated, end: %v", player.Name, glob.PlayerListEnd)
 	log.Println(buf)

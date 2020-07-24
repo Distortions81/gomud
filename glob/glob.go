@@ -86,9 +86,10 @@ type ConnectionData struct {
 	BytesOutRecorded int
 	BytesInRecorded  int
 
-	TempPass string      `json:"-"`
-	Player   *PlayerData `json:"-"`
-	Valid    bool
+	TempPass   string      `json:"-"`
+	TempPlayer *PlayerData `json:"-"`
+	Player     *PlayerData `json:"-"`
+	Valid      bool
 }
 
 type PlayerData struct {

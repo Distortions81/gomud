@@ -143,6 +143,25 @@ func interpretInput(con *glob.ConnectionData, input string) {
 				alphaCharLen < def.MAX_PLAYER_NAME_LENGTH &&
 				alphaChar != def.STRING_UNKNOWN {
 
+				for x := 0; x <= glob.PlayerListEnd; x++ {
+					target := glob.PlayerList[x]
+
+					if target != nil && target.Valid &&
+						target.Connection != nil &&
+						target.Connection.Valid &&
+						target.Connection.Desc != nil &&
+						target.Connection.State == def.CON_STATE_PLAYING {
+
+						if strings.EqualFold(target.Name, alphaChar) {
+							WriteToDesc(con, "That character is already online!")
+							WriteToDesc(con, "Login anyway? (y/n)")
+							con.TempPlayer = target
+							con.Name = alphaChar
+							con.State = def.CON_STATE_RECONNECT_CONFIRM
+							return
+						}
+					}
+				}
 				_, found := ReadPlayer(alphaChar, false)
 
 				if found == false {
@@ -159,6 +178,18 @@ func interpretInput(con *glob.ConnectionData, input string) {
 				WriteToDesc(con, "Name:")
 			}
 		}
+	} else if con.State == def.CON_STATE_RECONNECT_CONFIRM {
+		if command == "y" || command == "yes" {
+			WriteToDesc(con, "Incoming login attempt for your character!")
+			WriteToDesc(con, "Password:")
+			con.Name = con.TempPlayer.Name
+			con.State = def.CON_STATE_PASSWORD
+		} else {
+			con.Valid = false
+			con.State = def.CON_STATE_DISCONNECTED
+			con.Desc.Close()
+		}
+
 		/* Player's password */
 	} else if con.State == def.CON_STATE_PASSWORD {
 		player, _ := ReadPlayer(con.Name, true)
@@ -169,9 +200,21 @@ func interpretInput(con *glob.ConnectionData, input string) {
 		if err == nil {
 			con.State = def.CON_STATE_PLAYING
 
+			if con.TempPlayer != nil && con.TempPlayer.Connection.Valid {
+
+				WriteToDesc(con.TempPlayer.Connection, "You logged in from a different connection!")
+				con.TempPlayer.Connection.Desc.Close()
+				con.State = def.CON_STATE_DISCONNECTED
+				con.TempPlayer.Connection.Valid = false
+				con.TempPlayer.Valid = false
+				con.TempPlayer = nil
+				WriteToDesc(con, "Closing other connection to character...")
+			}
 			WriteToDesc(con, "Welcome back, "+player.Name+"!")
+
 			LinkPlayerConnection(player, con)
 		} else {
+
 			log.Println("Invalid password attempt: " + player.Name + " ip: " + con.Address)
 			WriteToDesc(con, "Invalid password.")
 			con.State = def.CON_STATE_DISCONNECTING
@@ -317,23 +360,25 @@ func CmdBytes(player *glob.PlayerData, args string) {
 
 	for x := 1; x <= glob.ConnectionListEnd; x++ {
 		con := &glob.ConnectionList[x]
-		target := con.Player
-		buf := ""
-		ssl := ""
+		if con.Valid {
+			target := con.Player
+			buf := ""
+			ssl := ""
 
-		if con.SSL {
-			ssl = "(SSL)"
-		}
-
-		if target != nil {
-			for key, value := range target.Connections {
-				buf = buf + fmt.Sprintf("%-5s%32v: %16v(%4v) %v/%v\r\n", ssl, target.Name, key, value, ScaleBytes(target.BytesIn[key]), ScaleBytes(target.BytesOut[key]))
+			if con.SSL {
+				ssl = "(SSL)"
 			}
-		} else if con != nil {
-			buf = buf + fmt.Sprintf("%-5s%32v: %16v(%4v) %v/%v\r\n", ssl, con.Name, "", "", ScaleBytes(con.BytesIn), ScaleBytes(con.BytesOut))
-		}
 
-		output = output + buf
+			if target != nil {
+				for key, value := range target.Connections {
+					buf = buf + fmt.Sprintf("%-5s%32v: %16v(%4v) %v/%v\r\n", ssl, target.Name, key, value, ScaleBytes(target.BytesIn[key]), ScaleBytes(target.BytesOut[key]))
+				}
+			} else if con != nil {
+				buf = buf + fmt.Sprintf("%-5s%32v: %16v(%4v) %v/%v\r\n", ssl, con.Name, "", "", ScaleBytes(con.BytesIn), ScaleBytes(con.BytesOut))
+			}
+
+			output = output + buf
+		}
 	}
 	WriteToPlayer(player, output)
 }

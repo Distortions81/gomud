@@ -35,3 +35,4 @@ with timestamps
 logfile
 chat log
 input log --skip password
+
