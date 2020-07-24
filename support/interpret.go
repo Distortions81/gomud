@@ -321,13 +321,18 @@ func CmdBytes(player *glob.PlayerData, args string) {
 		con := &glob.ConnectionList[x]
 		target := con.Player
 		buf := ""
+		ssl := ""
+
+		if con.SSL {
+			ssl = "(SSL)"
+		}
 
 		if target != nil {
 			for key, value := range target.Connections {
-				buf = buf + fmt.Sprintf("%32v: %16v(%4v) %v/%v\r\n", target.Name, key, value, ScaleBytes(target.BytesIn[key]), ScaleBytes(target.BytesOut[key]))
+				buf = buf + fmt.Sprintf("%-5s%32v: %16v(%4v) %v/%v\r\n", ssl, target.Name, key, value, ScaleBytes(target.BytesIn[key]), ScaleBytes(target.BytesOut[key]))
 			}
 		} else if con != nil {
-			buf = buf + fmt.Sprintf("%32v: %16v(%4v) %v/%v\r\n", con.Name, "", "", ScaleBytes(con.BytesIn), ScaleBytes(con.BytesOut))
+			buf = buf + fmt.Sprintf("%-5s%32v: %16v(%4v) %v/%v\r\n", ssl, con.Name, "", "", ScaleBytes(con.BytesIn), ScaleBytes(con.BytesOut))
 		}
 
 		output = output + buf
