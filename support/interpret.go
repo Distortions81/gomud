@@ -27,7 +27,7 @@ var CommandList = []Command{
 		Help: "See bandwidth usage"},
 	{Name: "asave", Cmd: CmdAsave, Admin: FOR_ADMIN,
 		Help: "Save game areas"},
-	{Name: "olc", Cmd: CmdOlc, Admin: FOR_ADMIN,
+	{Name: "olc", Cmd: CmdOLC, Admin: FOR_ADMIN,
 		Help: "Edit sectors and rooms"},
 
 	{Name: "help", Cmd: CmdHelp, Admin: FOR_USER,
@@ -76,6 +76,11 @@ func interpretInput(con *glob.ConnectionData, input string) {
 	if con == nil && !con.Valid {
 		return
 	}
+
+	//Newline at end of command output.
+	defer WriteToDesc(con, "")
+
+	//TODO non-playing and playing prompts
 
 	/*********************/
 	/*Clean up user input*/
@@ -427,10 +432,10 @@ func CmdLook(player *glob.PlayerData, args string) {
 			err = false
 		}
 
-		if player.RoomLink != nil {
+		if player.Location.RoomLink != nil {
 			names := ""
 			unlinked := ""
-			for _, target := range player.RoomLink.Players {
+			for _, target := range player.Location.RoomLink.Players {
 				if target != nil && target != player {
 					if target.Connection != nil && target.Connection.Valid == false {
 						unlinked = " (lost connection)"
