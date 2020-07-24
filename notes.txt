@@ -37,3 +37,45 @@ chat log
 input log --skip password
 
 Check/Handle Character deallocation
+
+
+olc editor layout
+
+olc <prompts for edit type>
+olc done <exits>
+
+olc sector
+olc room
+olc object
+olc trigger
+olc mobile
+olc quest
+
+List commands should also allow search results
+olc list areas (rename area in all matching sectors)
+olc list sectors
+olc list rooms
+olc list objects
+olc list mobiles
+olc list triggers <room/sector>
+olc list quests <room/sector/world>
+
+needs description editor, for multi-line descriptons. Code can be re-used for notes and helps.
+
+Could feasably bypass interp for ease of use, with do <command> to bypass. As well as add/delete line mode.
+
+
+inside editors: blank line or command refreshes editor view
+olc edit <field> (editor mode)
+olc edit <field> <argument>
+olc delete (prompts olc delete confirm, if set)
+
+Edit modes should show any related triggers, objects, mobiles, etc... Auto-space vnums by 100?
+move vnum command, fixes all links.
+
+
+Need to save edit-mode and selection into player,
+if we are in edit mode, any incomplete data.
+
+Selections would be sector/vnum
+and exit, trigger number,
