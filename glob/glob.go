@@ -67,8 +67,7 @@ type SectorData struct {
 
 	Rooms map[int]RoomData `json:",omitempty"`
 
-	Valid    bool
-	FileName string `json:"-"`
+	Valid bool
 }
 
 type ConnectionData struct {
