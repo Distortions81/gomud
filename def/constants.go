@@ -1,6 +1,6 @@
 package def
 
-const VERSION = "v0.0.7 7-23-2020-224"
+const VERSION = "v0.0.8 7-23-2020-836p"
 const DEFAULT_PORT = ":7777"
 const DEFAULT_PORT_SSL = ":7778"
 
