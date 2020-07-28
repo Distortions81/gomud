@@ -1,0 +1,137 @@
+login->server->character
+possibly make seperate program, that passes connections to servers (easier to handle copyover/crashes, and avoid reconnect/relog)
+
+races/classes/skills/spells/commands scripting language, lower barrier to entry.
+probably handle disconnected/deleted players/items/states at all times (via dedicated functions)
+
+online quest editor
+
+max connections/minute per ip, autoban
+ip/dns banning
+
+chat log
+input log --skip password
+
+-- OLC STUFF --
+olc editor layout
+
+olc <prompts for edit type>
+olc done <exits>
+
+olc sector
+olc room
+olc object
+olc trigger
+olc mobile
+olc quest
+
+sub edits:
+name
+description
+exit(rooms)
+trigger(rooms)
+flags
+type(trigger/object)
+
+List commands should also allow search results
+olc list areas (rename area in all matching sectors)
+olc list sectors
+olc list rooms
+olc list objects
+olc list mobiles
+olc list triggers <room/sector>
+olc list quests <room/sector/world>
+
+needs description editor, for multi-line descriptons. Code can be re-used for notes and helps.
+Could feasably bypass interp for ease of use, with do <command> to bypass. As well as add/delete line mode.
+also allow ;; or \n, some kind of delim for single-line
+
+inside editors: blank line or command refreshes editor view
+olc edit <field> (editor mode)
+olc edit <field> <argument>
+olc delete (prompts olc delete confirm, if set)
+
+Edit modes should show any related triggers, objects, mobiles, etc... Auto-space vnums by 100?
+move vnum command, fixes all links.
+
+commands todo
+whois/finger
+look <player/obj/mobile/direction>
+olc, show color codes mode
+channels, reply
+config/settings, ansi, width,paging,lines,
+sit/stand/lie/sleep/rest
+open/close/lock/unlock
+multi-line editor, olc/note full-editor
+delete
+
+OLC ID quickcycle, quickdump (website)?
+Quickmap
+block "dig over" doors.
+
+largish ASCII emjoii
+
+olc/room exits
+wiz: player level set, kick/ban/slay
+
+pedit/oedit/medit
+clone obj/player/mobile/room/sector
+delete ...
+move ...
+link <dir> <s:id>
+teleport to
+teleport from
+bamf
+short flags
+room desc off on walk
+mccp/telnet
+pload, remove player/kick, silence, blind, deaf, jail
+
+
+<-- 
+map
+look up doc/doa/tct commands?
+afk, idle
+helps
+email/discord 2fa/recovery
+
+ansi blink/extended color, etc.
+{{escape, skip non-used codes
+unicode chat
+web client
+
+
+sleep/rest, hibername (no hunger/thirst/heal)
+friends list, use fingerprint
+recovery question/answer
+require q/a to change password or delete, one-time set option.
+email recovery test?
+
+
+*********************
+large paper or photoshop, or program or generator
+draw whole process tree
+Plans locks and threads
+*********************
+
+compile idea list, and todo lists in one place
+move lists to lists.go, load/save?
+
+heh, wierd idea.
+for input or output... a find/replace filter players can make themselves.
+or censor words or phrases
+filter out add goodbye:au revoir
+filter out add {k:{K (brighten black text to dark gray)
+filter in add {2:{g convert old number-colors for letter colors
+filter out add shit:crap
+filter out add you are bleeding:{RYOU ARE BLEEDING!!!
+filter out add West:{BW{best
+
+modem sim w/ compression
+steal colorizers
+make list of things to take from old muds --> 
+
+input/out subsitution maps
+
+
+track fastest/average/slowest round time

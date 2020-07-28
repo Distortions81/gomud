@@ -1,0 +1,40 @@
+telnet negotate, CHARSET, MCCP, UNICDOE, SSL, etc.
+
+finish room olc/exits
+start olc object
+sector creator/editor
+dig vnum spacing options
+
+
+output at end of aliases / variables
+multi-line aliases (with max lines/chars)
+limit max number of aliases
+
+string subsistutuion system
+ansi on/off/show
+hide/noecho password login(telnet neg)
+
+escape {{ color code
+
+(save on kill complete)
+asave/psave on panic/kill, keep X files in archive
+write logs to log folder with date, buffered
+
+
+sort directions, NSEW-CUSTOM? color?
+player colorname
+
+old mud code/areas & docs to git
+
+
+make easy system for custom strings, map[fuction:strname:setname(languages, color, noncolor, version)]strings
+allow user submissions?
+strings.dat
+
+channels / yell
+notes (after edit mode, and newline support)
+
+one whitespace begining of each line config option
+
+
+MAKE DEFAULT SETTINGS LIST
