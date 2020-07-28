@@ -17,5 +17,8 @@ func ConfigSettings(player *glob.PlayerData, input string) {
 		{Name: "PreNewline", Help: "Place a bank line before commands", Ref: player.Settings.PreNewline},
 		{Name: "PostNewline", Help: "Place a bank line after commands", Ref: player.Settings.PostNewline},
 	}
+	if PlayerSettings != nil {
+		//
+	}
 
 }
