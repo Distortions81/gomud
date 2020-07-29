@@ -53,10 +53,6 @@ func CmdRelog(player *glob.PlayerData, input string) {
 	return
 }
 
-func CmdSettings(player *glob.PlayerData, input string) {
-
-}
-
 func CmdRecall(player *glob.PlayerData, input string) {
 
 	if input == "set" {

@@ -64,4 +64,6 @@ var CommandList = []glob.Command{
 		Help: "Quit the game"},
 	{AS: false, Short: "", Name: "relogin", Cmd: CmdRelog, Type: def.PLAYER_TYPE_NEW,
 		Help: "Go back to login screen."},
+	{AS: true, Short: "", Name: "config", Cmd: CmdConfig, Type: def.PLAYER_TYPE_NEW,
+		Help: "Configure settings"},
 }

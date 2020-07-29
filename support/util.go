@@ -160,24 +160,29 @@ func FindClosestMatch(CommandList []string, command string) (string, int) {
 
 func boolToOnOff(toggle bool) string {
 	if toggle {
-		return "{GON{x"
+		return "{GON{x  "
 	} else {
-		return "{rOFF{x"
+		return "{rOFF{x "
 	}
 }
 
 func boolToYesNo(toggle bool) string {
 	if toggle {
-		return "{GYES{x"
+		return "{GYES{x "
 	} else {
-		return "{RNO{x"
+		return "{RNO{x  "
 	}
 }
 
 func boolToTrueFalse(toggle bool) string {
-	if toggle {
+	if toggle == true {
 		return "{YTRUE{x"
 	} else {
 		return "{RFALSE{x"
 	}
+}
+
+func NewBool(a bool) *bool {
+	b := a
+	return &b
 }

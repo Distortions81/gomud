@@ -21,6 +21,12 @@ func SetupNewCharacter(player *glob.PlayerData) {
 	}
 	player.Location.Sector = def.PLAYER_START_SECTOR
 	player.Location.ID = def.PLAYER_START_ROOM
+
+	/*Default config options*/
+	player.Config.Ansi = true
+	player.Config.PostNewline = true
+	player.Config.PreNewline = true
+
 	player.Fingerprint = MakeFingerprint(player.Name)
 	WriteToAll("A newcomer has arrived, their name is " + player.Name + "...")
 }

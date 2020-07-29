@@ -145,14 +145,14 @@ type PlayerData struct {
 	LastSeen     time.Time
 	TimePlayed   int
 	UnlinkedTime time.Time `json:"-"`
-	OLCEdit      OLCEdit   `json:"-"`
+	OLCEdit      OLCEdit
 
 	Aliases     map[string]string
 	Connections map[string]int
 	BytesIn     map[string]int
 	BytesOut    map[string]int
 
-	Settings    SettingsData   `json:",omitempty"`
+	Config      PConfigData    `json:",omitempty"`
 	OLCSettings OLCSettingData `json:",omitempty"`
 
 	Email string `json:",omitempty"`
@@ -161,7 +161,8 @@ type PlayerData struct {
 	Sex         string `json:",omitempty"`
 
 	Connection *ConnectionData `json:"-"`
-	Valid      bool
+	Banned     bool
+	Valid      bool `json:"-"`
 }
 
 type OLCEdit struct {
@@ -206,11 +207,25 @@ type pTypeData struct {
 	PName string
 }
 
-type CommandArgData struct {
+type ConfigData struct {
 	ID   int
 	Name string
 	Help string
-	Ref  bool
-	RefS string
-	RefI int
+	Ref  *bool
+	RefS *string
+	RefI *int
+}
+
+type PConfigData struct {
+	Ansi         bool
+	Brief        bool
+	PromptString string
+	PromptHide   bool
+	PromptDelete bool
+	Paging       int
+	Deafen       bool
+	Affects      int
+	WhoHide      int
+	PreNewline   bool
+	PostNewline  bool
 }

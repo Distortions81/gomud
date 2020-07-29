@@ -132,6 +132,8 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
+	glob.ConnectionListLock.Lock()
+	//glob.ServerState = def.SERVER_CLOSING
 	support.WriteToAll("Server killed!")
 
 	/*Save everything*/
@@ -148,6 +150,8 @@ func main() {
 	support.WriteToAll("All sectors saved!")
 	support.WriteToAll("")
 	support.WriteToAll(glob.AuRevoir)
+
+	glob.ConnectionListLock.Unlock()
 	time.Sleep(time.Second)
 }
 

@@ -11,25 +11,7 @@ import (
 
 func CmdOLC(player *glob.PlayerData, input string) {
 
-	inputLen := len(input)
-	command := ""
-	longArg := ""
-	argNum := 0
-	//If we have arguments
-	if inputLen > 0 {
-		args := strings.Split(input, " ")
-		argNum = len(args)
-
-		if argNum > 0 {
-			//Command name, tolower
-			command = strings.ToLower(args[0])
-
-			//all arguments after command
-			if argNum > 1 {
-				longArg = strings.Join(args[1:argNum], " ")
-			}
-		}
-	}
+	command, longArg := SplitArgsTwo(input, " ")
 
 	if command == "done" {
 		player.OLCEdit.Mode = def.OLC_NONE
@@ -49,15 +31,15 @@ func CmdOLC(player *glob.PlayerData, input string) {
 	} else {
 
 		if command == "settings" {
-			olcSettings := []glob.CommandArgData{
+			olcSettings := []glob.ConfigData{
 				{ID: 1, Name: "follow", Help: "If on: you are always editing the room you are standing in.",
-					Ref: player.OLCSettings.OlcRoomFollow},
+					Ref: &player.OLCSettings.OlcRoomFollow},
 				{ID: 2, Name: "showCodes", Help: "If on: Show color codes in names / descriptions / etc",
-					Ref: player.OLCSettings.OlcShowCodes},
+					Ref: &player.OLCSettings.OlcShowCodes},
 				//{ID: 3, Name: "showAllCodes", Help: "If on: Show color codes, instead of color for the whole mud.",
 				//Ref: player.OLCSettings.OlcShowAllCodes},
 				{ID: 4, Name: "prompt", Help: "If on: Change your prompt to OLC information while in editor.",
-					Ref: player.OLCSettings.OlcPrompt},
+					Ref: &player.OLCSettings.OlcPrompt},
 				//{ID: 5, Name: "promptString", Help: "Customize OLC prompt.",
 				//Ref: player.OLCSettings.OlcPromptString},
 			}
@@ -102,7 +84,7 @@ func CmdOLC(player *glob.PlayerData, input string) {
 
 			//Show settings avaialble
 			for _, cmd := range olcSettings {
-				WriteToPlayer(player, fmt.Sprintf("%10v:%5v --  %v", cmd.Name, boolToOnOff(cmd.Ref), cmd.Help))
+				WriteToPlayer(player, fmt.Sprintf("%10v:%5v --  %v", cmd.Name, boolToOnOff(*cmd.Ref), cmd.Help))
 			}
 			return
 		}
