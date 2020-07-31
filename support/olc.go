@@ -26,7 +26,9 @@ func CmdGoto(player *glob.PlayerData, input string) {
 		glob.SectorsList[sector].Rooms != nil &&
 		glob.SectorsList[sector].Rooms[id] != nil {
 		WriteToPlayer(player, fmt.Sprintf("Going to %v:%v...", sector, id))
+		WriteToRoom(player, fmt.Sprintf("%v vanishes in a puff of smoke.", player.Name))
 		PlayerToRoom(player, sector, id)
+		WriteToRoom(player, fmt.Sprintf("A puff of smoke appears, and %v emerges from it.", player.Name))
 		CmdLook(player, "")
 	} else {
 		WriteToPlayer(player, "That location doesn't exist.")
@@ -154,6 +156,13 @@ func CmdOLC(player *glob.PlayerData, input string) {
 			player.OLCEdit.Mode = def.OLC_QUEST
 		} else if command == "sector" {
 			player.OLCEdit.Mode = def.OLC_SECTOR
+			if command == "" {
+				sid := player.Location.Sector
+				sector := glob.SectorsList[sid]
+				player.OLCEdit.Sector = sid
+
+				buf := Sprintf("Name: %v, ID %v, Fingerprint: %v\r\nArea: %v, Room count: %v, Valid: %v")
+			}
 		}
 
 	}
