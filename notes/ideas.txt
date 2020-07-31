@@ -101,7 +101,7 @@ unicode chat
 web client
 
 
-sleep/rest, hibername (no hunger/thirst/heal)
+sleep/rest, hibernate (no hunger/thirst/heal)
 friends list, use fingerprint
 recovery question/answer
 require q/a to change password or delete, one-time set option.

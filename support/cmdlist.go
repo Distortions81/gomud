@@ -24,6 +24,8 @@ var CommandList = []glob.Command{
 		Help: "Edit sectors, rooms, objs, etc (WIP)"},
 	{Short: "", Name: "dig", Cmd: CmdDig, Type: def.PLAYER_TYPE_BUILDER,
 		Help: "Create a new room, to the <exit name>"},
+	{Short: "", Name: "goto", Cmd: CmdGoto, Type: def.PLAYER_TYPE_BUILDER,
+		Help: "Goto <sector:id>, or goto <id> of the current sector"},
 
 	/*shortcuts*/
 	{AS: true, Short: "n", Name: "north", Cmd: CmdNorth, Type: def.PLAYER_TYPE_NEW,

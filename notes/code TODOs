@@ -1,11 +1,10 @@
 //TODO real direction names and messages
 CmdRecall(player, "") //TODO directly recall, dont use command
-//Show shortcuts, and info on shortcuts and aliases
 //TODO non-playing and playing prompts
 
 	if alphaCharLen <= 0 {
 		//Telnet or garbage
 		//TODO telnet negotation
 		return
-	}//TODO REJECT IF EXIT USED ON OTHER SIDE
+	}
     

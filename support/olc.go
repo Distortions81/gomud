@@ -9,6 +9,30 @@ import (
 	"../glob"
 )
 
+func CmdGoto(player *glob.PlayerData, input string) {
+	a, b := SplitArgsTwo(input, ":")
+	sector := 0
+	id := 0
+
+	if b == "" {
+		sector = player.Location.Sector
+		id, _ = strconv.Atoi(a)
+	} else {
+		sector, _ = strconv.Atoi(a)
+		id, _ = strconv.Atoi(b)
+	}
+
+	if glob.SectorsList[sector].Valid &&
+		glob.SectorsList[sector].Rooms != nil &&
+		glob.SectorsList[sector].Rooms[id] != nil {
+		WriteToPlayer(player, fmt.Sprintf("Going to %v:%v...", sector, id))
+		PlayerToRoom(player, sector, id)
+		CmdLook(player, "")
+	} else {
+		WriteToPlayer(player, "That location doesn't exist.")
+	}
+}
+
 func CmdOLC(player *glob.PlayerData, input string) {
 
 	command, longArg := SplitArgsTwo(input, " ")
@@ -181,19 +205,23 @@ func CmdOLC(player *glob.PlayerData, input string) {
 
 			buf := ""
 			exits := ""
-			for name, exit := range player.OLCEdit.Room.RoomLink.Exits {
-				exits = exits + fmt.Sprintf("%v, ToRoom: %v:%v, Door: %v, AutoOpen: %v, AutoClose: %v, Hidden: %v, Keyed: %v\r\n",
-					name, exit.ToRoom.Sector, exit.ToRoom.ID, exit.Door.Door, exit.Door.AutoOpen, exit.Door.AutoClose,
-					exit.Door.Hidden, exit.Door.Keyed)
+			if player.OLCEdit.Room.RoomLink != nil {
+				for name, exit := range player.OLCEdit.Room.RoomLink.Exits {
+					exits = exits + fmt.Sprintf("%v, ToRoom: %v:%v, Door: %v, AutoOpen: %v, AutoClose: %v, Hidden: %v, Keyed: %v\r\n",
+						name, exit.ToRoom.Sector, exit.ToRoom.ID, exit.Door.Door, exit.Door.AutoOpen, exit.Door.AutoClose,
+						exit.Door.Hidden, exit.Door.Keyed)
+				}
+				if exits == "" {
+					exits = "None"
+				}
+				buf = buf + fmt.Sprintf("Room: %v:%v (sector/id)\r\nName: %v\r\nDescription: \r\n\r\n%v\r\n\r\nExits:\r\n%v",
+					player.OLCEdit.Room.Sector, player.OLCEdit.Room.ID,
+					player.OLCEdit.Room.RoomLink.Name, player.OLCEdit.Room.RoomLink.Description, exits)
+				WriteToBuilder(player, buf)
+				WriteToPlayer(player, "Syntax for OLC room: olc <name, description, exit> <item>")
+			} else {
+				WriteToPlayer(player, "No room selected in editor")
 			}
-			if exits == "" {
-				exits = "None"
-			}
-			buf = buf + fmt.Sprintf("Room: %v:%v (sector/id)\r\nName: %v\r\nDescription: \r\n\r\n%v\r\n\r\nExits:\r\n%v",
-				player.OLCEdit.Room.Sector, player.OLCEdit.Room.ID,
-				player.OLCEdit.Room.RoomLink.Name, player.OLCEdit.Room.RoomLink.Description, exits)
-			WriteToBuilder(player, buf)
-			WriteToPlayer(player, "Syntax for OLC room: olc <name, description, exit> <item>")
 
 		}
 
