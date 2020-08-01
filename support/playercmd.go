@@ -212,7 +212,8 @@ func CmdQuit(player *glob.PlayerData, args string) {
 }
 
 func CmdWho(player *glob.PlayerData, args string) {
-	output := "Players online:\n"
+	buf := "Players online:"
+	WriteToPlayer(player, buf)
 
 	pos := 0
 	for x := 1; x <= glob.ConnectionListEnd; x++ {
@@ -220,7 +221,6 @@ func CmdWho(player *glob.PlayerData, args string) {
 		if p.Valid == false {
 			continue
 		}
-		buf := ""
 
 		if p.State == def.CON_STATE_PLAYING {
 			idleString := ""
@@ -241,7 +241,6 @@ func CmdWho(player *glob.PlayerData, args string) {
 			WriteToPlayer(player, buf)
 		}
 	}
-	WriteToPlayer(player, output)
 }
 
 func CmdSay(player *glob.PlayerData, args string) {
