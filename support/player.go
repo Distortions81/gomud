@@ -286,11 +286,11 @@ func PlayerToRoom(player *glob.PlayerData, sectorID int, roomID int) {
 		player.Location.ID = roomID
 		player.Dirty = true
 
-		if player.OLEEdit.Active &&
-			player.OLEEdit.Mode == def.OLE_ROOM &&
-			player.OLESettings.OLERoomFollow {
+		if player.OLCEdit.Active &&
+			player.OLCEdit.Mode == def.OLC_ROOM &&
+			player.OLCSettings.OLCRoomFollow {
 
-			player.OLEEdit.Room = player.Location
+			player.OLCEdit.Room = player.Location
 		}
 
 	} else {

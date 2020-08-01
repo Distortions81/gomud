@@ -6,8 +6,8 @@ olc/player dirty flags, add them!
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 telnet negotate, CHARSET, MCCP, UNICDOE, SSL, etc.
 
-finish room OLE/exits
-start OLE object
+finish room OLC/exits
+start OLC object
 sector creator/editor
 dig vnum spacing options
 
@@ -54,6 +54,7 @@ loginName {
     } else {
         player, found := loadPlayer(args)
 
+        state = password
         password(con)
         return
     }

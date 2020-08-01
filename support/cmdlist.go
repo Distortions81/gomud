@@ -28,7 +28,7 @@ var CommandList = []glob.Command{
 	/*Builder*/
 	{AS: false, Short: "", Name: "asave", Cmd: CmdAsave, Type: def.PLAYER_TYPE_BUILDER,
 		Help: "Save game areas (autosave is on)"},
-	{AS: true, Short: "", Name: "ole", Cmd: CmdOLE, Type: def.PLAYER_TYPE_BUILDER,
+	{AS: true, Short: "", Name: "olc", Cmd: CmdOLC, Type: def.PLAYER_TYPE_BUILDER,
 		Help: "Edit sectors, rooms, objs, etc (WIP)"},
 	{Short: "", Name: "dig", Cmd: CmdDig, Type: def.PLAYER_TYPE_BUILDER,
 		Help: "Create a new room, to the <exit name>"},

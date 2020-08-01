@@ -5,7 +5,6 @@ Recently added:
 playerType WIP
 reloadPlayer
 reloadText (news/greet/etc)
-OLC RENAMED OLE
 News added
 goto command (telport)
 OLC room editing is in place (exit exiting isn't complete)

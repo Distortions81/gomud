@@ -69,35 +69,35 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 	} else if con.State == def.CON_STATE_PLAYING && con.Player != nil && con.Player.Valid {
 		/*If we are playing the game, this is a command */
 
-		if command == "" && con.Player.OLEEdit.Active {
-			CmdOLE(con.Player, "")
+		if command == "" && con.Player.OLCEdit.Active {
+			CmdOLC(con.Player, "")
 			return
 		}
 
 		PlayerCommand(con.Player, command, longArg, isAlias)
-		if con.Player.OLEEdit.Active && con.Player.OLESettings.OLEPrompt {
-			OLEPrompt := ""
-			if con.Player.OLEEdit.Mode == def.OLE_NONE {
-				OLEPrompt = "<OLE: none>:"
-			} else if con.Player.OLEEdit.Mode == def.OLE_ROOM {
-				OLEPrompt = fmt.Sprintf("<OLE ROOM: %v:%v>:", con.Player.OLEEdit.Room.Sector, con.Player.OLEEdit.Room.ID)
-			} else if con.Player.OLEEdit.Mode == def.OLE_OBJECT {
-				OLEPrompt = fmt.Sprintf("<OLE OBJECT: WIP>:")
-			} else if con.Player.OLEEdit.Mode == def.OLE_TRIGGER {
-				OLEPrompt = fmt.Sprintf("<OLE TRIGGER: WIP>:")
-			} else if con.Player.OLEEdit.Mode == def.OLE_MOBILE {
-				OLEPrompt = fmt.Sprintf("<OLE MOBILE: WIP>: ")
-			} else if con.Player.OLEEdit.Mode == def.OLE_QUEST {
-				OLEPrompt = fmt.Sprintf("<OLE QUEST: WIP>: ")
-			} else if con.Player.OLEEdit.Mode == def.OLE_SECTOR {
-				OLEPrompt = fmt.Sprintf("<OLE SECTOR: WIP>: ")
-			} else if con.Player.OLEEdit.Mode == def.OLE_EXITS {
-				OLEPrompt = fmt.Sprintf("<OLE EXITS: [%v] Room: %v:%v>",
-					con.Player.OLEEdit.ExitName,
-					con.Player.OLEEdit.Room.Sector,
-					con.Player.OLEEdit.Room.ID)
+		if con.Player.OLCEdit.Active && con.Player.OLCSettings.OLCPrompt {
+			OLCPrompt := ""
+			if con.Player.OLCEdit.Mode == def.OLC_NONE {
+				OLCPrompt = "<OLC: none>:"
+			} else if con.Player.OLCEdit.Mode == def.OLC_ROOM {
+				OLCPrompt = fmt.Sprintf("<OLC ROOM: %v:%v>:", con.Player.OLCEdit.Room.Sector, con.Player.OLCEdit.Room.ID)
+			} else if con.Player.OLCEdit.Mode == def.OLC_OBJECT {
+				OLCPrompt = fmt.Sprintf("<OLC OBJECT: WIP>:")
+			} else if con.Player.OLCEdit.Mode == def.OLC_TRIGGER {
+				OLCPrompt = fmt.Sprintf("<OLC TRIGGER: WIP>:")
+			} else if con.Player.OLCEdit.Mode == def.OLC_MOBILE {
+				OLCPrompt = fmt.Sprintf("<OLC MOBILE: WIP>: ")
+			} else if con.Player.OLCEdit.Mode == def.OLC_QUEST {
+				OLCPrompt = fmt.Sprintf("<OLC QUEST: WIP>: ")
+			} else if con.Player.OLCEdit.Mode == def.OLC_SECTOR {
+				OLCPrompt = fmt.Sprintf("<OLC SECTOR: WIP>: ")
+			} else if con.Player.OLCEdit.Mode == def.OLC_EXITS {
+				OLCPrompt = fmt.Sprintf("<OLC EXITS: [%v] Room: %v:%v>",
+					con.Player.OLCEdit.ExitName,
+					con.Player.OLCEdit.Room.Sector,
+					con.Player.OLCEdit.Room.ID)
 			}
-			defer WriteToDesc(con, OLEPrompt)
+			defer WriteToDesc(con, OLCPrompt)
 			return
 		} else {
 			defer WriteToDesc(con, ">")
@@ -235,9 +235,9 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 
 		/*New player password*/
 	} else if con.State == def.CON_STATE_NEW_PASSWORD {
-		symbOLEount := len(NonAlpha(input))
+		symbOLCount := len(NonAlpha(input))
 		inputLen := len(input)
-		if inputLen >= 8 && inputLen <= 72 && symbOLEount >= 2 {
+		if inputLen >= 8 && inputLen <= 72 && symbOLCount >= 2 {
 			con.TempPass = input
 			WriteToDesc(con, "Type again to confirm:")
 			con.State = def.CON_STATE_NEW_PASSWORD_CONFIRM
