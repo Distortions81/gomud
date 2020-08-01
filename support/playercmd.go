@@ -234,11 +234,12 @@ func CmdWho(player *glob.PlayerData, args string) {
 			}
 			pos++
 			buf = fmt.Sprintf("%d: %s%s%s", pos, p.Name, connectedString, idleString)
+			WriteToPlayer(player, buf)
 		} else {
 			pos++
 			buf = fmt.Sprintf("%d: %s", pos, "(Connecting)")
+			WriteToPlayer(player, buf)
 		}
-		output = output + buf
 	}
 	WriteToPlayer(player, output)
 }
