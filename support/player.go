@@ -295,7 +295,12 @@ func PlayerToRoom(player *glob.PlayerData, sectorID int, roomID int) {
 	} else {
 		mlog.Write("PlayerToRoom: That sector or room is not valid.")
 		mlog.Write(fmt.Sprintf("Sector: %v, Room: %v, Player: %v", sectorID, roomID, player.Name))
-		CmdRecall(player, "")
+		if sectorID != def.PLAYER_START_SECTOR && roomID != def.PLAYER_START_ROOM {
+			PlayerToRoom(player, def.PLAYER_START_SECTOR, def.PLAYER_START_ROOM)
+		} else {
+			log.Println("Default room/sector not found. Quitting.")
+			os.Exit(1)
+		}
 
 	}
 }

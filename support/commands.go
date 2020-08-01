@@ -374,7 +374,7 @@ func CmdLook(player *glob.PlayerData, args string) {
 	}
 	if err {
 		WriteToPlayer(player, "You are floating in the VOID...")
-		CmdRecall(player, "")
+		PlayerToRoom(player, def.PLAYER_START_SECTOR, def.PLAYER_START_ROOM)
 	}
 
 }
