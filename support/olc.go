@@ -158,10 +158,10 @@ func CmdOLC(player *glob.PlayerData, input string) {
 			player.OLCEdit.Mode = def.OLC_SECTOR
 			if command == "" {
 				sid := player.Location.Sector
-				sector := glob.SectorsList[sid]
+				//sector := glob.SectorsList[sid]
 				player.OLCEdit.Sector = sid
 
-				buf := Sprintf("Name: %v, ID %v, Fingerprint: %v\r\nArea: %v, Room count: %v, Valid: %v")
+				//buf := fmt.Sprintf("Name: %v, ID %v, Fingerprint: %v\r\nArea: %v, Room count: %v, Valid: %v")
 			}
 		}
 
