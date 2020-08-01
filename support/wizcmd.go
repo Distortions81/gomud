@@ -91,3 +91,13 @@ func CmdPlayerType(player *glob.PlayerData, args string) {
 	WriteToPlayer(player, "I couldn't find anyone online by that name.")
 
 }
+
+func CmdSavePlayers(player *glob.PlayerData, args string) {
+	for x := 1; x <= glob.PlayerListEnd; x++ {
+		target := glob.PlayerList[x]
+		if target != nil && target.Valid {
+			WritePlayer(target)
+			WriteToPlayer(player, player.Name+" was saved.")
+		}
+	}
+}

@@ -22,6 +22,8 @@ var CommandList = []glob.Command{
 		Help: "Reload a player that is currently logged in."},
 	{AS: false, Short: "", Name: "playerType", Cmd: CmdPlayerType, Type: def.PLAYER_TYPE_MODERATOR,
 		Help: "Set a player's type"},
+	{AS: false, Short: "", Name: "SavePlayers", Cmd: CmdSavePlayers, Type: def.PLAYER_TYPE_MODERATOR,
+		Help: "Save all players"},
 
 	/*Builder*/
 	{AS: false, Short: "", Name: "asave", Cmd: CmdAsave, Type: def.PLAYER_TYPE_BUILDER,
