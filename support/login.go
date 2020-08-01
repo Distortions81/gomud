@@ -56,6 +56,15 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 		con.TempPlayer = nil
 		con.TempPlayer = nil
 		con.State = def.CON_STATE_WELCOME
+	} else if con.State == def.CON_STATE_NEWS {
+		con.State = def.CON_STATE_PLAYING
+		LinkPlayerConnection(con.Player, con)
+		if con.Player.Level == 0 {
+			WriteToPlayer(con.Player, "NEW PLAYER HELP:")
+			CmdHelp(con.Player, "")
+			con.Player.Level = 1
+		}
+		return
 	} else if con.State == def.CON_STATE_PLAYING && con.Player != nil && con.Player.Valid {
 		/*If we are playing the game, this is a command */
 
@@ -175,17 +184,17 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 		err := bcrypt.CompareHashAndPassword([]byte(player.Password), []byte(input))
 
 		if err == nil {
-			con.State = def.CON_STATE_PLAYING
+			con.State = def.CON_STATE_NEWS
 
 			if con.TempPlayer != nil && con.TempPlayer.Connection.Valid {
 
 				WriteToDesc(con.TempPlayer.Connection, "You logged in from another connection!")
 				CloseConnection(con.TempPlayer.Connection)
 				WriteToDesc(con, "Closing other connection to character...")
+				WriteToDesc(con, "")
 			}
-			WriteToDesc(con, "Welcome back, "+player.Name+"!")
-
-			LinkPlayerConnection(player, con)
+			WriteToDesc(con, glob.News)
+			WriteToDesc(con, "{K[Press enter or return to continue]")
 		} else {
 
 			mlog.Write("Invalid password attempt: " + player.Name + " ip: " + con.Address)
@@ -250,13 +259,13 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 				return
 			}
 			WriteToDesc(con, "...done! Welcome to GoMud!")
+			WriteToDesc(con, "")
 
 			con.TempPass = ""
 			con.Player.Password = string(hash)
 
 			SetupNewCharacter(con.Player)
-			con.State = def.CON_STATE_PLAYING
-			LinkPlayerConnection(con.Player, con)
+			con.State = def.CON_STATE_NEWS
 
 			okay := WritePlayer(con.Player)
 			if okay == false {
@@ -265,8 +274,8 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 				WriteToPlayer(con.Player, "Character saved.")
 			}
 
-			CmdHelp(con.Player, "")
-
+			WriteToDesc(con, glob.News)
+			WriteToDesc(con, "{K[Press enter or return to continue]")
 		} else {
 			con.TempPass = ""
 			WriteToDesc(con, "Passwords didn't match, try again.")

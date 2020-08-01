@@ -284,7 +284,7 @@ func WriteToDesc(c *glob.ConnectionData, text string) {
 	}
 
 	message := fmt.Sprintf("%s\r\n", text)
-	bytes, err := c.Desc.Write([]byte(message))
+	bytes, err := c.Desc.Write([]byte(ANSIColor(message)))
 	c.BytesOut += bytes
 	trackBytesOut(c)
 

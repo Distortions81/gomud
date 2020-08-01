@@ -214,6 +214,7 @@ func LinkPlayerConnection(player *glob.PlayerData, con *glob.ConnectionData) {
 			PlayerToRoom(player, player.Location.Sector, player.Location.ID)
 			buf := fmt.Sprintf("%s reconnects to their body.", player.Name)
 			WriteToRoom(player, buf)
+			CmdLook(player, "")
 			WriteToPlayer(player, "You reconnect to your body.")
 			return
 		}

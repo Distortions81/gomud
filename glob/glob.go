@@ -32,3 +32,4 @@ var WizHelp string
 //Texts
 var Greeting string
 var AuRevoir string
+var News string
