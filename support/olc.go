@@ -37,24 +37,27 @@ func CmdGoto(player *glob.PlayerData, input string) {
 
 func CmdOLC(player *glob.PlayerData, input string) {
 
-	command, longArg := SplitArgsTwo(input, " ")
+	command, argTwoThrough := SplitArgsTwo(input, " ")
+	cmdB, argThreeThrough := SplitArgsTwo(argTwoThrough, " ")
+	command = strings.ToLower(command)
+	cmdB = strings.ToLower(cmdB)
 
-	if command == "done" {
-		player.OLCEdit.Mode = def.OLC_NONE
-		WriteToPlayer(player, "Exiting OLC.")
-		player.OLCEdit.Active = false
-		return
-	}
 	player.OLCEdit.Active = true
 
-	if command == "" && player.OLCEdit.Mode == def.OLC_NONE {
-		WriteToPlayer(player, "Possible types:")
-		WriteToPlayer(player, "Room, object, trigger, mobile, quest or sector.")
-		WriteToPlayer(player, "OLC <type>, or OLC <type> <sector:id> (for a specfic item)")
-		WriteToPlayer(player, "Other commands: DONE (to exit olc), and Settings.")
-		WriteToPlayer(player, "Typing the command OLC (by itself) will show the editor again.")
-		return
-	} else {
+	if player.OLCEdit.Mode == def.OLC_NONE {
+		if command == "done" {
+			player.OLCEdit.Mode = def.OLC_NONE
+			WriteToPlayer(player, "Exiting OLC.")
+			player.OLCEdit.Active = false
+			return
+		} else if command == "" {
+			WriteToPlayer(player, "Possible types:")
+			WriteToPlayer(player, "Room, object, trigger, mobile, quest or sector.")
+			WriteToPlayer(player, "OLC <type>, or OLC <type> <sector:id> (for a specfic item), or just <id> (for sector you are standing in)")
+			WriteToPlayer(player, "Other commands: DONE (to exit olc), and Settings.")
+			WriteToPlayer(player, "Typing the command OLC (by itself) will show the editor again, so will enter/return on a blank line.")
+			return
+		}
 
 		if command == "settings" {
 			olcSettings := []glob.ConfigData{
@@ -74,7 +77,7 @@ func CmdOLC(player *glob.PlayerData, input string) {
 			for _, c := range olcSettings {
 				cmdNames = append(cmdNames, strings.ToLower(c.Name))
 			}
-			match, _ := FindClosestMatch(cmdNames, longArg)
+			match, _ := FindClosestMatch(cmdNames, argTwoThrough)
 
 			if match == "follow" {
 				if player.OLCSettings.OlcRoomFollow {
@@ -117,18 +120,66 @@ func CmdOLC(player *glob.PlayerData, input string) {
 		if command == "room" {
 			WriteToPlayer(player, "OLC EDIT: ROOM")
 			player.OLCEdit.Mode = def.OLC_ROOM
-			if longArg == "" {
+			if argTwoThrough == "" {
 				player.OLCEdit.Room = player.Location
-			} else {
-				loc := strings.Split(longArg, ":")
+				CmdOLC(player, "")
+			} else if cmdB == "create" {
+				loc := strings.Split(argThreeThrough, ":")
 				locLen := len(loc)
 
-				if locLen == 2 {
-					sector, errb := strconv.Atoi(loc[0])
-					id, erra := strconv.Atoi((loc[1]))
+				if locLen >= 1 {
+					sector := 0
+					id := 0
+					var erra error
+					var errb error
+					if locLen == 1 {
+						sector = player.Location.Sector
+						id, erra = strconv.Atoi((loc[0]))
+					} else if locLen == 2 {
+						sector, errb = strconv.Atoi(loc[0])
+						id, erra = strconv.Atoi((loc[1]))
+					}
 
 					if erra != nil || errb != nil {
-						WriteToPlayer(player, "Syntax: olc room sector:id\r\nExample: olc room 1:1")
+						WriteToPlayer(player, "Syntax: olc room create <sector:id> or just <id> (for sector you are standing in)\r\nExample: olc room create 1:1")
+						return
+					}
+
+					editRoom, roomFound := LocationDataFromID(sector, id)
+					if roomFound {
+						player.OLCEdit.Room = editRoom
+						CmdOLC(player, "")
+						WriteToPlayer(player, "Room already exists.")
+					} else {
+						glob.SectorsList[sector].Rooms[id] = CreateRoom()
+						editRoom, _ := LocationDataFromID(sector, id)
+						player.OLCEdit.Room = editRoom
+						CmdOLC(player, "")
+						WriteToPlayer(player, fmt.Sprintf("Room %v:%v created!", sector, id))
+						glob.SectorsList[player.OLCEdit.Room.Sector].Dirty = true //Autosave
+					}
+				} else {
+					WriteToPlayer(player, "Syntax: olc room create <sector:id> or just <id> (for sector you are standing in)\r\nExample: olc room create 1:1")
+				}
+			} else {
+				loc := strings.Split(argTwoThrough, ":")
+				locLen := len(loc)
+
+				if locLen >= 1 {
+					sector := 0
+					id := 0
+					var erra error
+					var errb error
+					if locLen == 1 {
+						sector = player.Location.Sector
+						id, erra = strconv.Atoi((loc[0]))
+					} else if locLen == 2 {
+						sector, errb = strconv.Atoi(loc[0])
+						id, erra = strconv.Atoi((loc[1]))
+					}
+
+					if erra != nil || errb != nil {
+						WriteToPlayer(player, "Syntax: olc room <sector:id> or just <id> (for sector you are standing in\r\nExample: olc room 1:1")
 						return
 					}
 
@@ -137,11 +188,10 @@ func CmdOLC(player *glob.PlayerData, input string) {
 						player.OLCEdit.Room = editRoom
 						CmdOLC(player, "")
 					} else {
-						WriteToPlayer(player, "I couldn't find that room.")
+						WriteToPlayer(player, "I couldn't find that room, to create: olc room create <sector:id> or just <id> (for sector you are standing in)")
 					}
-
 				} else {
-					WriteToPlayer(player, "Syntax: olc room sector:id\r\nExample: olc room 1:1")
+					WriteToPlayer(player, "Syntax: olc room <sector:id> or just <id> (for sector you are standing in)\r\nExample: olc room 1:1")
 					return
 				}
 
@@ -156,19 +206,19 @@ func CmdOLC(player *glob.PlayerData, input string) {
 			player.OLCEdit.Mode = def.OLC_QUEST
 		} else if command == "sector" {
 			player.OLCEdit.Mode = def.OLC_SECTOR
-			if command == "" {
-				sid := player.Location.Sector
-				//sector := glob.SectorsList[sid]
-				player.OLCEdit.Sector = sid
-
-				//buf := fmt.Sprintf("Name: %v, ID %v, Fingerprint: %v\r\nArea: %v, Room count: %v, Valid: %v")
-			}
 		}
 
 	}
 
 	/* ROOM-EXITS EDITOR */
 	if player.OLCEdit.Mode == def.OLC_EXITS {
+
+		if command == "done" {
+			player.OLCEdit.Mode = def.OLC_ROOM
+			WriteToPlayer(player, "Going back to room editor..")
+			CmdOLC(player, "")
+			return
+		}
 		buf := fmt.Sprintf("OLC EDIT EXITS:\r\nName: %v\r\n\r\nFromRoom: %v:%v\r\nToRoom: %v:%v\r\n",
 			player.OLCEdit.ExitName,
 			player.OLCEdit.Room.Sector,
@@ -186,28 +236,59 @@ func CmdOLC(player *glob.PlayerData, input string) {
 
 		/* ROOM EDITOR */
 	} else if player.OLCEdit.Mode == def.OLC_ROOM {
-		if longArg != "" {
+		if command == "room" {
+			WriteToPlayer(player, "Already in room editor.")
+		} else if command == "done" {
+			player.OLCEdit.Mode = def.OLC_NONE
+			WriteToPlayer(player, "Exiting OLC.")
+			player.OLCEdit.Active = false
+			return
+		}
+		if argTwoThrough != "" {
 			if command == "name" {
-				player.OLCEdit.Room.RoomLink.Name = longArg
+				player.OLCEdit.Room.RoomLink.Name = argTwoThrough
 				WriteToPlayer(player, "Name set")
 				glob.SectorsList[player.OLCEdit.Room.Sector].Dirty = true //Autosave
 
 			} else if command == "description" || command == "desc" {
-				player.OLCEdit.Room.RoomLink.Description = longArg
+				player.OLCEdit.Room.RoomLink.Description = argTwoThrough
 				WriteToPlayer(player, "Description set")
 				glob.SectorsList[player.OLCEdit.Room.Sector].Dirty = true //Autosave
 			} else if command == "exit" || command == "exits" {
-				for exitName, exit := range player.OLCEdit.Room.RoomLink.Exits {
-					if strings.EqualFold(exitName, longArg) {
-						player.OLCEdit.Exit = exit
-						player.OLCEdit.ExitName = exitName
+				if cmdB == "" {
+					WriteToPlayer(player, "olc exit <exit name>")
+				} else if cmdB == "create" {
+					if argThreeThrough != "" {
+						for exitName, _ := range player.OLCEdit.Room.RoomLink.Exits {
+							if strings.EqualFold(exitName, argThreeThrough) {
+								WriteToPlayer(player, "That exit already exists.")
+								return
+							}
+						}
+						player.OLCEdit.Room.RoomLink.Exits[argThreeThrough] = CreateExit()
+						player.OLCEdit.Room.RoomLink.Exits[argThreeThrough].ToRoom = player.OLCEdit.Room
+						player.OLCEdit.Exit = player.OLCEdit.Room.RoomLink.Exits[argThreeThrough]
+						player.OLCEdit.ExitName = argThreeThrough
 						player.OLCEdit.Mode = def.OLC_EXITS
-						WriteToPlayer(player, "Exit found, switching to exit editor.")
 						CmdOLC(player, "")
 						return
+					} else {
+						WriteToPlayer(player, "olc exit <exit name>")
 					}
+				} else {
+
+					for exitName, exit := range player.OLCEdit.Room.RoomLink.Exits {
+						if strings.EqualFold(exitName, argTwoThrough) {
+							player.OLCEdit.Exit = exit
+							player.OLCEdit.ExitName = exitName
+							player.OLCEdit.Mode = def.OLC_EXITS
+							WriteToPlayer(player, "Exit found, switching to exit editor.")
+							CmdOLC(player, "")
+							return
+						}
+					}
+					WriteToPlayer(player, "I didn't find an exit by that name, to create: olc exit create <Exit Name>")
 				}
-				WriteToPlayer(player, "I didn't find an exit by that name.")
 
 			}
 		} else {
@@ -235,15 +316,53 @@ func CmdOLC(player *glob.PlayerData, input string) {
 		}
 
 	} else if player.OLCEdit.Mode == def.OLC_OBJECT {
+		if command == "done" {
+			player.OLCEdit.Mode = def.OLC_NONE
+			WriteToPlayer(player, "Exiting OLC.")
+			player.OLCEdit.Active = false
+			return
+		}
 		WriteToPlayer(player, "Not available yet (WIP).")
 	} else if player.OLCEdit.Mode == def.OLC_TRIGGER {
+		if command == "done" {
+			player.OLCEdit.Mode = def.OLC_NONE
+			WriteToPlayer(player, "Exiting OLC.")
+			player.OLCEdit.Active = false
+			return
+		}
 		WriteToPlayer(player, "Not available yet (WIP).")
 	} else if player.OLCEdit.Mode == def.OLC_MOBILE {
+		if command == "done" {
+			player.OLCEdit.Mode = def.OLC_NONE
+			WriteToPlayer(player, "Exiting OLC.")
+			player.OLCEdit.Active = false
+			return
+		}
 		WriteToPlayer(player, "Not available yet (WIP).")
 	} else if player.OLCEdit.Mode == def.OLC_QUEST {
+		if command == "done" {
+			player.OLCEdit.Mode = def.OLC_NONE
+			WriteToPlayer(player, "Exiting OLC.")
+			player.OLCEdit.Active = false
+			return
+		}
 		WriteToPlayer(player, "Not available yet (WIP).")
 	} else if player.OLCEdit.Mode == def.OLC_SECTOR {
-		WriteToPlayer(player, "Not available yet (WIP).")
+		if command == "done" {
+			player.OLCEdit.Mode = def.OLC_NONE
+			WriteToPlayer(player, "Exiting OLC.")
+			player.OLCEdit.Active = false
+			return
+		}
+		if argTwoThrough == "" {
+			sid := player.Location.Sector
+			sector := glob.SectorsList[sid]
+			player.OLCEdit.Sector = sid
+
+			buf := fmt.Sprintf("Name: %v\r\nID %v\r\nFingerprint: %v\r\nDescription: %v\r\nArea: %v\r\nRoom count: %v\r\nValid: %v",
+				sector.Name, sector.ID, sector.Fingerprint, sector.Description, sector.Area, sector.NumRooms, sector.Valid)
+			WriteToBuilder(player, buf)
+		}
 	}
 
 }
@@ -251,6 +370,7 @@ func CmdOLC(player *glob.PlayerData, input string) {
 func CmdDig(player *glob.PlayerData, input string) {
 	if player.Location.RoomLink == nil {
 		WriteToPlayer(player, "You need to be in a room, to dig.")
+		return
 	}
 
 	command, _ := SplitArgsTwo(input, " ")
