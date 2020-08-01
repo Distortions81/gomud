@@ -34,6 +34,7 @@ func CmdGoto(player *glob.PlayerData, input string) {
 		WriteToRoom(player, fmt.Sprintf("%v vanishes in a puff of smoke.", player.Name))
 		PlayerToRoom(player, sector, id)
 		WriteToRoom(player, fmt.Sprintf("A puff of smoke appears, and %v emerges from it.", player.Name))
+		player.Dirty = true
 		CmdLook(player, "")
 	} else {
 		WriteToPlayer(player, "That location doesn't exist.")
@@ -83,6 +84,7 @@ func CmdOLE(player *glob.PlayerData, input string) {
 				cmdNames = append(cmdNames, strings.ToLower(c.Name))
 			}
 			match, _ := FindClosestMatch(cmdNames, argTwoThrough)
+			player.Dirty = true
 
 			if match == "follow" {
 				if player.OLESettings.OLERoomFollow {
@@ -275,6 +277,7 @@ func CmdOLE(player *glob.PlayerData, input string) {
 						player.OLEEdit.Exit = player.OLEEdit.Room.RoomLink.Exits[argThreeThrough]
 						player.OLEEdit.ExitName = argThreeThrough
 						player.OLEEdit.Mode = def.OLE_EXITS
+						glob.SectorsList[player.OLEEdit.Room.Sector].Dirty = true //Autosave
 						CmdOLE(player, "")
 						return
 					} else {
@@ -413,10 +416,12 @@ func CmdDig(player *glob.PlayerData, input string) {
 	if command != "" {
 		if IsStandardDirection(command) {
 			doDig(player, rooms, found, command, sector)
+			glob.SectorsList[player.OLEEdit.Room.Sector].Dirty = true //Autosave
 
 		} else if dirTwo != "" {
 			doDigCustom(player, rooms, found, dirOne, dirTwo, sector)
 			WriteToPlayer(player, fmt.Sprintf("Digging %v:%v", dirOne, dirTwo))
+			glob.SectorsList[player.OLEEdit.Room.Sector].Dirty = true //Autosave
 		} else {
 			WriteToPlayer(player, "Custom directions require names for both sides of the direction. dig climb up:slide down")
 		}

@@ -1,3 +1,9 @@
+new
+
+olc/player dirty flags, add them!
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 telnet negotate, CHARSET, MCCP, UNICDOE, SSL, etc.
 
 finish room OLE/exits

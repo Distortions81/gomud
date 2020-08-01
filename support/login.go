@@ -59,6 +59,7 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 	} else if con.State == def.CON_STATE_NEWS {
 		con.State = def.CON_STATE_PLAYING
 		LinkPlayerConnection(con.Player, con)
+		con.Player.Dirty = true
 		if con.Player.Level == 0 {
 			WriteToPlayer(con.Player, "NEW PLAYER HELP:")
 			CmdHelp(con.Player, "")

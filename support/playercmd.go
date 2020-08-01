@@ -35,6 +35,7 @@ func CmdDown(player *glob.PlayerData, input string) {
 
 func CmdRelog(player *glob.PlayerData, input string) {
 	c := player.Connection
+	CmdSave(player, "")
 	RemovePlayer(player)
 	c.Input.BufferInPos = 0
 	c.Input.BufferInCount = 0
@@ -80,6 +81,7 @@ func CmdRecall(player *glob.PlayerData, input string) {
 		PlayerToRoom(player, def.PLAYER_START_SECTOR, def.PLAYER_START_ROOM)
 	}
 	WriteToRoom(player, fmt.Sprintf("%v suddenly {mappears{x, with a bright blue {Cflash{x of {Ylight.", player.Name))
+	player.Dirty = true
 	CmdLook(player, "")
 }
 
@@ -114,6 +116,7 @@ func CmdAlias(player *glob.PlayerData, input string) {
 		/*Write data to player*/
 		player.Aliases[firstArg] = lastArgs
 		WriteToPlayer(player, "Alias added.")
+		player.Dirty = true
 	} else if command == "delete" {
 		found := false
 		for key, _ := range player.Aliases {
@@ -125,6 +128,7 @@ func CmdAlias(player *glob.PlayerData, input string) {
 		if found {
 			delete(player.Aliases, firstArg)
 			WriteToPlayer(player, "Alias deleted")
+			player.Dirty = true
 		}
 	} else {
 		WriteToPlayer(player, "Aliases can be the same name as commands,")
@@ -148,6 +152,7 @@ func movePlayerExit(player *glob.PlayerData, arg string, exit *glob.ExitData) {
 	PlayerToRoom(player, exit.ToRoom.Sector, exit.ToRoom.ID)
 
 	WriteToRoom(player, player.Name+" arrives.")
+	player.Dirty = true
 
 	CmdLook(player, "")
 }
@@ -180,6 +185,7 @@ func CmdGo(player *glob.PlayerData, args string) {
 			}
 
 			CmdLook(player, "")
+			player.Dirty = true
 			return
 		}
 	}

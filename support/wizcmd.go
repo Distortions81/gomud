@@ -58,6 +58,7 @@ func CmdReloadPlayer(player *glob.PlayerData, args string) {
 				LinkPlayerConnection(rtarget, target.Connection)
 				WriteToPlayer(target, "Your character file has been re-loaded.")
 				WriteToPlayer(player, "Player reloaded.")
+				player.Dirty = true
 				return
 			}
 		}
@@ -83,6 +84,7 @@ func CmdPlayerType(player *glob.PlayerData, args string) {
 			target.PlayerType = plevel
 			WriteToPlayer(player, "Player type set.")
 			WriteToPlayer(target, "Your player-type has been changed.")
+			player.Dirty = true
 			return
 		}
 	}
