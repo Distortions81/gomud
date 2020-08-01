@@ -139,15 +139,15 @@ type PlayerData struct {
 	Level      int
 	State      int
 	Location   LocationData
-	Recall     LocationData
+	Recall     LocationData `json:",omitempty"`
 
 	Created      time.Time
 	LastSeen     time.Time
 	TimePlayed   int
 	UnlinkedTime time.Time `json:"-"`
-	OLCEdit      OLCEdit
+	OLCEdit      OLCEdit   `json:"-"`
 
-	Aliases     map[string]string
+	Aliases     map[string]string `json:",omitempty"`
 	Connections map[string]int
 	BytesIn     map[string]int
 	BytesOut    map[string]int
@@ -161,8 +161,8 @@ type PlayerData struct {
 	Sex         string `json:",omitempty"`
 
 	Connection *ConnectionData `json:"-"`
-	Banned     bool
-	Valid      bool `json:"-"`
+	Banned     bool            `json:",omitempty"`
+	Valid      bool            `json:"-"`
 }
 
 type OLCEdit struct {
