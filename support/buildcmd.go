@@ -9,6 +9,11 @@ import (
 	"../glob"
 )
 
+func CmdAsave(player *glob.PlayerData, args string) {
+	WriteSectorList()
+	WriteToPlayer(player, "All sectors saving.")
+}
+
 func CmdGoto(player *glob.PlayerData, input string) {
 	a, b := SplitArgsTwo(input, ":")
 	sector := 0

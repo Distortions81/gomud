@@ -46,5 +46,5 @@ func ReadNews() {
 	} else {
 		glob.News = string(message)
 	}
-	log.Println("ReadNews: news loaded.")
+	log.Println("ReadNews: News loaded.")
 }

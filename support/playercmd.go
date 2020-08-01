@@ -9,6 +9,10 @@ import (
 	"../glob"
 )
 
+func CmdNews(player *glob.PlayerData, input string) {
+	WriteToPlayer(player, glob.News)
+}
+
 //Hard coded aliases
 func CmdNorth(player *glob.PlayerData, input string) {
 	CmdGo(player, "north")
@@ -134,10 +138,6 @@ func CmdAlias(player *glob.PlayerData, input string) {
 	}
 }
 
-func CmdWizHelp(player *glob.PlayerData, args string) {
-	WriteToPlayer(player, glob.WizHelp)
-}
-
 func CmdHelp(player *glob.PlayerData, args string) {
 	WriteToPlayer(player, glob.QuickHelp)
 }
@@ -243,36 +243,6 @@ func CmdWho(player *glob.PlayerData, args string) {
 	WriteToPlayer(player, output)
 }
 
-func CmdStats(player *glob.PlayerData, args string) {
-	output := ""
-
-	header := fmt.Sprintf("%-5v %25v: %16v (%4vc) %v/%v%v\r\n", "#", "Name", "ip", "count", "in", "out", "SSL")
-	for x := 1; x <= glob.ConnectionListEnd; x++ {
-		buf := ""
-		con := &glob.ConnectionList[x]
-		if con.Valid {
-			target := con.Player
-			ssl := ""
-
-			if con.SSL {
-				ssl = " (SSL)"
-			}
-
-			if target != nil {
-				for key, value := range target.Connections {
-					buf = fmt.Sprintf("%-5v %25v: %16v (%5v) %v/%v%v\r\n", x, target.Name, key, value, ScaleBytes(target.BytesIn[key]), ScaleBytes(target.BytesOut[key]), ssl)
-				}
-			} else if con != nil {
-				buf = fmt.Sprintf("%-5v %25v: %16v (%5v) %v/%v%v\r\n", x, con.Name, "", "", ScaleBytes(con.BytesIn), ScaleBytes(con.BytesOut), ssl)
-			}
-		} else {
-			buf = fmt.Sprintf("%-5v %25v: %16v (%5v) %v/%v%v\r\n", x, "Closed", "none", "0", "0", "0", "")
-		}
-		output = output + buf
-	}
-	WriteToPlayer(player, header+output)
-}
-
 func CmdSay(player *glob.PlayerData, args string) {
 	if len(args) > 0 {
 		out := fmt.Sprintf("%s says: %s", player.Name, args)
@@ -315,11 +285,6 @@ func CmdSave(player *glob.PlayerData, args string) {
 	} else {
 		WriteToPlayer(player, "Character saved.")
 	}
-}
-
-func CmdAsave(player *glob.PlayerData, args string) {
-	WriteSectorList()
-	WriteToPlayer(player, "All sectors saving.")
 }
 
 func CmdLook(player *glob.PlayerData, args string) {
