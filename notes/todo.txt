@@ -22,7 +22,6 @@ hide/noecho password login(telnet neg)
 
 escape {{ color code
 
-(save on kill complete)
 asave/psave on panic/kill, keep X files in archive
 write logs to log folder with date, buffered
 
@@ -44,3 +43,18 @@ one whitespace begining of each line config option
 
 
 MAKE DEFAULT SETTINGS LIST
+
+rewrite login code into individual functions, 
+psudo code
+
+
+loginName {
+    if state != login {
+        Print("Login:")
+    } else {
+        player, found := loadPlayer(args)
+
+        password(con)
+        return
+    }
+}
