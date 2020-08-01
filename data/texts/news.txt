@@ -1,0 +1,25 @@
+---NEWS---
+Distortions: 8/1/2020:
+
+Recently added:
+OLC RENAMED OLE
+News added
+goto command (telport)
+OLC room editing is in place (exit exiting isn't complete)
+The DIG command works, though!
+Config command added (not many options do anything yet)
+olc settings command added, and is functional.
+command shorthand ( see help command )
+help command
+wizhelp
+emote
+relogin
+
+In progress:
+Sector editor
+Exit editor
+Room/Sector ID edit & auto-relink
+Aliases ( Mostly done )
+
+{iFor more information, see the Discord!{x
+{uhttps://discord.gg/55CDABa

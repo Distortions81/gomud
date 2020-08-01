@@ -34,7 +34,7 @@ func CreateShortcuts() {
 		if aCmd.Short != "" || aCmd.AS == false {
 			continue
 		}
-		aName := aCmd.Name
+		aName := strings.ToLower(aCmd.Name)
 		aLen := len(aName)
 		maxMatch := 1
 
@@ -45,7 +45,7 @@ func CreateShortcuts() {
 				if bCmd.AS == false {
 					continue
 				}
-				bName := bCmd.Name
+				bName := strings.ToLower(bCmd.Name)
 				bLen := len(bName)
 				if x > bLen { //If we have reached max length of B, stop
 					continue
@@ -75,7 +75,7 @@ func MakeQuickHelp() {
 			//ptype = " " + GetPTypeString(cmd.Type)
 		}
 		help, _ := TruncateString(cmd.Help, 48)
-		buf = buf + fmt.Sprintf("%-5v:%12v : %-48v%10v\r\n", cmd.Short, cmd.Name, help, ptype)
+		buf = buf + fmt.Sprintf("%-5v:%12v : %-48v%10v\r\n", strings.ToLower(cmd.Short), strings.ToLower(cmd.Name), help, ptype)
 	}
 	buf = buf + "\r\nCommands that require arguments will show extended help, if run with no arguments."
 	glob.QuickHelp = buf
@@ -95,7 +95,7 @@ func MakeWizHelp() {
 			continue
 		}
 		help, _ := TruncateString(cmd.Help, 48)
-		buf = buf + fmt.Sprintf("%-5v:%12v : %-48v%10v\r\n", cmd.Short, cmd.Name, help, ptype)
+		buf = buf + fmt.Sprintf("%-5v:%12v : %-48v%10v\r\n", strings.ToLower(cmd.Short), strings.ToLower(cmd.Name), help, ptype)
 	}
 	buf = buf + "\r\nCommands that require arguments will show extended help, if run with no arguments."
 	glob.WizHelp = buf

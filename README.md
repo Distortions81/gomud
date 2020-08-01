@@ -16,7 +16,7 @@ Sector load/save
 rooms/exit
 
 
-OLC:
+OLE:
 
 Edit room name/desc
 
@@ -27,7 +27,7 @@ bytes
 
 asave
 
-olc
+OLE
 
 help
 

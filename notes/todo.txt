@@ -1,7 +1,7 @@
 telnet negotate, CHARSET, MCCP, UNICDOE, SSL, etc.
 
-finish room olc/exits
-start olc object
+finish room OLE/exits
+start OLE object
 sector creator/editor
 dig vnum spacing options
 

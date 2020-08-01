@@ -90,17 +90,17 @@ type ConnectionData struct {
 	Valid      bool
 }
 
-type OLCSettingData struct {
+type OLESettingData struct {
 	//Automatically switch room editor to current room
-	OlcRoomFollow bool
-	//Show color codes in OLC
-	OlcShowCodes bool
+	OLERoomFollow bool
+	//Show color codes in OLE
+	OLEShowCodes bool
 	//Show color codes for whole world
-	OlcShowAllCodes bool
-	//OLC Promt enable
-	OlcPrompt bool
-	//OLC prompt string
-	OlcPromptString string
+	OLEShowAllCodes bool
+	//OLE Promt enable
+	OLEPrompt bool
+	//OLE prompt string
+	OLEPromptString string
 }
 
 type SettingsData struct {
@@ -145,7 +145,7 @@ type PlayerData struct {
 	LastSeen     time.Time
 	TimePlayed   int
 	UnlinkedTime time.Time `json:"-"`
-	OLCEdit      OLCEdit   `json:"-"`
+	OLEEdit      OLEEdit   `json:"-"`
 
 	Aliases     map[string]string `json:",omitempty"`
 	Connections map[string]int
@@ -153,7 +153,7 @@ type PlayerData struct {
 	BytesOut    map[string]int
 
 	Config      PConfigData    `json:",omitempty"`
-	OLCSettings OLCSettingData `json:",omitempty"`
+	OLESettings OLESettingData `json:",omitempty"`
 
 	Email string `json:",omitempty"`
 
@@ -165,7 +165,7 @@ type PlayerData struct {
 	Valid      bool            `json:"-"`
 }
 
-type OLCEdit struct {
+type OLEEdit struct {
 	Active   bool `json:",omitempty"`
 	Mode     int  `json:",omitempty"`
 	EditDesc bool `json:",omitempty"`

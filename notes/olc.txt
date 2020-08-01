@@ -1,2 +1,2 @@
-olc room <id>
-olc exit <name>
+OLE room <id>
+OLE exit <name>

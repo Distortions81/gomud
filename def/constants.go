@@ -1,6 +1,6 @@
 package def
 
-const VERSION = "v0.0.10 8-1-2020-510"
+const VERSION = "v0.0.11 8-1-2020-1046"
 const DEFAULT_PORT = ":7777"
 const DEFAULT_PORT_SSL = ":7778"
 
@@ -100,15 +100,15 @@ const PLAYER_TYPE_MODERATOR = 800
 const PLAYER_TYPE_ADMIN = 900
 const PLAYER_TYPE_OWNER = 1000
 
-/*OLC */
-const OLC_NONE = 0
-const OLC_ROOM = 100
-const OLC_OBJECT = 200
-const OLC_TRIGGER = 300
-const OLC_MOBILE = 400
-const OLC_QUEST = 500
-const OLC_SECTOR = 600
-const OLC_EXITS = 700
+/*OLE */
+const OLE_NONE = 0
+const OLE_ROOM = 100
+const OLE_OBJECT = 200
+const OLE_TRIGGER = 300
+const OLE_MOBILE = 400
+const OLE_QUEST = 500
+const OLE_SECTOR = 600
+const OLE_EXITS = 700
 
 const SETTING_TYPE_BOOL = 0
 const SETTING_TYPE_INT = 100

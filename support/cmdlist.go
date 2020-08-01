@@ -12,15 +12,17 @@ var CommandList = []glob.Command{
 	/*allow short, short, name, function, type, quick-help*/
 
 	/*Moderator*/
-	{AS: true, Short: "", Name: "wizhelp", Cmd: CmdWizHelp, Type: def.PLAYER_TYPE_NEW,
+	{AS: true, Short: "", Name: "wizhelp", Cmd: CmdWizHelp, Type: def.PLAYER_TYPE_BUILDER,
 		Help: "Help for builders/moderators"},
 	{AS: true, Short: "", Name: "stats", Cmd: CmdStats, Type: def.PLAYER_TYPE_MODERATOR,
 		Help: "See bandwidth usage"},
+	{AS: true, Short: "", Name: "reloadText", Cmd: CmdReloadText, Type: def.PLAYER_TYPE_MODERATOR,
+		Help: "Reload text files, greeting, aurevoir, news, etc."},
 
 	/*Builder*/
 	{AS: false, Short: "", Name: "asave", Cmd: CmdAsave, Type: def.PLAYER_TYPE_BUILDER,
 		Help: "Save game areas (autosave is on)"},
-	{AS: true, Short: "", Name: "olc", Cmd: CmdOLC, Type: def.PLAYER_TYPE_BUILDER,
+	{AS: true, Short: "", Name: "ole", Cmd: CmdOLE, Type: def.PLAYER_TYPE_BUILDER,
 		Help: "Edit sectors, rooms, objs, etc (WIP)"},
 	{Short: "", Name: "dig", Cmd: CmdDig, Type: def.PLAYER_TYPE_BUILDER,
 		Help: "Create a new room, to the <exit name>"},
@@ -68,4 +70,6 @@ var CommandList = []glob.Command{
 		Help: "Go back to login screen."},
 	{AS: true, Short: "", Name: "config", Cmd: CmdConfig, Type: def.PLAYER_TYPE_NEW,
 		Help: "Configure settings"},
+	{AS: true, Short: "", Name: "news", Cmd: CmdNews, Type: def.PLAYER_TYPE_NEW,
+		Help: "See news"},
 }
