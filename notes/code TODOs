@@ -1,5 +1,4 @@
 //TODO real direction names and messages
-CmdRecall(player, "") //TODO directly recall, dont use command
 //TODO non-playing and playing prompts
 
 	if alphaCharLen <= 0 {
