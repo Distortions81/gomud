@@ -68,21 +68,21 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 		if con.Player.OLCEdit.Active && con.Player.OLCSettings.OlcPrompt {
 			olcPrompt := ""
 			if con.Player.OLCEdit.Mode == def.OLC_NONE {
-				olcPrompt = "<OLC: Edit mode: none (to exit: olc DONE)>:"
+				olcPrompt = "<OLC: none>:"
 			} else if con.Player.OLCEdit.Mode == def.OLC_ROOM {
-				olcPrompt = fmt.Sprintf("<OLC EDIT ROOM: %v:%v>: ", con.Player.OLCEdit.Room.Sector, con.Player.OLCEdit.Room.ID)
+				olcPrompt = fmt.Sprintf("<OLC ROOM: %v:%v>:", con.Player.OLCEdit.Room.Sector, con.Player.OLCEdit.Room.ID)
 			} else if con.Player.OLCEdit.Mode == def.OLC_OBJECT {
-				olcPrompt = fmt.Sprintf("<OLC EDIT OBJECT: WIP>: ")
+				olcPrompt = fmt.Sprintf("<OLC OBJECT: WIP>:")
 			} else if con.Player.OLCEdit.Mode == def.OLC_TRIGGER {
-				olcPrompt = fmt.Sprintf("<OLC EDIT TRIGGER: WIP>: ")
+				olcPrompt = fmt.Sprintf("<OLC TRIGGER: WIP>:")
 			} else if con.Player.OLCEdit.Mode == def.OLC_MOBILE {
-				olcPrompt = fmt.Sprintf("<OLC EDIT MOBILE: WIP>: ")
+				olcPrompt = fmt.Sprintf("<OLC MOBILE: WIP>: ")
 			} else if con.Player.OLCEdit.Mode == def.OLC_QUEST {
-				olcPrompt = fmt.Sprintf("<OLC EDIT QUEST: WIP>: ")
+				olcPrompt = fmt.Sprintf("<OLC QUEST: WIP>: ")
 			} else if con.Player.OLCEdit.Mode == def.OLC_SECTOR {
-				olcPrompt = fmt.Sprintf("<OLC EDIT SECTOR: WIP>: ")
+				olcPrompt = fmt.Sprintf("<OLC SECTOR: WIP>: ")
 			} else if con.Player.OLCEdit.Mode == def.OLC_EXITS {
-				olcPrompt = fmt.Sprintf("<OLC EDIT EXITS: [%v] Room: %v:%v>: ",
+				olcPrompt = fmt.Sprintf("<OLC EXITS: [%v] Room: %v:%v>",
 					con.Player.OLCEdit.ExitName,
 					con.Player.OLCEdit.Room.Sector,
 					con.Player.OLCEdit.Room.ID)
