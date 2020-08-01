@@ -16,8 +16,12 @@ var CommandList = []glob.Command{
 		Help: "Help for builders/moderators"},
 	{AS: true, Short: "", Name: "stats", Cmd: CmdStats, Type: def.PLAYER_TYPE_MODERATOR,
 		Help: "See bandwidth usage"},
-	{AS: true, Short: "", Name: "reloadText", Cmd: CmdReloadText, Type: def.PLAYER_TYPE_MODERATOR,
+	{AS: false, Short: "", Name: "reloadText", Cmd: CmdReloadText, Type: def.PLAYER_TYPE_MODERATOR,
 		Help: "Reload text files, greeting, aurevoir, news, etc."},
+	{AS: false, Short: "", Name: "reloadPlayer", Cmd: CmdReloadPlayer, Type: def.PLAYER_TYPE_MODERATOR,
+		Help: "Reload a player that is currently logged in."},
+	{AS: false, Short: "", Name: "playerType", Cmd: CmdPlayerType, Type: def.PLAYER_TYPE_MODERATOR,
+		Help: "Set a player's type"},
 
 	/*Builder*/
 	{AS: false, Short: "", Name: "asave", Cmd: CmdAsave, Type: def.PLAYER_TYPE_BUILDER,

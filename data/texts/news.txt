@@ -2,6 +2,9 @@
 Distortions: 8/1/2020:
 
 Recently added:
+playerType WIP
+reloadPlayer
+reloadNews
 OLC RENAMED OLE
 News added
 goto command (telport)

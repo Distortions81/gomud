@@ -2,6 +2,8 @@ package support
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"../glob"
 )
@@ -43,4 +45,47 @@ func CmdStats(player *glob.PlayerData, args string) {
 func CmdReloadText(player *glob.PlayerData, args string) {
 	ReadTextFiles()
 	WriteToPlayer(player, "Text files reloaded.")
+}
+
+func CmdReloadPlayer(player *glob.PlayerData, args string) {
+	for i := 1; i <= glob.PlayerListEnd; i++ {
+		target := glob.PlayerList[i]
+
+		if strings.EqualFold(target.Name, args) {
+			rtarget, found := ReadPlayer(strings.ToLower(args), true)
+			if found {
+				glob.PlayerList[i] = rtarget
+				LinkPlayerConnection(rtarget, target.Connection)
+				WriteToPlayer(target, "Your character file has been re-loaded.")
+				WriteToPlayer(player, "Player reloaded.")
+				return
+			}
+		}
+	}
+	WriteToPlayer(player, "I don't see that player online.")
+}
+
+func CmdPlayerType(player *glob.PlayerData, args string) {
+	pname, level := SplitArgsTwo(args, " ")
+
+	plevel, err := strconv.Atoi(level)
+
+	if err != nil {
+		WriteToPlayer(player, "Syntax: playerType <playerName> <typeNumber>")
+		return
+	}
+
+	//TODO: NAMED TYPES
+	pname = strings.ToLower(pname)
+	for x := 1; x <= glob.PlayerListEnd; x++ {
+		target := glob.PlayerList[x]
+		if strings.EqualFold(target.Name, pname) {
+			target.PlayerType = plevel
+			WriteToPlayer(player, "Player type set.")
+			WriteToPlayer(target, "Your player-type has been changed.")
+			return
+		}
+	}
+	WriteToPlayer(player, "I couldn't find anyone online by that name.")
+
 }
