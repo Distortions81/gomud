@@ -126,6 +126,9 @@ func main() {
 
 	//glob.HelpSystem = support.CreateHelps()
 	//glob.HelpSystem.Topics["Default"] = support.CreateHelpTopic()
+	//glob.HelpSystem.Topics["Default"].Chapters["Test Chapter"] = support.CreateChapter()
+	//glob.HelpSystem.Topics["Default"].Chapters["Test Chapter"].Pages[1] = "This is a test page."
+
 	support.ReadHelps()
 	support.CreateShortcuts()
 	support.MakeQuickHelp()

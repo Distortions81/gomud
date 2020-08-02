@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
+	"strings"
 
 	"../def"
 	"../glob"
@@ -14,6 +16,42 @@ import (
 
 func CmdGetHelps(player *glob.PlayerData, input string) {
 
+	input = strings.ToLower(input)
+
+	argOne, argTwoAndOn := SplitArgsTwo(input, " ")
+	argTwo, _ := SplitArgsTwo(argTwoAndOn, " ")
+
+	pageNum, err := strconv.Atoi(argTwo)
+	if err != nil {
+		pageNum = 1
+	}
+
+	found := false
+	totalPages := 1
+
+	//TODO
+	//Eventually allow searching by topic, or chapter.
+	//Or if not specified, show closest match
+	for topicName, topicData := range glob.HelpSystem.Topics {
+		for chapterName, chapterData := range topicData.Chapters {
+			if strings.HasPrefix(strings.ToLower(chapterName), argOne) {
+				totalPages = len(chapterData.Pages)
+				found = true
+
+				buf := fmt.Sprintf("Topic: %v\r\nChapter: %v\r\nPage: %v of %v\r\n", topicName, chapterName, pageNum, totalPages)
+				WriteToPlayer(player, buf)
+				WriteToPlayer(player, chapterData.Pages[pageNum]+"\r\n")
+				break
+			}
+		}
+	}
+
+	if found && totalPages > 1 {
+		WriteToPlayer(player, "Help: <chapter> <page> to see more.")
+	}
+	if found == false {
+		WriteToPlayer(player, "I couldn't find anything!")
+	}
 }
 
 func CmdAddHelps(player *glob.PlayerData, input string) {
@@ -90,6 +128,8 @@ func ReadHelps() bool {
 				helps.Topics = make(map[string]glob.HelpTopics)
 			}
 
+			glob.HelpSystem = helps
+
 			mlog.Write("Helps loaded.")
 			return true
 		} else {
@@ -110,11 +150,21 @@ func CreateHelpTopic() glob.HelpTopics {
 	topic := glob.HelpTopics{Name: "New"}
 
 	topic.Preface = "This is a new topic."
+
 	topic.EditHistory = make(map[string]string)
 	topic.Changes = make(map[string]string)
-	topic.Chapters = make(map[string]string)
+	topic.Chapters = make(map[string]glob.HelpPage)
 	topic.TermAbbrUsed = make(map[string]string)
 	topic.Footnotes = make(map[string]string)
 
 	return topic
+}
+
+func CreateChapter() glob.HelpPage {
+	helpPage := glob.HelpPage{}
+
+	helpPage.Pages = make(map[int]string)
+	helpPage.Keywords = make(map[int]string)
+
+	return helpPage
 }

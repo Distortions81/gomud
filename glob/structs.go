@@ -13,25 +13,32 @@ type HelpMain struct {
 	Preface string
 	Topics  map[string]HelpTopics
 
-	Dirty bool
+	//Keyword links?
+
+	Dirty bool `json:"-"`
 }
 
 type HelpTopics struct {
-	Name string `json:",omitempty"`
-	Desc string `json:",omitempty"`
+	Name string
+	Desc string
 
-	Author  string    `json:",omitempty"`
-	Created time.Time `json:",omitempty"`
+	Author  string
+	Created time.Time
 
 	//Time, name
 	EditHistory    map[string]string
 	Changes        map[string]string
-	QuickReference string `json:",omitempty"`
+	QuickReference string
 
-	Preface      string `json:",omitempty"`
-	Chapters     map[string]string
+	Preface      string
+	Chapters     map[string]HelpPage
 	TermAbbrUsed map[string]string
 	Footnotes    map[string]string
+}
+
+type HelpPage struct {
+	Keywords map[int]string
+	Pages    map[int]string
 }
 
 type MleData struct {

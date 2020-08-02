@@ -2,16 +2,26 @@
 	"Version": "0.0.1",
 	"Preface": "",
 	"Topics": {
-		"Test": {
-			"Name": "New",
+		"OLC": {
+			"Name": "OLC",
+			"Desc": "",
+			"Author": "",
 			"Created": "0001-01-01T00:00:00Z",
 			"EditHistory": {},
 			"Changes": {},
-			"Preface": "This is a new topic.",
-			"Chapters": {},
+			"QuickReference": "olc <room, object, trigger, mobile, quest or sector>",
+			"Preface": "OLC, create game content online.",
+			"Chapters": {
+				"rooms": {
+					"Keywords": {},
+					"Pages": {
+						"1":
+						"olc <name/description> <text>\n\rolc exit <exit name>\n\rolc exit create <direction name>\n\rolc room <location>"
+					}
+				}
+			},
 			"TermAbbrUsed": {},
 			"Footnotes": {}
 		}
-	},
-	"Dirty": false
+	}
 }
