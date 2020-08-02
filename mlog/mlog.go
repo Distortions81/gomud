@@ -33,4 +33,11 @@ func writeToMods(text string) {
 		}
 	}
 
+	//Async write
+	go func(text string) {
+		t := time.Now()
+		date := fmt.Sprintf("%02d-%02d-%04d_%02d-%02d-%02d", t.Month(), t.Day(), t.Year(), t.Hour(), t.Minute(), t.Second())
+		glob.MudLog.WriteString(fmt.Sprintf("%s: %s\n", date, text))
+	}(text)
+
 }

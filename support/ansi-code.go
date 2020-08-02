@@ -78,6 +78,6 @@ func getColor(i byte) string {
 	} else if i == 'W' { //bright white
 		return "\033[1;37m"
 	} else {
-		return "{\033[0m}" //error reset
+		return string(i)
 	}
 }

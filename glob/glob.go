@@ -2,6 +2,7 @@ package glob
 
 import (
 	"net"
+	"os"
 	"sync"
 
 	"../def"
@@ -10,6 +11,8 @@ import (
 /*The big dataset*/
 var OpenDesc int
 var OpenDescLock sync.Mutex
+
+var MudLog *os.File
 
 var ServerState = def.SERVER_RUNNING
 var ServerListener *net.TCPListener

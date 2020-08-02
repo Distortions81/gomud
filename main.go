@@ -112,6 +112,18 @@ func WaitNewConnection() {
 
 func main() {
 
+	var err error
+
+	t := time.Now()
+
+	logName := fmt.Sprintf("log/%v-%v-%v.log", t.Day(), t.Month(), t.Year())
+	glob.MudLog, err = os.OpenFile(logName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		fmt.Println("Unable to open log file!")
+		os.Exit(1)
+		return
+	}
+
 	support.CreateShortcuts()
 	support.MakeQuickHelp()
 	support.MakeWizHelp()
