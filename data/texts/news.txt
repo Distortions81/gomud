@@ -2,6 +2,7 @@
 Distortions: 8/1/2020:
 
 Recently added:
+Exit editor
 playerType WIP
 reloadPlayer
 reloadText (news/greet/etc)
@@ -19,7 +20,6 @@ relogin
 
 In progress:
 Sector editor
-Exit editor
 Room/Sector ID edit & auto-relink
 Aliases ( Mostly done )
 

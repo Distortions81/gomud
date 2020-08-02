@@ -91,6 +91,10 @@ type ConnectionData struct {
 }
 
 type OLCSettingData struct {
+	//Forward all input to OLC
+	NoOLCPrefix bool
+	//Tell users how to exit olc
+	NoHint bool
 	//Automatically switch room editor to current room
 	OLCRoomFollow bool
 	//Show color codes in OLC

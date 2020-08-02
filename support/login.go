@@ -38,8 +38,10 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 	}
 
 	/*Split up arguments*/
-	command, longArg := SplitArgsTwo(input, " ")
-	command = strings.ToLower(command)
+	command, argTwoThrough := SplitArgsTwo(input, " ")
+	cmdB, argThreeThrough := SplitArgsTwo(argTwoThrough, " ")
+	cmdl := strings.ToLower(command)
+	//cmdBl := strings.ToLower(cmdB)
 
 	//Set player as no longer idle
 	con.IdleTime = time.Now()
@@ -59,7 +61,6 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 	} else if con.State == def.CON_STATE_NEWS {
 		con.State = def.CON_STATE_PLAYING
 		LinkPlayerConnection(con.Player, con)
-		con.Player.Dirty = true
 		if con.Player.Level == 0 {
 			WriteToPlayer(con.Player, "NEW PLAYER HELP:")
 			CmdHelp(con.Player, "")
@@ -69,12 +70,25 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 	} else if con.State == def.CON_STATE_PLAYING && con.Player != nil && con.Player.Valid {
 		/*If we are playing the game, this is a command */
 
-		if command == "" && con.Player.OLCEdit.Active {
+		if con.Player.OLCSettings.NoOLCPrefix == false && con.Player.OLCEdit.Active {
+			if cmdl == "cmd" {
+				if strings.EqualFold(cmdB, "olc") == false {
+					PlayerCommand(con.Player, cmdB, argThreeThrough, false)
+					return
+				} else {
+					WriteToPlayer(con.Player, "DOES NOT COMPUTE, DOES NOT COMPUTE! <EXPLODES>...\r\nFor real though, you can't do that.")
+					return
+				}
+			} else {
+				CmdOLC(con.Player, input)
+				return
+			}
+		} else if command == "" && con.Player.OLCEdit.Active {
 			CmdOLC(con.Player, "")
 			return
 		}
 
-		PlayerCommand(con.Player, command, longArg, isAlias)
+		PlayerCommand(con.Player, command, argTwoThrough, isAlias)
 		if con.Player.OLCEdit.Active && con.Player.OLCSettings.OLCPrompt {
 			OLCPrompt := ""
 			if con.Player.OLCEdit.Mode == def.OLC_NONE {
