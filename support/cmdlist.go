@@ -25,7 +25,9 @@ var CommandList = []glob.Command{
 	{AS: false, Short: "", Name: "SavePlayers", Cmd: CmdSavePlayers, Type: def.PLAYER_TYPE_MODERATOR,
 		Help: "Save all players"},
 	{AS: false, Short: "", Name: "SaveHelps", Cmd: CmdWriteHelps, Type: def.PLAYER_TYPE_MODERATOR,
-		Help: "Save all players"},
+		Help: "Save help file"},
+	{AS: false, Short: "", Name: "reloadHelp", Cmd: CmdReloadHelpst, Type: def.PLAYER_TYPE_MODERATOR,
+		Help: "Reload help file."},
 
 	/*Builder*/
 	{AS: false, Short: "", Name: "asave", Cmd: CmdAsave, Type: def.PLAYER_TYPE_BUILDER,

@@ -2,21 +2,38 @@
 	"Version": "0.0.1",
 	"Preface": "",
 	"Topics": {
-		"OLC": {
-			"Name": "OLC",
+		"Color": {
 			"Desc": "",
 			"Author": "",
 			"Created": "0001-01-01T00:00:00Z",
 			"EditHistory": {},
 			"Changes": {},
-			"QuickReference": "olc <room, object, trigger, mobile, quest or sector>",
+			"QuickReference": "",
+			"Preface": "How to use color codes!",
+			"Chapters": {
+				"ANSI": {
+					"Keywords": {},
+					"Pages": {
+						"1": "Color codes:\n\r{wDark colors:         {WBright colors:{x\n\rk {KBlack{x              K {KDark Gray{x\n\rr {rDark Red{x           R {RBright Red{x\n\rg {gDark Green{x         G {GBright Green{x\n\ry {yDark Yellow{x        Y {YBright Yellow{x\n\rb {bDark Blue{x          B {BBright Blue{x\n\rm {mDark Magenta{x       M {MBright Magenta{x\n\rc {cDark Cyan{x          C {CBright Cyan{x\n\rw {wGray{x               W {WWhite{x\n\rx {xNo Color & Reset style\n\r\n\rStyles: (May not appear on all clients)\n\ri {iitalic{x\n\ru {uunderline{x\n\rn {n{Winverse{x (only works with bright colors)\n\rs {sstrike-through{x\n\r\n\rThis:\n\r{{{WRoses {{{ware {{{Rred.\n\r\n\rBecomes:\n\r{WRoses {ware {Rred."
+					}
+				}
+			},
+			"TermAbbrUsed": {},
+			"Footnotes": {}
+		},
+		"OLC": {
+			"Desc": "",
+			"Author": "",
+			"Created": "0001-01-01T00:00:00Z",
+			"EditHistory": {},
+			"Changes": {},
+			"QuickReference": "olc \u003croom, object, trigger, mobile, quest or sector\u003e",
 			"Preface": "OLC, create game content online.",
 			"Chapters": {
 				"rooms": {
 					"Keywords": {},
 					"Pages": {
-						"1":
-						"olc <name/description> <text>\n\rolc exit <exit name>\n\rolc exit create <direction name>\n\rolc room <location>"
+						"1": "olc \u003cname/description\u003e \u003ctext\u003e\n\rolc exit \u003cexit name\u003e\n\rolc exit create \u003cdirection name\u003e\n\rolc room \u003clocation\u003e"
 					}
 				}
 			},

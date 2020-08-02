@@ -29,6 +29,14 @@ func CmdGetHelps(player *glob.PlayerData, input string) {
 	found := false
 	totalPages := 1
 
+	if input == "" {
+		WriteToPlayer(player, "Help topics:")
+		for topicName, _ := range glob.HelpSystem.Topics {
+			WriteToPlayer(player, topicName)
+		}
+		return
+	}
+
 	//TODO
 	//Show closest match, allow topic:chapter searching
 
@@ -52,7 +60,7 @@ func CmdGetHelps(player *glob.PlayerData, input string) {
 			if strings.HasPrefix(strings.ToLower(topicName), argOne) {
 				WriteToPlayer(player, "Topic: "+topicName)
 				for chapterName, _ := range topicData.Chapters {
-					buf := fmt.Sprintf("Chapter: %v:%v", topicName, chapterName)
+					buf := fmt.Sprintf("Chapter: %v", chapterName)
 					WriteToPlayer(player, buf)
 					found = true
 				}

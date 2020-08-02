@@ -19,7 +19,7 @@ type HelpMain struct {
 }
 
 type HelpTopics struct {
-	Name string
+	Name string `json:"-"`
 	Desc string
 
 	Author  string

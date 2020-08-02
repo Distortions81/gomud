@@ -42,6 +42,11 @@ func CmdStats(player *glob.PlayerData, args string) {
 	WriteToPlayer(player, header+output)
 }
 
+func CmdReloadHelpst(player *glob.PlayerData, args string) {
+	ReadHelps()
+	WriteToPlayer(player, "Help file reloaded.")
+}
+
 func CmdReloadText(player *glob.PlayerData, args string) {
 	ReadTextFiles()
 	WriteToPlayer(player, "Text files reloaded.")
