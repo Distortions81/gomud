@@ -385,6 +385,38 @@ func CmdOLC(player *glob.PlayerData, input string) {
 				glob.SectorsList[player.OLCEdit.Room.Sector].Dirty = true //Autosave
 
 			} else if cmdl == "description" || cmdl == "desc" {
+				if cmdBl == "editor" {
+					player.CurEdit.Active = true
+					player.CurEdit.CallBack = "olc room"
+					player.CurEdit.CallBackP = &player.OLCEdit.Room.RoomLink.Description
+
+					dLines := strings.Split(player.OLCEdit.Room.RoomLink.Description, "\r\n")
+					dLen := len(dLines)
+					player.CurEdit.NumLines = 0
+					player.CurEdit.CurLine = 0
+					if player.CurEdit.Lines == nil {
+						player.CurEdit.Lines = make(map[int]string)
+					}
+					for x := 0; x < dLen; x++ {
+						player.CurEdit.Lines[x] = dLines[x]
+						player.CurEdit.NumLines++
+						player.CurEdit.CurLine++
+					}
+					player.CurEdit.NumLines--
+					player.CurEdit.CurLine--
+					MleEditor(player, argThreeThrough)
+					WriteToPlayer(player, "Description sent to editor.")
+					return
+				} else if cmdBl == "paste" {
+					newDesc := ""
+					for x := 0; x <= player.CurEdit.NumLines; x++ {
+						newDesc = newDesc + player.CurEdit.Lines[x] + "\r\n"
+					}
+					player.OLCEdit.Room.RoomLink.Description = newDesc
+					WriteToPlayer(player, "Text transfered from editor.")
+					CmdOLC(player, "")
+					return
+				}
 				player.OLCEdit.Room.RoomLink.Description = argTwoThrough
 				WriteToPlayer(player, "Description set")
 				glob.SectorsList[player.OLCEdit.Room.Sector].Dirty = true //Autosave

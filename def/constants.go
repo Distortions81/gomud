@@ -12,6 +12,7 @@ const SSL_KEY = "server.key"
 const MAX_SECTORS = 10000
 const MAX_USERS = 1000
 const MAX_DESC = 950
+const MAX_MLE = 100
 
 const MAX_INPUT_LENGTH = 4096
 const MAX_OUTPUT_LENGTH = 16384
@@ -118,3 +119,9 @@ const SETTING_TYPE_INDEX = 300
 
 const LINESEPA = "-------------------------------------------------------------------------------\r\n"
 const LINESEPB = "_______________________________________________________________________________\r\n"
+
+/*Mle Editor*/
+const MLE_ADD = 100
+const MLE_REMOVE = 200
+const MLE_INSERT = 300
+const MLE_REPLACE = 400

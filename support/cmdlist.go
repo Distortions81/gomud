@@ -78,4 +78,6 @@ var CommandList = []glob.Command{
 		Help: "Configure settings"},
 	{AS: true, Short: "", Name: "news", Cmd: CmdNews, Type: def.PLAYER_TYPE_NEW,
 		Help: "See news"},
+	{AS: true, Short: "", Name: "editor", Cmd: MleEditor, Type: def.PLAYER_TYPE_NEW,
+		Help: "Text editor."},
 }

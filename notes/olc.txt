@@ -1,2 +1,0 @@
-OLC room <id>
-OLC exit <name>

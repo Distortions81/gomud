@@ -7,6 +7,16 @@ import (
 	"../def"
 )
 
+type MleData struct {
+	Active bool           `json:"-"`
+	Lines  map[int]string `json:",omitempty"`
+
+	NumLines  int     `json:",omitempty"`
+	CurLine   int     `json:",omitempty"`
+	CallBackP *string `json:"-"`
+	CallBack  string  `json:",omitempty"`
+}
+
 type DoorData struct {
 	Door bool `json:",omitempty"`
 
@@ -29,13 +39,12 @@ type ExitData struct {
 }
 
 type RoomData struct {
-	//Location    LocationData           `json:"-"`
 	Name        string                 `json:",omitempty"`
 	Description string                 `json:",omitempty"`
 	Players     map[string]*PlayerData `json:"-"`
 
 	//Convert to map?
-	Exits map[string]*ExitData
+	Exits map[string]*ExitData `json:",omitempty"`
 
 	Valid bool
 }
@@ -69,20 +78,20 @@ type InputBuffer struct {
 type ConnectionData struct {
 	Input InputBuffer `json:"-"`
 
-	Name    string
+	Name    string   `json:",omitempty"`
 	Desc    net.Conn `json:"-"`
-	Address string
-	SSL     bool
+	Address string   `json:",omitempty"`
+	SSL     bool     `json:",omitempty"`
 
-	State        int
-	ConnectedFor time.Time
-	IdleTime     time.Time
+	State        int       `json:",omitempty"`
+	ConnectedFor time.Time `json:",omitempty"`
+	IdleTime     time.Time `json:",omitempty"`
 
-	BytesOut int
-	BytesIn  int
+	BytesOut int `json:",omitempty"`
+	BytesIn  int `json:",omitempty"`
 
-	BytesOutRecorded int
-	BytesInRecorded  int
+	BytesOutRecorded int `json:",omitempty"`
+	BytesInRecorded  int `json:",omitempty"`
 
 	TempPass   string      `json:"-"`
 	TempPlayer *PlayerData `json:"-"`
@@ -92,44 +101,44 @@ type ConnectionData struct {
 
 type OLCSettingData struct {
 	//Forward all input to OLC
-	NoOLCPrefix bool
+	NoOLCPrefix bool `json:",omitempty"`
 	//Tell users how to exit olc
-	NoHint bool
+	NoHint bool `json:",omitempty"`
 	//Automatically switch room editor to current room
-	OLCRoomFollow bool
+	OLCRoomFollow bool `json:",omitempty"`
 	//Show color codes in OLC
-	OLCShowCodes bool
+	OLCShowCodes bool `json:",omitempty"`
 	//Show color codes for whOLC world
-	OLCShowAllCodes bool
+	OLCShowAllCodes bool `json:",omitempty"`
 	//OLC Promt enable
-	OLCPrompt bool
+	OLCPrompt bool `json:",omitempty"`
 	//OLC prompt string
-	OLCPromptString string
+	OLCPromptString string `json:",omitempty"`
 }
 
 type SettingsData struct {
 	//Color
-	Ansi bool
+	Ansi bool `json:",omitempty"`
 	//Short direction names, no room desc
-	Brief bool
+	Brief bool `json:",omitempty"`
 	//PromptString
-	PromptString string
+	PromptString string `json:",omitempty"`
 	//Hide prompt except in battle
-	PromptHide bool
+	PromptHide bool `json:",omitempty"`
 	//Telnet backspace/clear line prompt out of history
-	PromptDelete bool
+	PromptDelete bool `json:",omitempty"`
 	//page wait, if one "round" of text exceeds N lines
-	Paging int
+	Paging int `json:",omitempty"`
 	//Global chat off
-	Deafen bool
+	Deafen bool `json:",omitempty"`
 	//long short brief off
-	Affects int
+	Affects int `json:",omitempty"`
 	//none, friends, clan, all
-	WhoHide int
+	WhoHide int `json:",omitempty"`
 	//Newline before commands
-	PreNewline bool
+	PreNewline bool `json:",omitempty"`
 	//Newline after commands
-	PostNewline bool
+	PostNewline bool `json:",omitempty"`
 }
 
 type PlayerData struct {
@@ -149,7 +158,8 @@ type PlayerData struct {
 	LastSeen     time.Time
 	TimePlayed   int
 	UnlinkedTime time.Time `json:"-"`
-	OLCEdit      OLCEdit   `json:"-"`
+	OLCEdit      OLCEdit   `json:",omitempty"`
+	CurEdit      MleData   `json:",omitempty"`
 
 	Aliases     map[string]string `json:",omitempty"`
 	Connections map[string]int
@@ -170,9 +180,8 @@ type PlayerData struct {
 }
 
 type OLCEdit struct {
-	Active   bool `json:",omitempty"`
-	Mode     int  `json:",omitempty"`
-	EditDesc bool `json:",omitempty"`
+	Active bool `json:"-"`
+	Mode   int  `json:"-"`
 
 	/*Current selection & past selections*/
 	Sector int `json:",omitempty"`
@@ -207,29 +216,29 @@ type Command struct {
 }
 
 type pTypeData struct {
-	PType int
-	PName string
+	PType int    `json:",omitempty"`
+	PName string `json:",omitempty"`
 }
 
 type ConfigData struct {
-	ID   int
-	Name string
-	Help string
-	Ref  *bool
-	RefS *string
-	RefI *int
+	ID   int     `json:",omitempty"`
+	Name string  `json:",omitempty"`
+	Help string  `json:",omitempty"`
+	Ref  *bool   `json:",omitempty"`
+	RefS *string `json:",omitempty"`
+	RefI *int    `json:",omitempty"`
 }
 
 type PConfigData struct {
-	Ansi         bool
-	Brief        bool
-	PromptString string
-	PromptHide   bool
-	PromptDelete bool
-	Paging       int
-	Deafen       bool
-	Affects      int
-	WhoHide      int
-	PreNewline   bool
-	PostNewline  bool
+	Ansi         bool   `json:",omitempty"`
+	Brief        bool   `json:",omitempty"`
+	PromptString string `json:",omitempty"`
+	PromptHide   bool   `json:",omitempty"`
+	PromptDelete bool   `json:",omitempty"`
+	Paging       int    `json:",omitempty"`
+	Deafen       bool   `json:",omitempty"`
+	Affects      int    `json:",omitempty"`
+	WhoHide      int    `json:",omitempty"`
+	PreNewline   bool   `json:",omitempty"`
+	PostNewline  bool   `json:",omitempty"`
 }
