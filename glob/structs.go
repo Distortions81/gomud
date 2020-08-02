@@ -8,8 +8,9 @@ import (
 )
 
 type MleData struct {
-	Active bool           `json:"-"`
-	Lines  map[int]string `json:",omitempty"`
+	Active     bool           `json:"-"`
+	Lines      map[int]string `json:",omitempty"`
+	ColorCodes bool           `json:",omitempty"`
 
 	NumLines  int     `json:",omitempty"`
 	CurLine   int     `json:",omitempty"`

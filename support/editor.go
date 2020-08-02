@@ -81,10 +81,16 @@ func MleEditor(player *glob.PlayerData, input string) {
 
 	} else if cmdl == "replace" {
 		e.Lines[e.CurLine] = argTwoThrough
+	} else if cmdl == "colorcodes" {
+		if e.ColorCodes {
+			e.ColorCodes = false
+		} else {
+			e.ColorCodes = true
+		}
 	}
 
 	//Print
-	WriteToPlayer(player, "Syntax: line <line num>\r\n        <command> <text>\r\nCommands: add, remove, insert, replace, deleteall, done")
+	WriteToPlayer(player, "Syntax: line <line num>\r\n        <command> <text>\r\nCommands: add, remove, insert, replace, deleteAll, colorCodes, done")
 	cl := " "
 	for i := 0; i <= e.NumLines; i++ {
 		if i == e.CurLine {
@@ -92,6 +98,10 @@ func MleEditor(player *glob.PlayerData, input string) {
 		} else {
 			cl = " "
 		}
-		WriteToPlayer(player, fmt.Sprintf("%3v %v: %v", i+1, cl, e.Lines[i]))
+		if e.ColorCodes {
+			WriteToPlayerCodes(player, fmt.Sprintf("%3v %v: %v", i+1, cl, e.Lines[i]))
+		} else {
+			WriteToPlayer(player, fmt.Sprintf("%3v %v: %v", i+1, cl, e.Lines[i]))
+		}
 	}
 }

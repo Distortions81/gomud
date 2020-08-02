@@ -304,6 +304,19 @@ func WriteToPlayer(player *glob.PlayerData, text string) {
 	DescWriteError(player.Connection, err)
 }
 
+func WriteToPlayerCodes(player *glob.PlayerData, text string) {
+
+	if player == nil || !player.Valid || player.Connection == nil || !player.Connection.Valid {
+		return
+	}
+
+	bytes, err := player.Connection.Desc.Write([]byte(text + "\r\n"))
+	player.Connection.BytesOut += bytes
+	trackBytesOut(player.Connection)
+
+	DescWriteError(player.Connection, err)
+}
+
 func WriteToAll(text string) {
 	if text == "" {
 		return
