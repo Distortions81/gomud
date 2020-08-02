@@ -70,7 +70,7 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 	} else if con.State == def.CON_STATE_PLAYING && con.Player != nil && con.Player.Valid {
 		/*If we are playing the game, this is a command */
 
-		if con.Player.OLCSettings.NoOLCPrefix == false && con.Player.OLCEdit.Active {
+		if con.Player.OLCSettings.NoOLCPrefix == true && con.Player.OLCEdit.Active {
 			if cmdl == "cmd" {
 				if strings.EqualFold(cmdB, "olc") == false {
 					PlayerCommand(con.Player, cmdB, argThreeThrough, false)
