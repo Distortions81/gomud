@@ -7,10 +7,37 @@ import (
 	"../def"
 )
 
+type HelpMain struct {
+	Version string
+
+	Preface string
+	Topics  map[string]HelpTopics
+
+	Dirty bool
+}
+
+type HelpTopics struct {
+	Name string `json:",omitempty"`
+	Desc string `json:",omitempty"`
+
+	Author  string    `json:",omitempty"`
+	Created time.Time `json:",omitempty"`
+
+	//Time, name
+	EditHistory    map[string]string
+	Changes        map[string]string
+	QuickReference string `json:",omitempty"`
+
+	Preface      string `json:",omitempty"`
+	Chapters     map[string]string
+	TermAbbrUsed map[string]string
+	Footnotes    map[string]string
+}
+
 type MleData struct {
-	Active     bool           `json:"-"`
-	Lines      map[int]string `json:",omitempty"`
-	ColorCodes bool           `json:",omitempty"`
+	Active     bool `json:"-"`
+	Lines      map[int]string
+	ColorCodes bool `json:",omitempty"`
 
 	NumLines  int     `json:",omitempty"`
 	CurLine   int     `json:",omitempty"`
@@ -162,7 +189,7 @@ type PlayerData struct {
 	OLCEdit      OLCEdit   `json:",omitempty"`
 	CurEdit      MleData   `json:",omitempty"`
 
-	Aliases     map[string]string `json:",omitempty"`
+	Aliases     map[string]string
 	Connections map[string]int
 	BytesIn     map[string]int
 	BytesOut    map[string]int

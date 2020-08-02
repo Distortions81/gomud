@@ -62,8 +62,8 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 		con.State = def.CON_STATE_PLAYING
 		LinkPlayerConnection(con.Player, con)
 		if con.Player.Level == 0 {
-			WriteToPlayer(con.Player, "NEW PLAYER HELP:")
-			CmdHelp(con.Player, "")
+			WriteToPlayer(con.Player, "Commands list:")
+			CmdCommands(con.Player, "")
 			con.Player.Level = 1
 		}
 		return

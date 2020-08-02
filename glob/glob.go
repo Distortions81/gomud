@@ -29,6 +29,8 @@ var PlayerList [def.MAX_USERS + 1]*PlayerData
 var SectorsListEnd int
 var SectorsList [def.MAX_SECTORS]SectorData
 
+var HelpSystem HelpMain
+
 var QuickHelp string
 var WizHelp string
 

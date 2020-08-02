@@ -24,18 +24,20 @@ var CommandList = []glob.Command{
 		Help: "Set a player's type"},
 	{AS: false, Short: "", Name: "SavePlayers", Cmd: CmdSavePlayers, Type: def.PLAYER_TYPE_MODERATOR,
 		Help: "Save all players"},
+	{AS: false, Short: "", Name: "SaveHelps", Cmd: CmdWriteHelps, Type: def.PLAYER_TYPE_MODERATOR,
+		Help: "Save all players"},
 
 	/*Builder*/
 	{AS: false, Short: "", Name: "asave", Cmd: CmdAsave, Type: def.PLAYER_TYPE_BUILDER,
-		Help: "Save game areas (autosave is on)"},
+		Help: "Save game areas"},
 	{AS: true, Short: "", Name: "olc", Cmd: CmdOLC, Type: def.PLAYER_TYPE_BUILDER,
 		Help: "Edit sectors, rooms, objs, etc (WIP)."},
-	{Short: "", Name: "dig", Cmd: CmdDig, Type: def.PLAYER_TYPE_BUILDER,
+	{AS: true, Short: "", Name: "dig", Cmd: CmdDig, Type: def.PLAYER_TYPE_BUILDER,
 		Help: "Create a new room, to the <exit name>"},
-	{Short: "", Name: "goto", Cmd: CmdGoto, Type: def.PLAYER_TYPE_BUILDER,
-		Help: "Goto <sector:id>, or goto <id> of the current sector"},
+	{AS: true, Short: "", Name: "goto", Cmd: CmdGoto, Type: def.PLAYER_TYPE_BUILDER,
+		Help: "Goto <location>"},
 
-	/*shortcuts*/
+	/*Shortcuts*/
 	{AS: true, Short: "n", Name: "north", Cmd: CmdNorth, Type: def.PLAYER_TYPE_NEW,
 		Help: "Go north"},
 	{AS: true, Short: "s", Name: "south", Cmd: CmdSouth, Type: def.PLAYER_TYPE_NEW,
@@ -54,7 +56,7 @@ var CommandList = []glob.Command{
 		Help: "transport home, to set: recall set"},
 	{AS: true, Short: "", Name: "emote", Cmd: CmdEmote, Type: def.PLAYER_TYPE_NEW,
 		Help: "emote tests... -> SomePlayer tests..."},
-	{AS: true, Short: "", Name: "help", Cmd: CmdHelp, Type: def.PLAYER_TYPE_NEW,
+	{AS: true, Short: "", Name: "commands", Cmd: CmdCommands, Type: def.PLAYER_TYPE_NEW,
 		Help: "You are here"},
 	{AS: true, Short: "", Name: "who", Cmd: CmdWho, Type: def.PLAYER_TYPE_NEW,
 		Help: "See who is online"},

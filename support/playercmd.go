@@ -142,7 +142,7 @@ func CmdAlias(player *glob.PlayerData, input string) {
 	}
 }
 
-func CmdHelp(player *glob.PlayerData, args string) {
+func CmdCommands(player *glob.PlayerData, args string) {
 	WriteToPlayer(player, glob.QuickHelp)
 }
 

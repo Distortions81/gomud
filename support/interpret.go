@@ -135,6 +135,6 @@ func PlayerCommand(player *glob.PlayerData, command string, args string, isAlias
 		}
 
 		WriteToPlayer(player, "Invalid command.")
-		CmdHelp(player, "")
+		CmdCommands(player, "")
 	}
 }

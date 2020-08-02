@@ -31,6 +31,7 @@ const PLAYER_START_ROOM = 1
 
 const PFILE_VERSION = "0.0.1"
 const SECTOR_VERSION = "0.0.1"
+const HELPS_VERSION = "0.0.1"
 
 const PASSWORD_HASH_COST = 10
 const MAX_PLAYER_NAME_LENGTH = 25
@@ -50,6 +51,7 @@ const FILE_SUFFIX = ".dat"
 const GREET_FILE = "greet.txt"
 const AUREVOIR_FILE = "aurevoir.txt"
 const NEWS_FILE = "news.txt"
+const HELPS_FILE = "help.txt"
 const PFILE_MAXARGS = 10000
 
 /*Server mode*/

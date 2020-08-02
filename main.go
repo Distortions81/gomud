@@ -124,6 +124,9 @@ func main() {
 		return
 	}
 
+	//glob.HelpSystem = support.CreateHelps()
+	//glob.HelpSystem.Topics["Default"] = support.CreateHelpTopic()
+	support.ReadHelps()
 	support.CreateShortcuts()
 	support.MakeQuickHelp()
 	support.MakeWizHelp()
