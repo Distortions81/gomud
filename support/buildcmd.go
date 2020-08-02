@@ -200,6 +200,45 @@ func CmdOLC(player *glob.PlayerData, input string) {
 			WriteToPlayer(player, "Going back to room editor...")
 			CmdOLC(player, "")
 			return
+		} else if cmdl == "name" {
+			if cmdB != "" {
+				for exitName, _ := range player.OLCEdit.Room.RoomLink.Exits {
+					if strings.EqualFold(exitName, cmdB) {
+						WriteToPlayer(player, "That exit already exists.")
+						return
+					}
+				}
+
+				//Delete old
+				exitName := player.OLCEdit.ExitName
+				exitDoor := player.OLCEdit.Exit.Door
+				exitToRoom := player.OLCEdit.Exit.ToRoom
+
+				delete(player.OLCEdit.Room.RoomLink.Exits, exitName)
+				if player.OLCEdit.Room.RoomLink.Exits == nil {
+					player.OLCEdit.Room.RoomLink.Exits = make(map[string]*glob.ExitData)
+				}
+
+				//Make new
+				if player.OLCEdit.Room.RoomLink.Exits == nil {
+					player.OLCEdit.Room.RoomLink.Exits = make(map[string]*glob.ExitData)
+				}
+				player.OLCEdit.Room.RoomLink.Exits[argTwoThrough] = CreateExit()
+
+				//Copy data over
+				player.OLCEdit.Room.RoomLink.Exits[argTwoThrough].Door = exitDoor
+				player.OLCEdit.Room.RoomLink.Exits[argTwoThrough].ToRoom = exitToRoom
+
+				player.OLCEdit.Exit = player.OLCEdit.Room.RoomLink.Exits[argTwoThrough]
+				player.OLCEdit.ExitName = argTwoThrough
+				player.OLCEdit.Mode = def.OLC_EXITS
+				glob.SectorsList[player.OLCEdit.Room.Sector].Dirty = true //Autosave
+				CmdOLC(player, "")
+				return
+			} else {
+				WriteToPlayer(player, "OLC exit <exit name>")
+			}
+
 		} else if cmdl == "door" {
 			if player.OLCEdit.Exit.Door.Door {
 				player.OLCEdit.Exit.Door.Door = false
@@ -353,7 +392,7 @@ func CmdOLC(player *glob.PlayerData, input string) {
 				if cmdB == "" {
 					WriteToPlayer(player, "OLC exit <exit name>")
 				} else if cmdBl == "create" {
-					if cmdB != "" {
+					if argThreeThrough != "" {
 						for exitName, _ := range player.OLCEdit.Room.RoomLink.Exits {
 							if strings.EqualFold(exitName, argThreeThrough) {
 								WriteToPlayer(player, "That exit already exists.")
