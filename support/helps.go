@@ -30,8 +30,8 @@ func CmdGetHelps(player *glob.PlayerData, input string) {
 	totalPages := 1
 
 	//TODO
-	//Eventually allow searching by topic, or chapter.
-	//Or if not specified, show closest match
+	//Show closest match, allow topic:chapter searching
+
 	for topicName, topicData := range glob.HelpSystem.Topics {
 		for chapterName, chapterData := range topicData.Chapters {
 			if strings.HasPrefix(strings.ToLower(chapterName), argOne) {
@@ -42,6 +42,21 @@ func CmdGetHelps(player *glob.PlayerData, input string) {
 				WriteToPlayer(player, buf)
 				WriteToPlayer(player, chapterData.Pages[pageNum]+"\r\n")
 				break
+			}
+		}
+	}
+	if found == false {
+		WriteToPlayer(player, "No chapter found with that search term, Topics found:")
+
+		for topicName, topicData := range glob.HelpSystem.Topics {
+			if strings.HasPrefix(strings.ToLower(topicName), argOne) {
+				WriteToPlayer(player, "Topic: "+topicName)
+				for chapterName, _ := range topicData.Chapters {
+					buf := fmt.Sprintf("Chapter: %v:%v", topicName, chapterName)
+					WriteToPlayer(player, buf)
+					found = true
+				}
+				WriteToPlayer(player, "") //Topic spacer
 			}
 		}
 	}
