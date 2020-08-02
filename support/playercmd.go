@@ -233,10 +233,10 @@ func CmdWho(player *glob.PlayerData, args string) {
 			connectedString := ""
 
 			if time.Since(p.IdleTime) > time.Minute {
-				idleString = " (idle " + ToHourMinute(time.Since(p.IdleTime)) + ")"
+				idleString = " (idle " + RoundSinceTime("m", p.IdleTime) + ")"
 			}
 			if time.Since(p.ConnectedFor) > time.Minute {
-				connectedString = " (on " + ToHourMinute(time.Since(p.ConnectedFor)) + ")"
+				connectedString = " (on " + RoundSinceTime("m", p.ConnectedFor) + ")"
 			}
 			pos++
 			buf = fmt.Sprintf("%d: %s%s%s", pos, p.Name, connectedString, idleString)

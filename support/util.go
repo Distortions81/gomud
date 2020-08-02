@@ -21,16 +21,18 @@ func CheckError(source string, err error, fatal bool) {
 	}
 }
 
-func ToHourMinute(t time.Duration) string {
-	out := ""
-
-	if int(t.Hours()) > 0 {
-		out = out + fmt.Sprintf("%dh", int(t.Hours()))
+func RoundSinceTime(roundTo string, value time.Time) string {
+	since := time.Since(value)
+	if roundTo == "h" {
+		since -= since % time.Hour
 	}
-	if int(t.Minutes()) > 0 {
-		out = out + fmt.Sprintf("%dm", int(t.Minutes()))
+	if roundTo == "m" {
+		since -= since % time.Minute
 	}
-	return out
+	if roundTo == "s" {
+		since -= since % time.Second
+	}
+	return since.String()
 }
 
 func MakeFingerprint(prefix string) string {
