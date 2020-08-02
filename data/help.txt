@@ -14,7 +14,7 @@
 				"ANSI": {
 					"Keywords": {},
 					"Pages": {
-						"1": "Color codes:\n\r{wDark colors:         {WBright colors:{x\n\rk {KBlack{x                K {KDark Gray{x\n\rr {rDark Red{x             R {RBright Red{x\n\rg {gDark Green{x           G {GBright Green{x\n\ry {yDark Yellow{x          Y {YBright Yellow{x\n\rb {bDark Blue{x            B {BBright Blue{x\n\rm {mDark Magenta{x         M {MBright Magenta{x\n\rc {cDark Cyan{x            C {CBright Cyan{x\n\rw {wGray{x                 W {WWhite{x\n\rx {xNo Color,reset style {{{{ to display {\n\r\n\rStyles: (May not appear on all clients)\n\ri {iitalic{x\n\ru {uunderline{x\n\rn {n{Winverse{x (only works with bright colors)\n\rs {sstrike-through{x\n\r\n\r\n\rThis:\n\r{{{WRoses {{{ware {{{Rred.\n\r\n\rBecomes:\n\r{WRoses {ware {Rred."
+						"1": "Color codes:\n\r{wDark colors:           {WBright colors:{x\n\rk {KBlack{x                K {KDark Gray{x\n\rr {rDark Red{x             R {RBright Red{x\n\rg {gDark Green{x           G {GBright Green{x\n\ry {yDark Yellow{x          Y {YBright Yellow{x\n\rb {bDark Blue{x            B {BBright Blue{x\n\rm {mDark Magenta{x         M {MBright Magenta{x\n\rc {cDark Cyan{x            C {CBright Cyan{x\n\rw {wGray{x                 W {WWhite{x\n\rx {xNo Color,reset style {{{{ to display {\n\r\n\rStyles: (May not appear on all clients)\n\ri {iitalic{x\n\ru {uunderline{x\n\rn {n{Winverse{x (only works with bright colors)\n\rs {sstrike-through{x\n\r\n\r\n\rThis:\n\r{{{WRoses {{{ware {{{Rred.\n\r\n\rBecomes:\n\r{WRoses {ware {Rred.\n\r"
 					}
 				}
 			},
