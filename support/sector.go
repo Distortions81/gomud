@@ -94,19 +94,23 @@ func WriteSector(sector *glob.SectorData) bool {
 		return false
 	}
 
-	err = ioutil.WriteFile(fileName, []byte(outbuf.String()), 0644)
+	//Async write
+	go func(outbuf bytes.Buffer) {
+		err = ioutil.WriteFile(fileName, []byte(outbuf.String()), 0644)
 
-	if err != nil {
-		CheckError("WriteSector: WriteFile", err, def.ERROR_NONFATAL)
-		return false
-	}
+		if err != nil {
+			CheckError("WriteSector: WriteFile", err, def.ERROR_NONFATAL)
+		}
 
-	buf := fmt.Sprintf("Wrote %v, %v.", fileName, ScaleBytes(len(outbuf.String())))
-	mlog.Write(buf)
+		buf := fmt.Sprintf("Wrote %v, %v.", fileName, ScaleBytes(len(outbuf.String())))
+		mlog.Write(buf)
+	}(*outbuf)
+
 	sector.Dirty = false
 	return true
 }
 
+//TODO async read
 func ReadSector(name string) *glob.SectorData {
 
 	_, err := os.Stat(def.DATA_DIR + def.SECTOR_DIR + name)

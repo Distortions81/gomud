@@ -6,72 +6,26 @@ probably handle disconnected/deleted players/items/states at all times (via dedi
 
 online quest editor
 
-max connections/minute per ip, autoban
+max connections/minute per ip, autoban (UFW is on, still should do some mud-level detection)
 ip/dns banning
 
 chat log
 input log --skip password
 
--- OLC STUFF --
-OLC editor layout
-
-OLC <prompts for edit type>
-OLC done <exits>
-
-OLC sector
-OLC room
-OLC object
-OLC trigger
-OLC mobile
-OLC quest
-
-sub edits:
-name
-description
-exit(rooms)
-trigger(rooms)
-flags
-type(trigger/object)
-
-List commands should also allow search results
-OLC list areas (rename area in all matching sectors)
-OLC list sectors
-OLC list rooms
-OLC list objects
-OLC list mobiles
-OLC list triggers <room/sector>
-OLC list quests <room/sector/world>
-
-needs description editor, for multi-line descriptons. Code can be re-used for notes and helps.
-Could feasably bypass interp for ease of use, with do <command> to bypass. As well as add/delete line mode.
-also allow ;; or \n, some kind of delim for single-line
-
-inside editors: blank line or command refreshes editor view
-OLC edit <field> (editor mode)
-OLC edit <field> <argument>
-OLC delete (prompts OLC delete confirm, if set)
-
-Edit modes should show any related triggers, objects, mobiles, etc... Auto-space vnums by 100?
-move vnum command, fixes all links.
-
 commands todo
 whois/finger
 look <player/obj/mobile/direction>
-OLC, show color codes mode
+OLC, show color codes mode //Partial, available for OLC
 channels, reply
-config/settings, ansi, width,paging,lines,
+config/settings, ansi, width,paging,lines, //Config in, need to do something with flags
 sit/stand/lie/sleep/rest
 open/close/lock/unlock
-multi-line editor, OLC/note full-editor
-delete
 
 OLC ID quickcycle, quickdump (website)?
 Quickmap
-block "dig over" doors.
 
 largish ASCII emjoii
 
-OLC/room exits
 wiz: player level set, kick/ban/slay
 
 pedit/oedit/medit
@@ -79,9 +33,7 @@ clone obj/player/mobile/room/sector
 delete ...
 move ...
 link <dir> <s:id>
-teleport to
 teleport from
-bamf
 short flags
 room desc off on walk
 mccp/telnet
@@ -91,15 +43,13 @@ pload, remove player/kick, silence, blind, deaf, jail
 <-- 
 map
 look up doc/doa/tct commands?
-afk, idle
+afk
 helps
 email/discord 2fa/recovery
 
 ansi blink/extended color, etc.
-{{escape, skip non-used codes
 unicode chat
 web client
-
 
 sleep/rest, hibernate (no hunger/thirst/heal)
 friends list, use fingerprint
@@ -110,7 +60,7 @@ email recovery test?
 
 *********************
 large paper or photoshop, or program or generator
-draw whOLC process tree
+draw whole process tree
 Plans locks and threads
 *********************
 

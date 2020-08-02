@@ -15,8 +15,6 @@ limit max number of aliases
 string subsistutuion system
 hide/noecho password login(telnet neg)
 
-escape {{ color code
-
 asave/psave on panic/kill, keep X files in archive
 write logs to log folder with date, buffered
 

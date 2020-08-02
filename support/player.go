@@ -95,6 +95,7 @@ func CreatePlayerFromDesc(conn *glob.ConnectionData) *glob.PlayerData {
 	return &player
 }
 
+//TODO ASYNC READ
 func ReadPlayer(name string, load bool) (*glob.PlayerData, bool) {
 
 	_, err := os.Stat(def.DATA_DIR + def.PLAYER_DIR + strings.ToLower(name))
@@ -161,6 +162,7 @@ func WritePlayer(player *glob.PlayerData) bool {
 		CheckError("WritePlayer: enc.Encode", err, def.ERROR_NONFATAL)
 		return false
 	}
+
 	_, err := os.Create(fileName)
 
 	if err != nil {
@@ -168,15 +170,18 @@ func WritePlayer(player *glob.PlayerData) bool {
 		return false
 	}
 
-	err = ioutil.WriteFile(fileName, []byte(outbuf.String()), 0644)
+	//Async write
+	go func(outbuf bytes.Buffer) {
+		err = ioutil.WriteFile(fileName, []byte(outbuf.String()), 0644)
 
-	if err != nil {
-		CheckError("WritePlayer: WriteFile", err, def.ERROR_NONFATAL)
-		return false
-	}
+		if err != nil {
+			CheckError("WritePlayer: WriteFile", err, def.ERROR_NONFATAL)
+		}
 
-	buf := fmt.Sprintf("Wrote %v, %v.", fileName, ScaleBytes(len(outbuf.String())))
-	mlog.Write(buf)
+		buf := fmt.Sprintf("Wrote %v, %v.", fileName, ScaleBytes(len(outbuf.String())))
+		mlog.Write(buf)
+	}(*outbuf)
+
 	player.Dirty = false
 	return true
 }
