@@ -33,6 +33,7 @@ func ReadSectorList() {
 	for _, file := range files {
 		if strings.HasSuffix(file.Name(), def.FILE_SUFFIX) {
 			sector := ReadSector(file.Name())
+			sector.Valid = true
 			if sector != nil {
 				if glob.SectorsList[sector.ID].Valid {
 					buf := fmt.Sprintf("%v has same sector ID as %v! Skipping!", sector.Name, glob.SectorsList[sector.ID].Name)
@@ -55,7 +56,10 @@ func ReloadSector() {
 
 func WriteSectorList() {
 	for x := 1; x <= glob.SectorsListEnd; x++ {
-		if glob.SectorsList[x].Valid {
+		if glob.SectorsList[x].Valid && glob.SectorsList[x].Name != "" {
+			if glob.SectorsList[x].Fingerprint == "" {
+				glob.SectorsList[x].Fingerprint = MakeFingerprint(glob.SectorsList[x].Name)
+			}
 			glob.SectorsList[x].ID = x
 			WriteSector(&glob.SectorsList[x])
 		}
@@ -110,7 +114,6 @@ func WriteSector(sector *glob.SectorData) bool {
 	return true
 }
 
-//TODO async read
 func ReadSector(name string) *glob.SectorData {
 
 	_, err := os.Stat(def.DATA_DIR + def.SECTOR_DIR + name)
@@ -132,10 +135,52 @@ func ReadSector(name string) *glob.SectorData {
 				CheckError("ReadSector: Unmashal", err, def.ERROR_NONFATAL)
 				return nil
 			}
-
+			numRooms := 0
 			for x, _ := range sector.Rooms {
+				numRooms++
 				room := sector.Rooms[x]
-				room.Players = make(map[string]*glob.PlayerData)
+
+				if room.Players == nil {
+					room.Players = make(map[string]*glob.PlayerData)
+				}
+				if room.Exits == nil {
+					room.Exits = make(map[string]*glob.ExitData)
+				}
+				if room.PermObjects == nil {
+					room.PermObjects = make(map[string]*glob.ObjectData)
+				}
+				if room.Objects == nil {
+					room.Objects = make(map[string]*glob.ObjectData)
+				}
+
+				for x, _ := range room.Exits {
+					exit := room.Exits[x]
+					if exit.Door != nil {
+						exit.Door.Valid = true
+					}
+					exit.RoomP = room
+					exit.Valid = true
+				}
+				for x, _ := range room.PermObjects {
+					pObj := room.PermObjects[x]
+					pObj.Sector = sector.ID
+					pObj.InRoom = room
+					pObj.Valid = true
+				}
+				for x, _ := range room.Objects {
+					obj := room.Objects[x]
+					obj.Sector = sector.ID
+					obj.InRoom = room
+					obj.Valid = true
+				}
+				room.SectorP = sector
+				room.Valid = true
+			}
+			sector.NumRooms = numRooms
+
+			for x, _ := range sector.Objects {
+				obj := sector.Objects[x]
+				obj.Valid = true
 			}
 
 			prefix := ""
@@ -146,6 +191,7 @@ func ReadSector(name string) *glob.SectorData {
 				mlog.Write(sector.Name + " assigned fingerprint.")
 				sector.Fingerprint = MakeFingerprint(prefix)
 			}
+			sector.Valid = true
 			mlog.Write("ReadSector: " + sector.Name)
 			return sector
 		} else {
@@ -157,22 +203,19 @@ func ReadSector(name string) *glob.SectorData {
 }
 
 func CreateSector() *glob.SectorData {
+	glob.SectorsListEnd++
+
 	sector := glob.SectorData{
+		ID:          glob.SectorsListEnd,
 		Fingerprint: "",
 		Name:        "",
 		Area:        "",
 		Description: "",
-		Rooms:       nil,
+		Rooms:       make(map[int]*glob.RoomData),
+		Objects:     make(map[string]*glob.ObjectData),
+		Dirty:       false,
 
 		Valid: true,
-	}
-
-	if sector.Rooms == nil {
-		sector.Rooms = make(map[int]*glob.RoomData)
-	}
-
-	for _, value := range sector.Rooms {
-		value.Players = make(map[string]*glob.PlayerData)
 	}
 
 	return &sector
@@ -182,11 +225,12 @@ func CreateRoom() *glob.RoomData {
 	room := glob.RoomData{
 		Name:        "new room",
 		Description: "",
-
-		Valid: true,
+		Players:     make(map[string]*glob.PlayerData),
+		Exits:       make(map[string]*glob.ExitData),
+		PermObjects: make(map[string]*glob.ObjectData),
+		Objects:     make(map[string]*glob.ObjectData),
+		Valid:       true,
 	}
-	room.Players = make(map[string]*glob.PlayerData)
-	room.Exits = make(map[string]*glob.ExitData)
 
 	return &room
 }
@@ -196,5 +240,6 @@ func CreateExit() *glob.ExitData {
 		Valid: true,
 	}
 
+	exit.Door = &glob.DoorData{Valid: true}
 	return &exit
 }
