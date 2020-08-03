@@ -135,6 +135,9 @@ func ReadSector(name string) *glob.SectorData {
 				CheckError("ReadSector: Unmashal", err, def.ERROR_NONFATAL)
 				return nil
 			}
+			if sector.ID > glob.SectorsListEnd {
+				glob.SectorsListEnd = sector.ID
+			}
 			numRooms := 0
 			for x, _ := range sector.Rooms {
 				numRooms++
@@ -186,7 +189,7 @@ func ReadSector(name string) *glob.SectorData {
 			prefix := ""
 			if sector.Fingerprint == "" {
 				if sector.Name != "" {
-					prefix = sector.Name + "-"
+					prefix = sector.Name
 				}
 				mlog.Write(sector.Name + " assigned fingerprint.")
 				sector.Fingerprint = MakeFingerprint(prefix)
@@ -203,7 +206,6 @@ func ReadSector(name string) *glob.SectorData {
 }
 
 func CreateSector() *glob.SectorData {
-	glob.SectorsListEnd++
 
 	sector := glob.SectorData{
 		ID:          glob.SectorsListEnd,

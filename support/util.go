@@ -36,6 +36,9 @@ func RoundSinceTime(roundTo string, value time.Time) string {
 }
 
 func MakeFingerprint(prefix string) string {
+	if prefix != "" {
+		prefix = prefix + "-"
+	}
 	fingerprint := fmt.Sprintf("%v%v-%v", prefix, time.Now().UnixNano(), rand.Uint64())
 	return fingerprint
 }

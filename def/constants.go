@@ -52,7 +52,6 @@ const GREET_FILE = "greet.txt"
 const AUREVOIR_FILE = "aurevoir.txt"
 const NEWS_FILE = "news.txt"
 const HELPS_FILE = "help.txt"
-const PFILE_MAXARGS = 10000
 
 /*Server mode*/
 const SERVER_RUNNING = 0
