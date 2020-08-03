@@ -8,37 +8,42 @@ import (
 )
 
 type HelpMain struct {
-	Version string
+	Version string `json:",omitempty"`
 
-	Preface string
-	Topics  map[string]HelpTopics
+	Preface string                 `json:",omitempty"`
+	Topics  map[string]*HelpTopics `json:",omitempty"`
 
 	//Keyword links?
 
 	Dirty bool `json:"-"`
+	Valid bool `json:"-"`
 }
 
 type HelpTopics struct {
 	Name string `json:"-"`
-	Desc string
+	Desc string `json:",omitempty"`
 
-	Author  string
-	Created time.Time
+	Author  string    `json:",omitempty"`
+	Created time.Time `json:",omitempty"`
 
 	//Time, name
-	EditHistory    map[string]string
-	Changes        map[string]string
-	QuickReference string
+	EditHistory    map[string]string `json:",omitempty"`
+	Changes        map[string]string `json:",omitempty"`
+	QuickReference string            `json:",omitempty"`
 
-	Preface      string
-	Chapters     map[string]HelpPage
-	TermAbbrUsed map[string]string
-	Footnotes    map[string]string
+	Preface      string              `json:",omitempty"`
+	Chapters     map[string]HelpPage `json:",omitempty"`
+	TermAbbrUsed map[string]string   `json:",omitempty"`
+	Footnotes    map[string]string   `json:",omitempty"`
+
+	Valid bool `json:"-"`
 }
 
 type HelpPage struct {
-	Keywords map[int]string
-	Pages    map[int]string
+	Keywords map[int]string `json:",omitempty"`
+	Pages    map[int]string `json:",omitempty"`
+
+	Valid bool `json:"-"`
 }
 
 type MleData struct {
@@ -50,10 +55,15 @@ type MleData struct {
 	CurLine   int     `json:",omitempty"`
 	CallBackP *string `json:"-"`
 	CallBack  string  `json:",omitempty"`
+
+	Valid bool `json:"-"`
 }
 
 type DoorData struct {
 	Door bool `json:",omitempty"`
+
+	OpenString  string `json:",omitempty"`
+	CloseString string `json:",omitempty"`
 
 	Closed    bool `json:",omitempty"`
 	AutoOpen  bool `json:",omitempty"`
@@ -61,44 +71,56 @@ type DoorData struct {
 
 	Hidden bool `json:",omitempty"`
 	Keyed  bool `json:",omitempty"`
+
+	Valid bool `json:"-"`
 }
 
 type ExitData struct {
-	ToRoom LocationData
+	RoomP          *RoomData `json:"-"`
+	ColorName      string    `json:",omitempty"`
+	Description    string    `json:",omitempty"`
+	ExitFromString string    `json:",omitempty"`
+	EnterToString  string    `json:",omitempty"`
 
-	Door DoorData `json:",omitempty"`
+	ToRoom LocationData `json:",omitempty"`
+	Door   *DoorData    `json:",omitempty"`
+	Hidden bool         `json:",omitempty"`
 
-	//function to print
-	//fucntion to parse
-	Valid bool `json:",omitempty"`
+	Valid bool `json:"-"`
 }
 
 type RoomData struct {
+	SectorP     *SectorData            `json:"-"`
 	Name        string                 `json:",omitempty"`
+	ColorName   string                 `json:",omitempty"`
 	Description string                 `json:",omitempty"`
 	Players     map[string]*PlayerData `json:"-"`
+	Objects     map[string]*ObjectData `json:"-"`
+	PermObjects map[string]*ObjectData `json:",omitempty"`
 
-	//Convert to map?
 	Exits map[string]*ExitData `json:",omitempty"`
 
-	Valid bool
+	Valid bool `json:"-"`
 }
 
 type SectorData struct {
-	Version string
+	Version string `json:",omitempty"`
 
-	NumRooms    int
-	ID          int
+	NumRooms    int    `json:",omitempty"`
+	ID          int    `json:",omitempty"`
 	Fingerprint string `json:",omitempty"`
 
 	Name        string `json:",omitempty"`
+	ColorName   string `json:",omitempty"`
 	Area        string `json:",omitempty"`
 	Description string `json:",omitempty"`
 
-	Rooms map[int]*RoomData `json:",omitempty"`
-	Dirty bool              `json:"-"`
+	Rooms   map[int]*RoomData      `json:",omitempty"`
+	Objects map[string]*ObjectData `json:",omitempty"`
 
-	Valid bool
+	Dirty bool `json:"-"`
+
+	Valid bool `json:"-"`
 }
 
 type InputBuffer struct {
@@ -108,30 +130,33 @@ type InputBuffer struct {
 	BufferOutPos   int                             `json:"-"`
 	BufferOutCount int                             `json:"-"`
 	InputBuffer    [def.MAX_INPUT_LINES + 1]string `json:"-"`
+
+	Valid bool ` json:"-"`
 }
 
 type ConnectionData struct {
 	Input InputBuffer `json:"-"`
 
-	Name    string   `json:",omitempty"`
+	Name    string   `json:"-"`
 	Desc    net.Conn `json:"-"`
-	Address string   `json:",omitempty"`
-	SSL     bool     `json:",omitempty"`
+	Address string   `json:"-"`
+	SSL     bool     `json:"-"`
 
-	State        int       `json:",omitempty"`
-	ConnectedFor time.Time `json:",omitempty"`
-	IdleTime     time.Time `json:",omitempty"`
+	State        int       `json:"-"`
+	ConnectedFor time.Time `json:"-"`
+	IdleTime     time.Time `json:"-"`
 
-	BytesOut int `json:",omitempty"`
-	BytesIn  int `json:",omitempty"`
+	BytesOut int `json:"-"`
+	BytesIn  int `json:"-"`
 
-	BytesOutRecorded int `json:",omitempty"`
-	BytesInRecorded  int `json:",omitempty"`
+	BytesOutRecorded int `json:"-"`
+	BytesInRecorded  int `json:"-"`
 
 	TempPass   string      `json:"-"`
 	TempPlayer *PlayerData `json:"-"`
 	Player     *PlayerData `json:"-"`
-	Valid      bool
+
+	Valid bool `json:"-"`
 }
 
 type OLCSettingData struct {
@@ -149,6 +174,8 @@ type OLCSettingData struct {
 	OLCPrompt bool `json:",omitempty"`
 	//OLC prompt string
 	OLCPromptString string `json:",omitempty"`
+
+	Valid bool `json:"-"`
 }
 
 type SettingsData struct {
@@ -174,32 +201,82 @@ type SettingsData struct {
 	PreNewline bool `json:",omitempty"`
 	//Newline after commands
 	PostNewline bool `json:",omitempty"`
+
+	Valid bool `json:"-"`
+}
+
+type ObjectData struct {
+	Sector      int             `json:",omitempty"`
+	ID          int             `json:",omitempty"`
+	Fingerprint string          `json:",omitempty"`
+	Container   ObjectContainer `json:",omitempty"`
+
+	Name        string `json:",omitempty"`
+	Description string `json:",omitempty"`
+	ColorName   string `json:",omitempty"`
+	Owner       string `json:",omitempty"`
+
+	Player     *PlayerData  `json:"-"`
+	InRoom     *RoomData    `json:"-"`
+	Location   LocationData `json:",omitempty"`
+	Persistant bool         `json:",omitempty"`
+
+	PlayerRestring string         `json:",omitempty"`
+	Owners         map[int]string `json:",omitempty"`
+
+	Type          int     `json:",omitempty"`
+	PlayerUseable bool    `json:",omitempty"`
+	PlayerTake    bool    `json:",omitempty"`
+	Unique        bool    `json:",omitempty"`
+	Weight        int     `json:",omitempty"`
+	SlotsUsed     int     `json:",omitempty"`
+	Bound         bool    `json:",omitempty"`
+	Health        float64 `json:",omitempty"`
+	HealthPerUse  float64 `json:",omitempty"`
+	WearSlot      int     `json:",omitempty"`
+
+	Valid bool `json:"-"`
+}
+
+type ObjectContainer struct {
+	Name string `json:",omitempty"`
+
+	Contents  map[string]ObjectData `json:",omitempty"`
+	Slots     int                   `json:",omitempty"`
+	MaxWeight int                   `json:",omitempty"`
+
+	Closeable bool `json:",omitempty"`
+	Closed    bool `json:",omitempty"`
+
+	Valid bool `json:"-"`
 }
 
 type PlayerData struct {
-	Version     string
-	Fingerprint string
-	Name        string
-	Password    string
-	Dirty       bool `json:"-"`
+	Version     string `json:",omitempty"`
+	Fingerprint string `json:",omitempty"`
 
-	PlayerType int `json:",omitempty"`
-	Level      int
-	State      int
-	Location   LocationData
+	Name      string `json:",omitempty"`
+	ColorName string `json:",omitempty"`
+	Password  string `json:",omitempty"`
+	Dirty     bool   `json:"-"`
+
+	PlayerType int          `json:",omitempty"`
+	Level      int          `json:",omitempty"`
+	State      int          `json:",omitempty"`
+	Location   LocationData `json:",omitempty"`
 	Recall     LocationData `json:",omitempty"`
 
-	Created      time.Time
-	LastSeen     time.Time
-	TimePlayed   int
+	Created      time.Time `json:",omitempty"`
+	TimePlayed   int       `json:",omitempty"`
+	LastSeen     time.Time `json:",omitempty"`
 	UnlinkedTime time.Time `json:"-"`
 	OLCEdit      OLCEdit   `json:",omitempty"`
 	CurEdit      MleData   `json:",omitempty"`
 
-	Aliases     map[string]string
-	Connections map[string]int
-	BytesIn     map[string]int
-	BytesOut    map[string]int
+	Aliases     map[string]string `json:",omitempty"`
+	Connections map[string]int    `json:",omitempty"`
+	BytesIn     map[string]int    `json:",omitempty"`
+	BytesOut    map[string]int    `json:",omitempty"`
 
 	Config      PConfigData    `json:",omitempty"`
 	OLCSettings OLCSettingData `json:",omitempty"`
@@ -210,7 +287,6 @@ type PlayerData struct {
 	Sex         string `json:",omitempty"`
 
 	Connection *ConnectionData `json:"-"`
-	Banned     bool            `json:",omitempty"`
 	Valid      bool            `json:"-"`
 }
 
@@ -230,6 +306,7 @@ type OLCEdit struct {
 	ExitName string       `json:",omitempty"`
 
 	Description string `json:",omitempty"`
+	Valid       bool   `json:"-"`
 }
 
 type LocationData struct {
@@ -239,29 +316,33 @@ type LocationData struct {
 	RoomLink *RoomData `json:"-"`
 	//Function to print
 	//Function to parse
+	Valid bool `json:"-"`
 }
 
 type Command struct {
-	AS    bool
-	Short string
-	Name  string
-	Cmd   func(player *PlayerData, args string)
-	Type  int
-	Help  string
+	AS    bool                                  `json:",omitempty"`
+	Short string                                `json:",omitempty"`
+	Name  string                                `json:",omitempty"`
+	Cmd   func(player *PlayerData, args string) `json:"-"`
+	Type  int                                   `json:",omitempty"`
+	Help  string                                `json:",omitempty"`
+	Valid bool                                  `json:"-"`
 }
 
 type pTypeData struct {
 	PType int    `json:",omitempty"`
 	PName string `json:",omitempty"`
+	Valid bool   `json:"-"`
 }
 
 type ConfigData struct {
-	ID   int     `json:",omitempty"`
-	Name string  `json:",omitempty"`
-	Help string  `json:",omitempty"`
-	Ref  *bool   `json:",omitempty"`
-	RefS *string `json:",omitempty"`
-	RefI *int    `json:",omitempty"`
+	ID    int     `json:",omitempty"`
+	Name  string  `json:",omitempty"`
+	Help  string  `json:",omitempty"`
+	Ref   *bool   `json:",omitempty"`
+	RefS  *string `json:",omitempty"`
+	RefI  *int    `json:",omitempty"`
+	Valid bool    `json:"-"`
 }
 
 type PConfigData struct {
@@ -276,4 +357,5 @@ type PConfigData struct {
 	WhoHide      int    `json:",omitempty"`
 	PreNewline   bool   `json:",omitempty"`
 	PostNewline  bool   `json:",omitempty"`
+	Valid        bool   `json:"-"`
 }
