@@ -8,17 +8,20 @@ import (
 	"../def"
 )
 
-/*The big dataset*/
+/*Descriptor counting*/
 var OpenDesc int
 var OpenDescLock sync.Mutex
 
-var MudLog *os.File
-
+/*Listeners, server state*/
 var ServerState = def.SERVER_RUNNING
 var ServerListener *net.TCPListener
 var ServerListenerSSL net.Listener
+
+/*Log desc, round channel*/
+var MudLog *os.File
 var Round <-chan struct{}
 
+/*Main Game Data*/
 var ConnectionListEnd int
 var ConnectionList [def.MAX_USERS + 1]ConnectionData
 var ConnectionListLock sync.Mutex
@@ -38,3 +41,8 @@ var WizHelp string
 var Greeting string
 var AuRevoir string
 var News string
+
+//Autosave
+var PlayerBackgroundPos int
+var SectorBackgroundPos int
+var NumPlayers int

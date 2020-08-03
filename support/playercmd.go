@@ -285,12 +285,11 @@ func CmdChat(player *glob.PlayerData, args string) {
 }
 
 func CmdSave(player *glob.PlayerData, args string) {
-	okay := WritePlayer(player)
-	if okay == false {
-		WriteToPlayer(player, "Saving character failed!!!")
-	} else {
-		WriteToPlayer(player, "Character saved.")
+	if player.ReqSave == false {
+		WriteToPlayer(player, "Saving character...")
 	}
+	player.Dirty = true
+	player.ReqSave = true
 }
 
 func CmdLook(player *glob.PlayerData, args string) {

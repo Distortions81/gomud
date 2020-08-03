@@ -259,6 +259,7 @@ type PlayerData struct {
 	ColorName string `json:",omitempty"`
 	Password  string `json:",omitempty"`
 	Dirty     bool   `json:"-"`
+	ReqSave   bool   `json:"-"`
 
 	PlayerType int          `json:",omitempty"`
 	Level      int          `json:",omitempty"`

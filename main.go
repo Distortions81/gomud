@@ -217,53 +217,112 @@ func mainLoop() {
 			}
 
 			numPlayerLast = tempCount
+			glob.NumPlayers = tempCount
 			time.Sleep(def.ROUND_REST_MS) /*Limit max CPU, and allow background to run*/
 
 		}
 	}()
 
-	/*Background tasks*/
+	/*Player background tasks*/
 	go func() {
 		for glob.ServerState == def.SERVER_RUNNING {
-			/* ONCE A MINUTE */
-			time.Sleep(time.Minute)
+
+			/*Delay based on number of characters*/
+			if glob.NumPlayers > 1 {
+				sleepFor := def.PLAYER_BACKGROUND_uS / (glob.NumPlayers)
+				time.Sleep(time.Duration(sleepFor) * time.Microsecond)
+				//fmt.Println(fmt.Sprintf("Player autosave slept for %v uS.", sleepFor))
+			} else {
+				time.Sleep(time.Duration(def.PLAYER_BACKGROUND_uS) * time.Microsecond)
+			}
+
+			/*Cycle players, skipping anyone not playing*/
+			if glob.PlayerBackgroundPos <= glob.PlayerListEnd {
+				glob.PlayerBackgroundPos++
+
+				for glob.PlayerBackgroundPos < glob.PlayerListEnd &&
+					glob.PlayerList[glob.PlayerBackgroundPos].Valid == false &&
+					glob.PlayerList[glob.PlayerBackgroundPos].Connection != nil &&
+					glob.PlayerList[glob.PlayerBackgroundPos].Connection.Valid {
+					glob.PlayerBackgroundPos++
+				}
+			} else {
+				glob.PlayerBackgroundPos = 1
+			}
+
+			/*--- LOCK ---*/
+			glob.ConnectionListLock.Lock()
+			/*--- LOCK ---*/
+
+			/*Autosave players, check if valid*/
+			if glob.PlayerList[glob.PlayerBackgroundPos] != nil &&
+				glob.PlayerList[glob.PlayerBackgroundPos].Valid {
+
+				/*Marked dirty, or save requested*/
+				if glob.PlayerList[glob.PlayerBackgroundPos].Dirty ||
+					glob.PlayerList[glob.PlayerBackgroundPos].ReqSave {
+
+					/*Write*/
+					support.WritePlayer(glob.PlayerList[glob.PlayerBackgroundPos])
+
+					/*If requested, notify player*/
+					if glob.PlayerList[glob.PlayerBackgroundPos].ReqSave {
+						support.WriteToPlayer(glob.PlayerList[glob.PlayerBackgroundPos], "Character saved.")
+						glob.PlayerList[glob.PlayerBackgroundPos].ReqSave = false
+					}
+
+				}
+			}
+
+			/*Remove players that haven't been connected for some time*/
+			player := glob.PlayerList[glob.PlayerBackgroundPos]
+			if player != nil &&
+				player.Valid &&
+				player.Location.RoomLink != nil {
+
+				if player.Connection.Valid == false &&
+					player.UnlinkedTime.IsZero() == false &&
+					time.Since(player.UnlinkedTime) > (2*time.Minute) {
+
+					player.UnlinkedTime = time.Time{}
+					support.WritePlayer(player)
+					support.WriteToRoom(player, fmt.Sprintf("%s fades into nothing...", player.Name))
+					support.RemovePlayer(player)
+				}
+			}
+
+			/*--- UNLOCK ---*/
+			glob.ConnectionListLock.Unlock()
+			/*--- UNLOCK ---*/
+		}
+	}()
+
+	/*Sector background tasks*/
+	go func() {
+		for glob.ServerState == def.SERVER_RUNNING {
+
+			if glob.SectorsListEnd > 2 {
+				sleepFor := def.SECTOR_BACKGROUND_uS / (glob.SectorsListEnd - 1)
+				time.Sleep(time.Duration(sleepFor) * time.Microsecond)
+				//fmt.Println(fmt.Sprintf("Sector autosave slept for %v uS,", sleepFor))
+			} else {
+				time.Sleep(def.SECTOR_BACKGROUND_uS * time.Microsecond)
+			}
+
+			/*Cycle sectors*/
+			if glob.SectorBackgroundPos < glob.SectorsListEnd {
+				glob.SectorBackgroundPos++
+			} else {
+				glob.SectorBackgroundPos = 0
+			}
 
 			/*--- LOCK ---*/
 			glob.ConnectionListLock.Lock()
 			/*--- LOCK ---*/
 
 			/*Autosave sectors*/
-			for x := 1; x <= glob.SectorsListEnd; x++ {
-				if glob.SectorsList[x].Dirty {
-					support.WriteSector(&glob.SectorsList[x])
-				}
-			}
-
-			/*Autosave players*/
-			for x := 1; x <= glob.PlayerListEnd; x++ {
-				if glob.PlayerList[x].Dirty {
-					support.WritePlayer(glob.PlayerList[x])
-				}
-			}
-
-			/*Remove disconnected players after a while*/
-			for x := 1; x <= glob.PlayerListEnd; x++ {
-				player := glob.PlayerList[x]
-
-				if player != nil &&
-					player.Valid &&
-					player.Location.RoomLink != nil {
-
-					if player.Connection.Valid == false &&
-						player.UnlinkedTime.IsZero() == false &&
-						time.Since(player.UnlinkedTime) > (2*time.Minute) {
-
-						player.UnlinkedTime = time.Time{}
-						support.WritePlayer(player)
-						support.WriteToRoom(player, fmt.Sprintf("%s fades into nothing...", player.Name))
-						support.RemovePlayer(player)
-					}
-				}
+			if glob.SectorsList[glob.SectorBackgroundPos].Dirty {
+				support.WriteSector(&glob.SectorsList[glob.SectorBackgroundPos])
 			}
 
 			/*--- UNLOCK ---*/

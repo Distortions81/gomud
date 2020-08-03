@@ -285,12 +285,8 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 			SetupNewCharacter(con.Player)
 			con.State = def.CON_STATE_NEWS
 
-			okay := WritePlayer(con.Player)
-			if okay == false {
-				WriteToPlayer(con.Player, "Saving character failed!!!")
-			} else {
-				WriteToPlayer(con.Player, "Character saved.")
-			}
+			con.Player.Dirty = true
+			con.Player.ReqSave = true
 
 			WriteToDesc(con, glob.News)
 			WriteToDesc(con, "{K[Press enter or return to continue]")
