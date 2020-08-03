@@ -50,3 +50,6 @@ loginName {
         return
     }
 }
+
+
+Check / Set valid flags on all memory objects
