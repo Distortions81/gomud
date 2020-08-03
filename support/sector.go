@@ -100,6 +100,9 @@ func WriteSector(sector *glob.SectorData) bool {
 
 	//Async write
 	go func(outbuf bytes.Buffer) {
+		glob.WriteSectorsLock.Lock()
+		defer glob.WriteSectorsLock.Unlock()
+
 		err = ioutil.WriteFile(fileName, []byte(outbuf.String()), 0644)
 
 		if err != nil {

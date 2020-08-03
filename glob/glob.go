@@ -12,6 +12,10 @@ import (
 var OpenDesc int
 var OpenDescLock sync.Mutex
 
+/*Files desc locks*/
+var WritePlayerLock sync.Mutex
+var WriteSectorsLock sync.Mutex
+
 /*Listeners, server state*/
 var ServerState = def.SERVER_RUNNING
 var ServerListener *net.TCPListener

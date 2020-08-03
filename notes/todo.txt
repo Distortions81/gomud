@@ -1,6 +1,12 @@
 new
 
-olc/player dirty flags, add them! (seems good for now)
+WRITE SECTORS/PLAYERS TO TEMP FILE.
+MOVE OLD FILE TO BACKUP DIR, CRON COMPRESS / DELETE EXCESS
+RENAME TEMP FILE
+
+olc/player dirty flags, add/check them!
+
+
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 telnet negotate, CHARSET, MCCP, UNICDOE, SSL, etc.
 start OLC object

@@ -172,6 +172,9 @@ func WritePlayer(player *glob.PlayerData) bool {
 
 	//Async write
 	go func(outbuf bytes.Buffer) {
+		glob.WritePlayerLock.Lock()
+		defer glob.WritePlayerLock.Unlock()
+
 		err = ioutil.WriteFile(fileName, []byte(outbuf.String()), 0644)
 
 		if err != nil {
