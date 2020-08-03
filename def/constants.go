@@ -127,3 +127,6 @@ const MLE_ADD = 100
 const MLE_REMOVE = 200
 const MLE_INSERT = 300
 const MLE_REPLACE = 400
+
+/*Objects*/
+const OBJ_TYPE_NORMAL = 0
