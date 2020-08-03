@@ -141,6 +141,7 @@ func ReadHelps() bool {
 
 		if file != nil && err == nil {
 			helps := CreateHelps()
+			helps.Valid = true
 
 			err := json.Unmarshal([]byte(file), &helps)
 			if err != nil {
@@ -148,7 +149,11 @@ func ReadHelps() bool {
 			}
 
 			if helps.Topics == nil {
-				helps.Topics = make(map[string]glob.HelpTopics)
+				helps.Topics = make(map[string]*glob.HelpTopics)
+			}
+
+			for x, _ := range helps.Topics {
+				helps.Topics[x].Valid = true
 			}
 
 			glob.HelpSystem = helps
@@ -164,7 +169,7 @@ func ReadHelps() bool {
 
 func CreateHelps() glob.HelpMain {
 	help := glob.HelpMain{Version: def.HELPS_VERSION, Dirty: false}
-	help.Topics = make(map[string]glob.HelpTopics)
+	help.Topics = make(map[string]*glob.HelpTopics)
 
 	return help
 }
