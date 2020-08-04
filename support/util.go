@@ -2,6 +2,7 @@ package support
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"strings"
@@ -10,6 +11,12 @@ import (
 	"../def"
 	"../mlog"
 )
+
+func MovingExpAvg(value, oldValue, fdtime, ftime float64) float64 {
+	alpha := 1.0 - math.Exp(-fdtime/ftime)
+	r := alpha*value + (1.0-alpha)*oldValue
+	return r
+}
 
 func CheckError(source string, err error, fatal bool) {
 	if err != nil {

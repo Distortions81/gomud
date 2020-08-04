@@ -115,6 +115,9 @@ func main() {
 	var err error
 
 	t := time.Now()
+	glob.MaxRun = time.Nanosecond
+	glob.MinRun = time.Second
+	glob.MedRun = time.Nanosecond
 
 	logName := fmt.Sprintf("log/%v-%v-%v.log", t.Day(), t.Month(), t.Year())
 	glob.MudLog, err = os.OpenFile(logName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
@@ -169,13 +172,19 @@ func main() {
 }
 
 func mainLoop() {
+
 	rand.Seed(time.Now().UTC().UnixNano())
+
+	glob.MinRun = time.Duration(time.Second)
 
 	/* Player rounds */
 	go func() {
 		numPlayerLast := glob.ConnectionListEnd
 		sleepFor := time.Duration(def.ROUND_LENGTH_uS)
+		tickNum := 0
+
 		for glob.ServerState == def.SERVER_RUNNING {
+			tickNum++
 
 			glob.ConnectionListLock.Lock() /*--- LOCK ---*/
 
@@ -186,6 +195,7 @@ func mainLoop() {
 			} else {
 				sleepFor = time.Duration(def.ROUND_LENGTH_uS/numPlayerLast) * time.Microsecond
 			}
+
 			cEnd := glob.ConnectionListEnd
 			glob.ConnectionListLock.Unlock() /*--- UNLOCK ---*/
 
@@ -211,13 +221,33 @@ func mainLoop() {
 					end := time.Now()
 					spent := end.Sub(start) /*Round sleep, slice per player*/
 					time.Sleep(sleepFor - spent)
+
+					glob.PerLock.Lock() //PERF-LOCK
+					avrTime := support.MovingExpAvg(float64(spent), float64(10*time.Nanosecond), 1.0, 1000.0)
+
+					if spent > glob.MaxRun {
+						glob.MaxRun = spent
+					} else if spent < glob.MinRun {
+						glob.MinRun = spent
+					}
+
+					if tickNum%10 == 0 {
+						glob.PerfStats = fmt.Sprintf("Ran for %10v, Max: %10v, Min: %10v, Avr: %10v, Slept: %10v",
+							spent.String(), glob.MaxRun, glob.MinRun, time.Duration(avrTime).String(), sleepFor-spent)
+					}
+
+					glob.PerLock.Unlock() //PERF-UNLOCK
+
 					glob.ConnectionListLock.Lock() /*--- LOCK ---*/
 				}
 				glob.ConnectionListLock.Unlock() /*--- UNLOCK ---*/
 			}
 
+			glob.ConnectionListLock.Lock() /*--- LOCK ---*/
 			numPlayerLast = tempCount
 			glob.NumPlayers = tempCount
+			glob.ConnectionListLock.Unlock() /*--- UNLOCK ---*/
+
 			time.Sleep(def.ROUND_REST_MS) /*Limit max CPU, and allow background to run*/
 
 		}
@@ -227,14 +257,20 @@ func mainLoop() {
 	go func() {
 		for glob.ServerState == def.SERVER_RUNNING {
 
+			glob.ConnectionListLock.Lock() /*--- LOCK ---*/
+			numPlayers := glob.NumPlayers
+			glob.ConnectionListLock.Unlock() /*--- UNLOCK ---*/
+
 			/*Delay based on number of characters*/
-			if glob.NumPlayers > 1 {
-				sleepFor := def.PLAYER_BACKGROUND_uS / (glob.NumPlayers)
+			if numPlayers > 1 {
+				sleepFor := def.PLAYER_BACKGROUND_uS / (numPlayers)
 				time.Sleep(time.Duration(sleepFor) * time.Microsecond)
 				//fmt.Println(fmt.Sprintf("Player autosave slept for %v uS.", sleepFor))
 			} else {
 				time.Sleep(time.Duration(def.PLAYER_BACKGROUND_uS) * time.Microsecond)
 			}
+
+			glob.ConnectionListLock.Lock() /*--- LOCK ---*/
 
 			/*Cycle players, skipping anyone not playing*/
 			if glob.PlayerBackgroundPos <= glob.PlayerListEnd {
@@ -246,13 +282,10 @@ func mainLoop() {
 					glob.PlayerList[glob.PlayerBackgroundPos].Connection.Valid {
 					glob.PlayerBackgroundPos++
 				}
+
 			} else {
 				glob.PlayerBackgroundPos = 1
 			}
-
-			/*--- LOCK ---*/
-			glob.ConnectionListLock.Lock()
-			/*--- LOCK ---*/
 
 			/*Autosave players, check if valid*/
 			if glob.PlayerList[glob.PlayerBackgroundPos] != nil &&
@@ -291,9 +324,7 @@ func mainLoop() {
 				}
 			}
 
-			/*--- UNLOCK ---*/
-			glob.ConnectionListLock.Unlock()
-			/*--- UNLOCK ---*/
+			glob.ConnectionListLock.Unlock() /*--- UNLOCK ---*/
 		}
 	}()
 

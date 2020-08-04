@@ -4,6 +4,7 @@ import (
 	"net"
 	"os"
 	"sync"
+	"time"
 
 	"../def"
 )
@@ -50,3 +51,10 @@ var News string
 var PlayerBackgroundPos int
 var SectorBackgroundPos int
 var NumPlayers int
+
+/*Performance stats*/
+var MaxRun time.Duration
+var MinRun time.Duration
+var MedRun time.Duration
+var PerfStats string
+var PerLock sync.Mutex

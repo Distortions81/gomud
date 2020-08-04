@@ -8,6 +8,12 @@ import (
 	"../glob"
 )
 
+func CmdPerfStat(player *glob.PlayerData, args string) {
+	glob.PerLock.Lock() //PERF-LOCK
+	WriteToPlayer(player, glob.PerfStats)
+	glob.PerLock.Unlock() //PERF-UNLOCK
+}
+
 func CmdWizHelp(player *glob.PlayerData, args string) {
 	WriteToPlayer(player, glob.WizHelp)
 }

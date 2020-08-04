@@ -28,6 +28,8 @@ var CommandList = []glob.Command{
 		Help: "Save help file"},
 	{AS: false, Short: "", Name: "reloadHelp", Cmd: CmdReloadHelpst, Type: def.PLAYER_TYPE_MODERATOR,
 		Help: "Reload help file."},
+	{AS: false, Short: "", Name: "perfStats", Cmd: CmdPerfStat, Type: def.PLAYER_TYPE_MODERATOR,
+		Help: "Show performance stats."},
 
 	/*Builder*/
 	{AS: false, Short: "", Name: "asave", Cmd: CmdAsave, Type: def.PLAYER_TYPE_BUILDER,
