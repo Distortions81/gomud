@@ -39,7 +39,7 @@ func ReadSectorList() {
 					buf := fmt.Sprintf("%v has same sector ID as %v! Skipping!", sector.Name, glob.SectorsList[sector.ID].Name)
 					mlog.Write(buf)
 				} else {
-					glob.SectorsList[sector.ID] = *sectorl
+					glob.SectorsList[sector.ID] = *sector
 					glob.SectorsListEnd++
 				}
 			} else {
@@ -52,6 +52,7 @@ func ReadSectorList() {
 func ReloadSector() {
 
 	//reload sector, handle future load handles, regen player pointers
+	//and/or possibly just reload rooms and descriptions/names/exits
 }
 
 func WriteSectorList() {

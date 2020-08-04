@@ -246,6 +246,13 @@ func mainLoop() {
 			glob.ConnectionListLock.Lock() /*--- LOCK ---*/
 			numPlayerLast = tempCount
 			glob.NumPlayers = tempCount
+
+			/*Tick down connection list end if not used*/
+			if glob.ConnectionListEnd > 0 &&
+				glob.ConnectionList[glob.ConnectionListEnd].Valid == false {
+				glob.ConnectionListEnd--
+			}
+
 			glob.ConnectionListLock.Unlock() /*--- UNLOCK ---*/
 
 			time.Sleep(def.ROUND_REST_MS) /*Limit max CPU, and allow background to run*/
