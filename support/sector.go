@@ -39,7 +39,7 @@ func ReadSectorList() {
 					buf := fmt.Sprintf("%v has same sector ID as %v! Skipping!", sector.Name, glob.SectorsList[sector.ID].Name)
 					mlog.Write(buf)
 				} else {
-					glob.SectorsList[sector.ID] = *sector
+					glob.SectorsList[sector.ID] = *sectorl
 					glob.SectorsListEnd++
 				}
 			} else {

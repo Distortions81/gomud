@@ -1,6 +1,8 @@
 ---NEWS---
 Distortions: 8/1/2020:
 
+WIP: objects
+
 Recently added:
 Player/Sector locks (safety)
 Better performance sector/player autosaving
