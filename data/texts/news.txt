@@ -2,7 +2,7 @@
 Distortions: 8/1/2020:
 
 Recently added:
-File save locks (safety)
+Player/Sector locks (safety)
 Better performance sector/player autosaving
 Performance stats
 Sector editor
