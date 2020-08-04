@@ -109,6 +109,10 @@ func ReadPlayer(name string, load bool) (*glob.PlayerData, bool) {
 	} else {
 
 		if load {
+
+			glob.PlayerFileLock.Lock()
+			defer glob.PlayerFileLock.Unlock()
+
 			file, err := ioutil.ReadFile(def.DATA_DIR + def.PLAYER_DIR + strings.ToLower(name))
 
 			if file != nil && err == nil {
@@ -172,8 +176,8 @@ func WritePlayer(player *glob.PlayerData) bool {
 
 	//Async write
 	go func(outbuf bytes.Buffer) {
-		glob.WritePlayerLock.Lock()
-		defer glob.WritePlayerLock.Unlock()
+		glob.PlayerFileLock.Lock()
+		defer glob.PlayerFileLock.Unlock()
 
 		err = ioutil.WriteFile(fileName, []byte(outbuf.String()), 0644)
 

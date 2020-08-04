@@ -14,8 +14,8 @@ var OpenDesc int
 var OpenDescLock sync.Mutex
 
 /*Files desc locks*/
-var WritePlayerLock sync.Mutex
-var WriteSectorsLock sync.Mutex
+var PlayerFileLock sync.Mutex
+var SectorsFileLock sync.Mutex
 
 /*Listeners, server state*/
 var ServerState = def.SERVER_RUNNING

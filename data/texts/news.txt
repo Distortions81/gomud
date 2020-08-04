@@ -2,7 +2,13 @@
 Distortions: 8/1/2020:
 
 Recently added:
+File save locks (safety)
+Better performance sector/player autosaving
+Performance stats
+Sector editor
 Exit editor
+
+Added:
 playerType WIP
 reloadPlayer
 reloadText (news/greet/etc)
