@@ -221,7 +221,7 @@ func CreateSector() *glob.SectorData {
 		Area:        "",
 		Description: "",
 		Rooms:       make(map[int]*glob.RoomData),
-		Objects:     make(map[string]*glob.ObjectData),
+		Objects:     make(map[int]*glob.ObjectData),
 		Dirty:       false,
 
 		Valid: true,
@@ -255,8 +255,7 @@ func CreateExit() *glob.ExitData {
 
 func CreateObject() *glob.ObjectData {
 	obj := glob.ObjectData{
-		
 		Valid: true,
 	}
-
+	return &obj
 }

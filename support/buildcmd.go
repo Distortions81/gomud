@@ -491,8 +491,30 @@ func CmdOLC(player *glob.PlayerData, input string) {
 			WriteToPlayer(player, "Exiting OLC.")
 			player.OLCEdit.Active = false
 			return
+		} else if cmdl == "create" {
+			sector := player.Location.Sector
+			objs := glob.SectorsList[sector].Objects
+
+			found := 0
+			for x := 0; ; x++ {
+				if objs[x] != nil && objs[x].Valid == false {
+					found = x
+					break
+				}
+				if objs[x] == nil {
+					found = x
+					break
+				}
+			}
+			obj := CreateObject()
+			obj.ID = found
+		} else if cmdl == "" {
+			if player.OLCEdit.Object.ID != 0 {
+
+			} else {
+				WriteToPlayer(player, "No object selected.")
+			}
 		}
-		WriteToPlayer(buf)
 	} else if player.OLCEdit.Mode == def.OLC_TRIGGER {
 		if cmdl == "done" {
 			player.OLCEdit.Mode = def.OLC_NONE
@@ -597,7 +619,6 @@ func CmdDig(player *glob.PlayerData, input string) {
 	command, _ := SplitArgsTwo(input, " ")
 	dirOne, dirTwo := SplitArgsTwo(input, ":")
 
-	curID := player.Location.ID
 	sector := player.Location.Sector
 
 	if player.Location.RoomLink.Exits[strings.Title(dirOne)] != nil {
@@ -609,7 +630,7 @@ func CmdDig(player *glob.PlayerData, input string) {
 
 	//Find first available slot
 	found := 0
-	for x := curID; ; x++ {
+	for x := 0; ; x = x + 1 {
 		/* Re-use old room */
 		if rooms[x] != nil && rooms[x].Valid == false {
 			found = x

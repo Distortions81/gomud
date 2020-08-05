@@ -115,8 +115,8 @@ type SectorData struct {
 	Area        string `json:",omitempty"`
 	Description string `json:",omitempty"`
 
-	Rooms   map[int]*RoomData      `json:",omitempty"`
-	Objects map[string]*ObjectData `json:",omitempty"`
+	Rooms   map[int]*RoomData   `json:",omitempty"`
+	Objects map[int]*ObjectData `json:",omitempty"`
 
 	Dirty bool `json:"-"`
 

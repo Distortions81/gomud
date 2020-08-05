@@ -7,6 +7,14 @@ RENAME TEMP FILE
 olc/player dirty flags, add/check them!
 
 
+split up files, olc, olc room, olc object, reorg interp/buffer/negotate
+split up OLC command, individual functions.
+split up struct.go, move lists to lists.go
+look into putting related functions into structs?
+replace login with account/character, seperate process.
+
+
+
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 telnet negotate, CHARSET, MCCP, UNICDOE, SSL, etc.
 start OLC object
