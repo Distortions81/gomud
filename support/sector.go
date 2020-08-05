@@ -252,3 +252,11 @@ func CreateExit() *glob.ExitData {
 	exit.Door = &glob.DoorData{Valid: true}
 	return &exit
 }
+
+func CreateObject() *glob.ObjectData {
+	obj := glob.ObjectData{
+		
+		Valid: true,
+	}
+
+}

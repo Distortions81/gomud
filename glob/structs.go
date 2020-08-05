@@ -360,3 +360,14 @@ type PConfigData struct {
 	PostNewline  bool   `json:",omitempty"`
 	Valid        bool   `json:"-"`
 }
+
+type WearLocations struct {
+	Name          string
+	ID            int
+	WearMessage   string
+	RemoveMessage string
+	LookDesc      string
+
+	ConflictLocationA int
+	ConflictLocationB int
+}

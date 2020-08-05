@@ -492,7 +492,7 @@ func CmdOLC(player *glob.PlayerData, input string) {
 			player.OLCEdit.Active = false
 			return
 		}
-		WriteToPlayer(player, "Not available yet (WIP).")
+		WriteToPlayer(buf)
 	} else if player.OLCEdit.Mode == def.OLC_TRIGGER {
 		if cmdl == "done" {
 			player.OLCEdit.Mode = def.OLC_NONE

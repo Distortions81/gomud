@@ -13,3 +13,16 @@ var PlayerTypes = []pTypeData{
 	{PType: def.PLAYER_TYPE_ADMIN, PName: "Admin"},
 	{PType: def.PLAYER_TYPE_OWNER, PName: "Owner"},
 }
+
+var WearLocationsList = []WearLocations{
+	{Name: "head", ID: def.OBJ_WEAR_HEAD},
+	{Name: "face", ID: def.OBJ_WEAR_FACE},
+
+	{Name: "left eye", ID: def.OBJ_WEAR_LEYE, ConflictLocationA: def.OBJ_WEAR_EYES},
+	{Name: "right eye", ID: def.OBJ_WEAR_REYE, ConflictLocationA: def.OBJ_WEAR_EYES},
+	{Name: "eyes", ID: def.OBJ_WEAR_EYES, ConflictLocationA: def.OBJ_WEAR_LEYE, ConflictLocationB: def.OBJ_WEAR_REYE},
+
+	{Name: "left ear", ID: def.OBJ_WEAR_LEAR, ConflictLocationA: def.OBJ_WEAR_EARS},
+	{Name: "right ear", ID: def.OBJ_WEAR_REAR, ConflictLocationA: def.OBJ_WEAR_EARS},
+	{Name: "ears", ID: def.OBJ_WEAR_EARS, ConflictLocationA: def.OBJ_WEAR_LEAR, ConflictLocationB: def.OBJ_WEAR_REAR},
+}
