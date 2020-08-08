@@ -129,7 +129,7 @@ func FindClosestMatch(CommandList []string, command string) (string, int) {
 	var output [def.MAX_CMATCH_SEARCH + 1]string
 
 	command = strings.ToLower(command)
-	if command == "" {
+	if command == "" || CommandList == nil || len(CommandList) <= 1 {
 		return "", -1
 	}
 
