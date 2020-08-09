@@ -291,23 +291,32 @@ type PlayerData struct {
 	Valid      bool            `json:"-"`
 }
 
+type EditLink struct {
+	Name   string
+	Sector int
+	ID     int
+
+	RoomLink   *RoomData
+	ObjectLink *ObjectData
+	//TriggerLink *TriggerData
+	//MobileLink  *MobileData
+	ExitLink *ExitData
+}
+
 type OLCEdit struct {
 	Active bool `json:"-"`
 	Mode   int  `json:"-"`
 
 	/*Current selection & past selections*/
 	Sector int `json:",omitempty"`
+	ID     int `json:",omitempty"`
 
-	Room     LocationData `json:",omitempty"`
-	Object   LocationData `json:",omitempty"`
-	Trigger  LocationData `json:",omitempty"`
-	Mobile   LocationData `json:",omitempty"`
-	Quest    LocationData `json:",omitempty"`
-	Exit     *ExitData    `json:",omitempty"`
-	ExitName string       `json:",omitempty"`
-
-	Description string `json:",omitempty"`
-	Valid       bool   `json:"-"`
+	Room   EditLink `json:"-"`
+	Object EditLink `json:"-"`
+	//Trigger EditLink `json:"-"`
+	//Mobile  EditLink `json:"-"`
+	//Quest   EditLink `json:"-"`
+	Exit EditLink `json:"-"`
 }
 
 type LocationData struct {

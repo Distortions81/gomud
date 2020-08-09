@@ -110,7 +110,7 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 				OLCPrompt = fmt.Sprintf("<OLC SECTOR: WIP>: ")
 			} else if con.Player.OLCEdit.Mode == def.OLC_EXITS {
 				OLCPrompt = fmt.Sprintf("<OLC EXITS: [%v] Room: %v:%v>",
-					con.Player.OLCEdit.ExitName,
+					con.Player.OLCEdit.Exit.Name,
 					con.Player.OLCEdit.Room.Sector,
 					con.Player.OLCEdit.Room.ID)
 			}

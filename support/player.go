@@ -302,7 +302,9 @@ func PlayerToRoom(player *glob.PlayerData, sectorID int, roomID int) {
 			player.OLCEdit.Mode == def.OLC_ROOM &&
 			player.OLCSettings.OLCRoomFollow {
 
-			player.OLCEdit.Room = player.Location
+			player.OLCEdit.Room.ID = player.Location.ID
+			player.OLCEdit.Room.Sector = player.Location.Sector
+			player.OLCEdit.Room.RoomLink = player.Location.RoomLink
 		}
 
 	} else {

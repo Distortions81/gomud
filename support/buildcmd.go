@@ -177,7 +177,8 @@ func CmdOLC(player *glob.PlayerData, input string) {
 
 		if cmdl == "room" {
 			player.OLCEdit.Mode = def.OLC_ROOM
-			player.OLCEdit.Room = player.Location
+			player.OLCEdit.Sector = player.Location.Sector
+			player.OLCEdit.ID = player.Location.ID
 		} else if cmdl == "object" {
 			player.OLCEdit.Mode = def.OLC_OBJECT
 		} else if cmdl == "trigger" {
@@ -210,9 +211,9 @@ func CmdOLC(player *glob.PlayerData, input string) {
 				}
 
 				//Delete old
-				exitName := player.OLCEdit.ExitName
-				exitDoor := player.OLCEdit.Exit.Door
-				exitToRoom := player.OLCEdit.Exit.ToRoom
+				exitName := player.OLCEdit.Exit.Name
+				exitDoor := player.OLCEdit.Exit.ExitLink.Door
+				exitToRoom := player.OLCEdit.Exit.ExitLink.ToRoom
 
 				delete(player.OLCEdit.Room.RoomLink.Exits, exitName)
 				if player.OLCEdit.Room.RoomLink.Exits == nil {
@@ -229,8 +230,8 @@ func CmdOLC(player *glob.PlayerData, input string) {
 				player.OLCEdit.Room.RoomLink.Exits[argTwoThrough].Door = exitDoor
 				player.OLCEdit.Room.RoomLink.Exits[argTwoThrough].ToRoom = exitToRoom
 
-				player.OLCEdit.Exit = player.OLCEdit.Room.RoomLink.Exits[argTwoThrough]
-				player.OLCEdit.ExitName = argTwoThrough
+				player.OLCEdit.Exit.ExitLink = player.OLCEdit.Room.RoomLink.Exits[argTwoThrough]
+				player.OLCEdit.Exit.Name = argTwoThrough
 				player.OLCEdit.Mode = def.OLC_EXITS
 				glob.SectorsList[player.OLCEdit.Room.Sector].Dirty = true //Autosave
 				CmdOLC(player, "")
@@ -240,33 +241,32 @@ func CmdOLC(player *glob.PlayerData, input string) {
 			}
 
 		} else if cmdl == "door" {
-			if player.OLCEdit.Exit.Door.Door {
-				player.OLCEdit.Exit.Door.Door = false
+			if player.OLCEdit.Exit.ExitLink.Door.Door {
+				player.OLCEdit.Exit.ExitLink.Door.Door = false
 			} else {
-				player.OLCEdit.Exit.Door.Door = true
+				player.OLCEdit.Exit.ExitLink.Door.Door = true
 			}
 		} else if cmdl == "autoopen" {
-			if player.OLCEdit.Exit.Door.AutoOpen {
-				player.OLCEdit.Exit.Door.AutoOpen = false
+			if player.OLCEdit.Exit.ExitLink.Door.AutoOpen {
+				player.OLCEdit.Exit.ExitLink.Door.AutoOpen = false
 			} else {
-				player.OLCEdit.Exit.Door.AutoOpen = true
+				player.OLCEdit.Exit.ExitLink.Door.AutoOpen = true
 			}
 		} else if cmdl == "autoclose" {
-			if player.OLCEdit.Exit.Door.AutoClose {
-				player.OLCEdit.Exit.Door.AutoClose = false
+			if player.OLCEdit.Exit.ExitLink.Door.AutoClose {
+				player.OLCEdit.Exit.ExitLink.Door.AutoClose = false
 			} else {
-				player.OLCEdit.Exit.Door.AutoClose = true
+				player.OLCEdit.Exit.ExitLink.Door.AutoClose = true
 			}
 		} else if cmdl == "keyed" {
-			if player.OLCEdit.Exit.Door.AutoClose {
-				player.OLCEdit.Exit.Door.AutoClose = false
+			if player.OLCEdit.Exit.ExitLink.Door.AutoClose {
+				player.OLCEdit.Exit.ExitLink.Door.AutoClose = false
 			} else {
-				player.OLCEdit.Exit.Door.AutoClose = true
+				player.OLCEdit.Exit.ExitLink.Door.AutoClose = true
 			}
 		} else if cmdl == "delete" {
-			exitName := player.OLCEdit.ExitName
+			exitName := player.OLCEdit.Exit.Name
 			delete(player.OLCEdit.Room.RoomLink.Exits, exitName)
-			player.OLCEdit.Exit = nil
 			player.OLCEdit.Mode = def.OLC_ROOM
 			CmdOLC(player, "")
 			WriteToPlayer(player, "Exit deleted, returning to room editor.")
@@ -277,29 +277,29 @@ func CmdOLC(player *glob.PlayerData, input string) {
 				WriteToPlayer(player, "Invalid location. <sector:id>, or <id> for sector you are standing in.")
 				return
 			}
-			player.OLCEdit.Exit.ToRoom = loc
+			player.OLCEdit.Exit.ExitLink.ToRoom = loc
 		}
 		buf := fmt.Sprintf("OLC EDIT EXITS:\r\n%10v: %v\r\n\r\n%10v: %v:%v\r\n%10v: %v:%v\r\n",
 			"Name",
-			player.OLCEdit.ExitName,
+			player.OLCEdit.Exit.Name,
 			"FromRoom",
 			player.OLCEdit.Room.Sector,
 			player.OLCEdit.Room.ID,
 			"ToRoom",
-			player.OLCEdit.Exit.ToRoom.Sector,
-			player.OLCEdit.Exit.ToRoom.ID)
+			player.OLCEdit.Exit.ExitLink.ToRoom.Sector,
+			player.OLCEdit.Exit.ExitLink.ToRoom.ID)
 		WriteToBuilder(player, buf)
 		buf = fmt.Sprintf("%10v: %v\r\n%10v: %v\r%10v: %v\r\n%10v: %v\r%10v: %v",
 			"Door",
-			boolToYesNo(player.OLCEdit.Exit.Door.Door),
+			boolToYesNo(player.OLCEdit.Exit.ExitLink.Door.Door),
 			"AutoOpen",
-			boolToYesNo(player.OLCEdit.Exit.Door.AutoOpen),
+			boolToYesNo(player.OLCEdit.Exit.ExitLink.Door.AutoOpen),
 			"AutoClose",
-			boolToYesNo(player.OLCEdit.Exit.Door.AutoClose),
+			boolToYesNo(player.OLCEdit.Exit.ExitLink.Door.AutoClose),
 			"Hidden",
-			boolToYesNo(player.OLCEdit.Exit.Door.Hidden),
+			boolToYesNo(player.OLCEdit.Exit.ExitLink.Door.Hidden),
 			"Keyed",
-			boolToYesNo(player.OLCEdit.Exit.Door.Keyed))
+			boolToYesNo(player.OLCEdit.Exit.ExitLink.Door.Keyed))
 		WriteToPlayer(player, buf)
 		WriteToPlayer(player, "Syntax for OLC exits: olc ToRoom <location>, door, autoOpen, autoClose, keyed, delete, done")
 
@@ -326,7 +326,9 @@ func CmdOLC(player *glob.PlayerData, input string) {
 				if erra == nil && errb == nil {
 					editRoom, roomFound := LocationDataFromID(sector, id)
 					if roomFound {
-						player.OLCEdit.Room = editRoom
+						player.OLCEdit.Room.ID = editRoom.ID
+						player.OLCEdit.Room.Sector = editRoom.Sector
+						player.OLCEdit.Room.RoomLink = editRoom.RoomLink
 						CmdOLC(player, "")
 					}
 				}
@@ -354,14 +356,18 @@ func CmdOLC(player *glob.PlayerData, input string) {
 
 					editRoom, roomFound := LocationDataFromID(sector, id)
 					if roomFound {
-						player.OLCEdit.Room = editRoom
+						player.OLCEdit.Room.ID = editRoom.ID
+						player.OLCEdit.Room.Sector = editRoom.Sector
+						player.OLCEdit.Room.RoomLink = editRoom.RoomLink
 						CmdOLC(player, "")
 						WriteToPlayer(player, "Room already exists.")
 						return
 					} else {
 						glob.SectorsList[sector].Rooms[id] = CreateRoom()
 						editRoom, _ := LocationDataFromID(sector, id)
-						player.OLCEdit.Room = editRoom
+						player.OLCEdit.Room.ID = editRoom.ID
+						player.OLCEdit.Room.Sector = editRoom.Sector
+						player.OLCEdit.Room.RoomLink = editRoom.RoomLink
 						CmdOLC(player, "")
 						WriteToPlayer(player, fmt.Sprintf("Room %v:%v created!", sector, id))
 						glob.SectorsList[player.OLCEdit.Room.Sector].Dirty = true //Autosave
@@ -435,9 +441,11 @@ func CmdOLC(player *glob.PlayerData, input string) {
 							player.OLCEdit.Room.RoomLink.Exits = make(map[string]*glob.ExitData)
 						}
 						player.OLCEdit.Room.RoomLink.Exits[argThreeThrough] = CreateExit()
-						player.OLCEdit.Room.RoomLink.Exits[argThreeThrough].ToRoom = player.OLCEdit.Room
-						player.OLCEdit.Exit = player.OLCEdit.Room.RoomLink.Exits[argThreeThrough]
-						player.OLCEdit.ExitName = argThreeThrough
+						player.OLCEdit.Room.RoomLink.Exits[argThreeThrough].ToRoom.RoomLink = player.OLCEdit.Room.RoomLink
+						player.OLCEdit.Room.RoomLink.Exits[argThreeThrough].ToRoom.ID = player.OLCEdit.Room.ID
+						player.OLCEdit.Room.RoomLink.Exits[argThreeThrough].ToRoom.Sector = player.OLCEdit.Room.Sector
+						player.OLCEdit.Exit.ExitLink = player.OLCEdit.Room.RoomLink.Exits[argThreeThrough]
+						player.OLCEdit.Exit.Name = argThreeThrough
 						player.OLCEdit.Mode = def.OLC_EXITS
 						glob.SectorsList[player.OLCEdit.Room.Sector].Dirty = true //Autosave
 						CmdOLC(player, "")
@@ -449,8 +457,8 @@ func CmdOLC(player *glob.PlayerData, input string) {
 
 					for exitName, exit := range player.OLCEdit.Room.RoomLink.Exits {
 						if strings.EqualFold(exitName, argTwoThrough) {
-							player.OLCEdit.Exit = exit
-							player.OLCEdit.ExitName = exitName
+							player.OLCEdit.Exit.ExitLink = exit
+							player.OLCEdit.Exit.Name = exitName
 							player.OLCEdit.Mode = def.OLC_EXITS
 							WriteToPlayer(player, "Exit found, switching to exit editor.")
 							CmdOLC(player, "")
@@ -486,33 +494,55 @@ func CmdOLC(player *glob.PlayerData, input string) {
 		}
 
 	} else if player.OLCEdit.Mode == def.OLC_OBJECT {
+
 		if cmdl == "done" {
 			player.OLCEdit.Mode = def.OLC_NONE
 			WriteToPlayer(player, "Exiting OLC.")
 			player.OLCEdit.Active = false
 			return
 		} else if cmdl == "create" {
-			sector := player.Location.Sector
-			objs := glob.SectorsList[sector].Objects
+			sector, id, err := ParseVnum(player, argThreeThrough)
+			if err == false {
+				glob.SectorsList[sector].Objects[id] = CreateObject()
+			} else {
+				objs := glob.SectorsList[sector].Objects
 
-			found := 0
-			for x := 0; ; x++ {
-				if objs[x] != nil && objs[x].Valid == false {
-					found = x
-					break
+				found := 0
+				for x := 0; ; x++ {
+					if objs[x] != nil && objs[x].Valid == false {
+						found = x
+						break
+					}
+					if objs[x] == nil {
+						found = x
+						break
+					}
 				}
-				if objs[x] == nil {
-					found = x
-					break
-				}
+				objs[found] = CreateObject()
+				objs[found].ID = found
 			}
-			obj := CreateObject()
-			obj.ID = found
 		} else if cmdl == "" {
 			if player.OLCEdit.Object.ID != 0 {
-
+				objId := player.OLCEdit.Object.ID
+				objSec := player.OLCEdit.Sector
+				obj := glob.SectorsList[objSec].Objects[objId]
+				buf := fmt.Sprintf("Name: %v\r\nID: %v\r\nDesc: %v\r\n", obj.Name, obj.ID, obj.Description)
+				WriteToPlayer(player, buf)
 			} else {
 				WriteToPlayer(player, "No object selected.")
+			}
+		} else {
+			sector, id, err := ParseVnum(player, argTwoThrough)
+			obj, found := GetObjectFromID(sector, id)
+			if err == false && found == true {
+				obj = player.OLCEdit.Object.ObjectLink
+				buf := fmt.Sprintf("Name: %v, ID, %v", obj.Name, obj.ID)
+				WriteToPlayer(player, buf)
+			} else {
+				player.OLCEdit.Object.ObjectLink, found = GetObjectFromID(sector, id)
+				player.OLCEdit.Object.Sector = sector
+				player.OLCEdit.Object.ID = id
+				WriteToPlayer(player, "Object selected.")
 			}
 		}
 	} else if player.OLCEdit.Mode == def.OLC_TRIGGER {

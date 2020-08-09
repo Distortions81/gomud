@@ -5,12 +5,53 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"../def"
+	"../glob"
 	"../mlog"
 )
+
+func GetObjectFromID(sector int, id int) (*glob.ObjectData, bool) {
+
+	sData := glob.SectorsList[sector]
+	if sData.Valid {
+		oData := sData.Objects[id]
+		if oData != nil && oData.Valid {
+			return oData, true
+		}
+	}
+
+	return nil, false
+}
+
+func ParseVnum(player *glob.PlayerData, input string) (int, int, bool) {
+	a, b := SplitArgsTwo(input, ":")
+	sector := 0
+	id := 0
+	var erra error
+	var errb error
+
+	if len(input) < 1 {
+		return 0, 0, true
+	}
+
+	if b == "" {
+		sector = player.Location.Sector
+		id, erra = strconv.Atoi(a)
+	} else {
+		sector, _ = strconv.Atoi(a)
+		id, errb = strconv.Atoi(b)
+	}
+
+	err := false
+	if erra != nil || errb != nil {
+		err = true
+	}
+	return sector, id, err
+}
 
 func MovingExpAvg(value, oldValue, fdtime, ftime float64) float64 {
 	alpha := 1.0 - math.Exp(-fdtime/ftime)
