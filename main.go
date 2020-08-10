@@ -359,7 +359,9 @@ func mainLoop() {
 			/*--- LOCK ---*/
 
 			/*Autosave sectors*/
-			if glob.SectorsList[glob.SectorBackgroundPos].Dirty {
+			if glob.SectorsList[glob.SectorBackgroundPos].Dirty &&
+				glob.SectorsList[glob.SectorBackgroundPos].Valid &&
+				glob.SectorsList[glob.SectorBackgroundPos].Name != "" {
 				support.WriteSector(&glob.SectorsList[glob.SectorBackgroundPos])
 			}
 

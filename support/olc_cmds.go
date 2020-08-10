@@ -8,6 +8,33 @@ import (
 	"../glob"
 )
 
+func CmdRoomList(player *glob.PlayerData, args string) {
+	sec := glob.SectorsList[player.OLCEdit.Sector]
+	rooms := sec.Rooms
+
+	buf := ""
+	lastS := -1
+	for s, r := range rooms {
+		if r.Valid {
+			if (s + 1) != lastS {
+				buf = buf + fmt.Sprintf("%v, ", s)
+			}
+			lastS = s
+		}
+	}
+	WriteToPlayer(player, buf)
+}
+
+func CmdSectorList(player *glob.PlayerData, args string) {
+	for x := 1; x <= glob.SectorsListEnd; x++ {
+		sec := glob.SectorsList[x]
+		if sec.Valid {
+			buf := fmt.Sprintf("Sector ID: %4v, Name: %-20v, Area: %-20v, Rooms: %-7v", x, sec.Name, sec.Area, len(sec.Rooms))
+			WriteToPlayer(player, buf)
+		}
+	}
+}
+
 func CmdAsave(player *glob.PlayerData, args string) {
 	WriteSectorList()
 	WriteToPlayer(player, "All sectors saving.")

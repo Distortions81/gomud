@@ -40,6 +40,10 @@ var CommandList = []glob.Command{
 		Help: "Create a new room, to the <exit name>"},
 	{AS: true, Short: "", Name: "goto", Cmd: CmdGoto, Type: def.PLAYER_TYPE_BUILDER,
 		Help: "Goto <location>"},
+	{AS: true, Short: "", Name: "sectorlist", Cmd: CmdSectorList, Type: def.PLAYER_TYPE_BUILDER,
+		Help: "Shows list of sectors."},
+	{AS: true, Short: "", Name: "roomlist", Cmd: CmdRoomList, Type: def.PLAYER_TYPE_BUILDER,
+		Help: "Shows list of rooms."},
 
 	/*Shortcuts*/
 	{AS: true, Short: "n", Name: "north", Cmd: CmdNorth, Type: def.PLAYER_TYPE_NEW,

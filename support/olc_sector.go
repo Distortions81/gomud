@@ -2,6 +2,7 @@ package support
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -36,13 +37,14 @@ func OLCSector(player *glob.PlayerData,
 		WriteToBuilder(player, buf)
 	} else {
 		/* If sector specified, use it, otherwise use player location */
-
-		sector = &glob.SectorsList[player.OLCEdit.Sector]
-
+		if sector == nil {
+			sector = &glob.SectorsList[player.Location.Sector]
+		}
 		if cmdl == "done" {
 			player.OLCEdit.Mode = def.OLC_NONE
 			WriteToPlayer(player, "Exiting OLC.")
 			player.OLCEdit.Active = false
+			sector.Dirty = true
 			return
 		} else if strings.EqualFold(cmdl, "sector") {
 			psid, err := strconv.Atoi(cmdBl)
@@ -59,11 +61,13 @@ func OLCSector(player *glob.PlayerData,
 			CmdOLC(player, "")
 			return
 		} else if strings.EqualFold(cmdl, "valid") {
-			if glob.SectorsList[player.OLCEdit.Sector].Valid {
-				glob.SectorsList[player.OLCEdit.Sector].Valid = false
+			if sector.Valid {
+				sector.Valid = false
+				sector.Dirty = true
 				WriteToPlayer(player, "Sector set to invalid / inactive.")
 			} else {
-				glob.SectorsList[player.OLCEdit.Sector].Valid = true
+				sector.Valid = true
+				sector.Dirty = true
 				WriteToPlayer(player, "Sector set to valid / active.")
 
 			}
@@ -71,11 +75,21 @@ func OLCSector(player *glob.PlayerData,
 			WriteToPlayer(player, "If you are COMPLETELY CERTAIN you want to PERMENATELY DLETE the ROOMS AND OBJECTS in this ENTIRE SECTOR....\r\nType: confirm-delete-sector")
 			return
 		} else if strings.EqualFold(cmdl, "confirm-delete-sector") {
-			glob.SectorsList[player.OLCEdit.Sector].Rooms = nil
-			glob.SectorsList[player.OLCEdit.Sector].Objects = nil
-			glob.SectorsList[player.OLCEdit.Sector].Valid = false
-			glob.SectorsList[player.OLCEdit.Sector].Dirty = true
-			WriteToPlayer(player, "Rooms and objects in sector cleard, and sector set to invalid / inactive.")
+			fileName := def.DATA_DIR + def.SECTOR_DIR + def.SECTOR_PREFIX + fmt.Sprintf("%v", sector.ID) + def.FILE_SUFFIX
+			os.Remove(fileName)
+
+			if sector.ID == glob.SectorsListEnd {
+				glob.SectorsListEnd--
+			}
+			sector.Name = ""
+			sector.Description = ""
+			sector.Area = ""
+			sector.Rooms = nil
+			sector.Objects = nil
+			sector.Valid = false
+			sector.Dirty = false
+			WriteToPlayer(player, "Sector is deleted.")
+
 			return
 		} else if strings.EqualFold(cmdl, "id") {
 			idNum, err := strconv.Atoi(argTwoThrough)
@@ -85,6 +99,9 @@ func OLCSector(player *glob.PlayerData,
 				oldSectorData := glob.SectorsList[oldSector]
 				WriteToPlayer(player, "Sector moved.")
 				player.OLCEdit.Sector = idNum
+				if glob.SectorsListEnd < idNum {
+					glob.SectorsListEnd = idNum
+				}
 				glob.SectorsList[idNum] = oldSectorData
 				glob.SectorsList[oldSector].Valid = false
 				glob.SectorsList[idNum].Dirty = true
@@ -96,6 +113,7 @@ func OLCSector(player *glob.PlayerData,
 		} else if strings.EqualFold(cmdl, "name") {
 			sector.Name = argTwoThrough
 			sector.Valid = true
+			sector.Dirty = true
 			if sector.Fingerprint == "" {
 				sector.Fingerprint = MakeFingerprint(sector.Name)
 			}
@@ -103,18 +121,21 @@ func OLCSector(player *glob.PlayerData,
 		} else if strings.EqualFold(cmdl, "desc") || strings.EqualFold(cmdl, "description") {
 			//Todo, editor
 			sector.Description = argTwoThrough
+			sector.Dirty = true
 			WriteToPlayer(player, "Description set.")
 		} else if strings.EqualFold(cmdl, "area") {
 			sector.Area = argTwoThrough
+			sector.Dirty = true
 			WriteToPlayer(player, "Area set.")
 		} else if strings.EqualFold(cmdl, "create") {
-			glob.SectorsListEnd++
 
 			newSector := CreateSector()
 			newSector.Valid = true
+			glob.SectorsListEnd++
 			glob.SectorsList[glob.SectorsListEnd] = *newSector
-
+			sector.ID = glob.SectorsListEnd
 			player.OLCEdit.Sector = glob.SectorsListEnd
+			sector.Dirty = true
 			WriteToPlayer(player, "Sector created.")
 			CmdOLC(player, "")
 			return
