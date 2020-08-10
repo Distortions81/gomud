@@ -312,9 +312,11 @@ func CmdLook(player *glob.PlayerData, args string) {
 			x := 0
 			for name, _ := range player.Location.RoomLink.Exits {
 				x++
-				exits = exits + name
-				if x < l {
-					exits = exits + ", "
+				if name != "" {
+					exits = exits + name
+					if x < l {
+						exits = exits + ", "
+					}
 				}
 			}
 			if exits == "[" {
