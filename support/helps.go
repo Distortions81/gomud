@@ -95,7 +95,7 @@ func WriteHelps() bool {
 	enc.SetIndent("", "\t")
 
 	glob.HelpSystem.Version = def.HELPS_VERSION
-	fileName := def.DATA_DIR + def.HELPS_FILE
+	fileName := def.DATA_DIR + def.TEXTS_DIR + def.HELPS_FILE
 
 	if err := enc.Encode(&glob.HelpSystem); err != nil {
 		CheckError("WriteHelps: enc.Encode", err, def.ERROR_NONFATAL)
@@ -127,7 +127,7 @@ func WriteHelps() bool {
 
 func ReadHelps() bool {
 
-	_, err := os.Stat(def.DATA_DIR + def.HELPS_FILE)
+	_, err := os.Stat(def.DATA_DIR + def.TEXTS_DIR + def.HELPS_FILE)
 	notfound := os.IsNotExist(err)
 
 	if notfound {
@@ -137,7 +137,7 @@ func ReadHelps() bool {
 
 	} else {
 
-		file, err := ioutil.ReadFile(def.DATA_DIR + def.HELPS_FILE)
+		file, err := ioutil.ReadFile(def.DATA_DIR + def.TEXTS_DIR + def.HELPS_FILE)
 
 		if file != nil && err == nil {
 			helps := CreateHelps()
