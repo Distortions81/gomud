@@ -183,9 +183,11 @@ func OLCRoom(player *glob.PlayerData,
 		exits := ""
 		if player.OLCEdit.Room.RoomLink != nil {
 			for name, exit := range player.OLCEdit.Room.RoomLink.Exits {
-				exits = exits + fmt.Sprintf("%v, ToRoom: %v:%v, Door: %v, AutoOpen: %v, AutoClose: %v, Hidden: %v, Keyed: %v\r\n",
-					name, exit.ToRoom.Sector, exit.ToRoom.ID, exit.Door.Door, exit.Door.AutoOpen, exit.Door.AutoClose,
-					exit.Door.Hidden, exit.Door.Keyed)
+				if name != "" {
+					exits = exits + fmt.Sprintf("%v, ToRoom: %v:%v, Door: %v, AutoOpen: %v, AutoClose: %v, Hidden: %v, Keyed: %v\r\n",
+						name, exit.ToRoom.Sector, exit.ToRoom.ID, exit.Door.Door, exit.Door.AutoOpen, exit.Door.AutoClose,
+						exit.Door.Hidden, exit.Door.Keyed)
+				}
 			}
 			if exits == "" {
 				exits = "None"
@@ -196,7 +198,12 @@ func OLCRoom(player *glob.PlayerData,
 			WriteToBuilder(player, buf)
 			WriteToPlayer(player, "Syntax for OLC room:\r\rolc <name/description> <text>\r\nolc exit <exit name>\r\nolc exit create <direction name>\r\nolc room <location>")
 		} else {
-			WriteToPlayer(player, "No room selected in editor")
+			WriteToPlayer(player, "No room selected in editor, selecting current room.")
+			player.OLCEdit.Room.ID = player.Location.ID
+			player.OLCEdit.Room.Sector = player.Location.Sector
+			player.OLCEdit.Room.RoomLink = player.Location.RoomLink
+			CmdOLC(player, "")
+			return
 		}
 
 	}
