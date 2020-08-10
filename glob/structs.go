@@ -47,9 +47,9 @@ type HelpPage struct {
 }
 
 type MleData struct {
-	Active     bool `json:"-"`
-	Lines      map[int]string
-	ColorCodes bool `json:",omitempty"`
+	Active     bool           `json:",omitempty"`
+	Lines      map[int]string `json:",omitempty"`
+	ColorCodes bool           `json:",omitempty"`
 
 	NumLines  int     `json:",omitempty"`
 	CurLine   int     `json:",omitempty"`
@@ -292,31 +292,31 @@ type PlayerData struct {
 }
 
 type EditLink struct {
-	Name   string
-	Sector int
-	ID     int
+	Name   string `json:",omitempty"`
+	Sector int    `json:",omitempty"`
+	ID     int    `json:",omitempty"`
 
-	RoomLink   *RoomData
-	ObjectLink *ObjectData
-	//TriggerLink *TriggerData
-	//MobileLink  *MobileData
-	ExitLink *ExitData
+	RoomLink   *RoomData   `json:"-"`
+	ObjectLink *ObjectData `json:"-"`
+	//TriggerLink *TriggerData `json:"-"`
+	//MobileLink  *MobileData `json:"-"`
+	ExitLink *ExitData `json:"-"`
 }
 
 type OLCEdit struct {
-	Active bool `json:"-"`
-	Mode   int  `json:"-"`
+	Active bool `json:",omitempty"`
+	Mode   int  `json:",omitempty"`
 
 	/*Current selection & past selections*/
 	Sector int `json:",omitempty"`
 	ID     int `json:",omitempty"`
 
-	Room   EditLink `json:"-"`
-	Object EditLink `json:"-"`
-	//Trigger EditLink `json:"-"`
-	//Mobile  EditLink `json:"-"`
-	//Quest   EditLink `json:"-"`
-	Exit EditLink `json:"-"`
+	Room   EditLink `json:",omitempty"`
+	Object EditLink `json:",omitempty"`
+	//Trigger EditLink `json:",omitempty"`
+	//Mobile  EditLink `json:",omitempty"`
+	//Quest   EditLink `json:",omitempty"`
+	Exit EditLink `json:",omitempty"`
 }
 
 type LocationData struct {
@@ -330,12 +330,12 @@ type LocationData struct {
 }
 
 type Command struct {
-	AS    bool                                  `json:",omitempty"`
-	Short string                                `json:",omitempty"`
-	Name  string                                `json:",omitempty"`
+	AS    bool                                  `json:"-"`
+	Short string                                `json:"-"`
+	Name  string                                `json:"-"`
 	Cmd   func(player *PlayerData, args string) `json:"-"`
-	Type  int                                   `json:",omitempty"`
-	Help  string                                `json:",omitempty"`
+	Type  int                                   `json:"-"`
+	Help  string                                `json:"-"`
 	Valid bool                                  `json:"-"`
 }
 
@@ -349,9 +349,9 @@ type ConfigData struct {
 	ID    int     `json:",omitempty"`
 	Name  string  `json:",omitempty"`
 	Help  string  `json:",omitempty"`
-	Ref   *bool   `json:",omitempty"`
-	RefS  *string `json:",omitempty"`
-	RefI  *int    `json:",omitempty"`
+	Ref   *bool   `json:"-"`
+	RefS  *string `json:"-"`
+	RefI  *int    `json:"-"`
 	Valid bool    `json:"-"`
 }
 
@@ -367,16 +367,19 @@ type PConfigData struct {
 	WhoHide      int    `json:",omitempty"`
 	PreNewline   bool   `json:",omitempty"`
 	PostNewline  bool   `json:",omitempty"`
-	Valid        bool   `json:"-"`
+
+	Valid bool `json:"-"`
 }
 
 type WearLocations struct {
-	Name          string
-	ID            int
-	WearMessage   string
-	RemoveMessage string
-	LookDesc      string
+	Name          string `json:",omitempty"`
+	ID            int    `json:",omitempty"`
+	WearMessage   string `json:",omitempty"`
+	RemoveMessage string `json:",omitempty"`
+	LookDesc      string `json:",omitempty"`
 
-	ConflictLocationA int
-	ConflictLocationB int
+	ConflictLocationA int `json:",omitempty"`
+	ConflictLocationB int `json:",omitempty"`
+
+	Valid bool `json:"-"`
 }

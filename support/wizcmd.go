@@ -2,11 +2,19 @@ package support
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
 	"../glob"
 )
+
+func CmdShutdown(player *glob.PlayerData, args string) {
+	WriteToAll("Server shutting down.")
+	CmdAsave(player, "")
+	CmdSavePlayers(player, "")
+	os.Exit(0)
+}
 
 func CmdPerfStat(player *glob.PlayerData, args string) {
 	glob.PerLock.Lock() //PERF-LOCK
