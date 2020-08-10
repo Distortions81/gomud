@@ -57,7 +57,7 @@ func ReloadSector() {
 
 func WriteSectorList() {
 	for x := 1; x <= glob.SectorsListEnd; x++ {
-		if glob.SectorsList[x].Valid && glob.SectorsList[x].Name != "" {
+		if glob.SectorsList[x].ID > 0 && glob.SectorsList[x].Name != "" {
 			if glob.SectorsList[x].Fingerprint == "" {
 				glob.SectorsList[x].Fingerprint = MakeFingerprint(glob.SectorsList[x].Name)
 			}
@@ -75,7 +75,7 @@ func WriteSector(sector *glob.SectorData) bool {
 
 	sector.Version = def.SECTOR_VERSION
 
-	if sector == nil && !sector.Valid {
+	if sector == nil {
 		return false
 	}
 

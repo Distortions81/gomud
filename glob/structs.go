@@ -120,7 +120,7 @@ type SectorData struct {
 
 	Dirty bool `json:"-"`
 
-	Valid bool `json:"-"`
+	Valid bool `json:",omitempty"`
 }
 
 type InputBuffer struct {

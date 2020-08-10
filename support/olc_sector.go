@@ -19,9 +19,20 @@ func OLCSector(player *glob.PlayerData,
 	}
 	sector := &glob.SectorsList[player.OLCEdit.Sector]
 
-	if cmdl == "" {
-		buf := fmt.Sprintf("Name: %v\r\nID %v\r\nFingerprint: %v\r\nDescription: %v\r\nArea: %v\r\nRoom count: %v",
-			sector.Name, sector.ID, sector.Fingerprint, sector.Description, sector.Area, sector.NumRooms)
+	sec, err := strconv.Atoi(cmdl)
+
+	if err == nil && sec > 0 {
+		secData := &glob.SectorsList[sec]
+		if secData != nil {
+			WriteToPlayer(player, fmt.Sprintf("Sector %v selected.", sec))
+			player.OLCEdit.Sector = sec
+			sector = secData
+			CmdOLC(player, "")
+			return
+		}
+	} else if cmdl == "" {
+		buf := fmt.Sprintf("Name: %v\r\nID %v\r\nFingerprint: %v\r\nDescription: %v\r\nArea: %v\r\nRoom count: %v\r\nVALID: %v",
+			sector.Name, sector.ID, sector.Fingerprint, sector.Description, sector.Area, sector.NumRooms, sector.Valid)
 		WriteToBuilder(player, buf)
 	} else {
 		/* If sector specified, use it, otherwise use player location */
@@ -46,6 +57,41 @@ func OLCSector(player *glob.PlayerData,
 				}
 			}
 			CmdOLC(player, "")
+			return
+		} else if strings.EqualFold(cmdl, "valid") {
+			if glob.SectorsList[player.OLCEdit.Sector].Valid {
+				glob.SectorsList[player.OLCEdit.Sector].Valid = false
+				WriteToPlayer(player, "Sector set to invalid / inactive.")
+			} else {
+				glob.SectorsList[player.OLCEdit.Sector].Valid = true
+				WriteToPlayer(player, "Sector set to valid / active.")
+
+			}
+		} else if strings.EqualFold(cmdl, "delete") {
+			WriteToPlayer(player, "If you are COMPLETELY CERTAIN you want to PERMENATELY DLETE the ROOMS AND OBJECTS in this ENTIRE SECTOR....\r\nType: confirm-delete-sector")
+			return
+		} else if strings.EqualFold(cmdl, "confirm-delete-sector") {
+			glob.SectorsList[player.OLCEdit.Sector].Rooms = nil
+			glob.SectorsList[player.OLCEdit.Sector].Objects = nil
+			glob.SectorsList[player.OLCEdit.Sector].Valid = false
+			glob.SectorsList[player.OLCEdit.Sector].Dirty = true
+			WriteToPlayer(player, "Rooms and objects in sector cleard, and sector set to invalid / inactive.")
+			return
+		} else if strings.EqualFold(cmdl, "id") {
+			idNum, err := strconv.Atoi(argTwoThrough)
+
+			if err == nil && idNum > 0 {
+				oldSector := player.OLCEdit.Sector
+				oldSectorData := glob.SectorsList[oldSector]
+				WriteToPlayer(player, "Sector moved.")
+				player.OLCEdit.Sector = idNum
+				glob.SectorsList[idNum] = oldSectorData
+				glob.SectorsList[oldSector].Valid = false
+				glob.SectorsList[idNum].Dirty = true
+				glob.SectorsList[oldSector].Dirty = true
+			} else {
+				WriteToPlayer(player, "sector <sector number>")
+			}
 			return
 		} else if strings.EqualFold(cmdl, "name") {
 			sector.Name = argTwoThrough
