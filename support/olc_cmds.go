@@ -9,7 +9,7 @@ import (
 )
 
 func CmdRoomList(player *glob.PlayerData, args string) {
-	sec := glob.SectorsList[player.OLCEdit.Sector]
+	sec := glob.SectorsList[player.OLCEdit.Room.Sector]
 	rooms := sec.Rooms
 
 	buf := ""

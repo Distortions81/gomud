@@ -14,11 +14,11 @@ func OLCSector(player *glob.PlayerData,
 	input string, command string, cmdB string, cmdl string, cmdBl string,
 	argTwoThrough string, argThreeThrough string) {
 
-	if player.OLCEdit.Sector == 0 {
+	if player.OLCEdit.Sector.Sector == 0 {
 		sid := player.Location.Sector
-		player.OLCEdit.Sector = sid
+		player.OLCEdit.Sector.Sector = sid
 	}
-	sector := &glob.SectorsList[player.OLCEdit.Sector]
+	sector := &glob.SectorsList[player.OLCEdit.Sector.Sector]
 
 	sec, err := strconv.Atoi(cmdl)
 
@@ -26,7 +26,7 @@ func OLCSector(player *glob.PlayerData,
 		secData := &glob.SectorsList[sec]
 		if secData != nil {
 			WriteToPlayer(player, fmt.Sprintf("Sector %v selected.", sec))
-			player.OLCEdit.Sector = sec
+			player.OLCEdit.Sector.Sector = sec
 			sector = secData
 			CmdOLC(player, "")
 			return
@@ -51,7 +51,7 @@ func OLCSector(player *glob.PlayerData,
 
 			if err == nil {
 				if glob.SectorsList[psid].Valid {
-					player.OLCEdit.Sector = psid
+					player.OLCEdit.Sector.Sector = psid
 					WriteToPlayer(player, "Sector "+cmdBl+" selected")
 				} else {
 					WriteToPlayer(player, "Invalid sector, use sector create.")
@@ -95,10 +95,10 @@ func OLCSector(player *glob.PlayerData,
 			idNum, err := strconv.Atoi(argTwoThrough)
 
 			if err == nil && idNum > 0 {
-				oldSector := player.OLCEdit.Sector
+				oldSector := player.OLCEdit.Sector.Sector
 				oldSectorData := glob.SectorsList[oldSector]
 				WriteToPlayer(player, "Sector moved.")
-				player.OLCEdit.Sector = idNum
+				player.OLCEdit.Sector.Sector = idNum
 				if glob.SectorsListEnd < idNum {
 					glob.SectorsListEnd = idNum
 				}
@@ -134,7 +134,7 @@ func OLCSector(player *glob.PlayerData,
 			glob.SectorsListEnd++
 			glob.SectorsList[glob.SectorsListEnd] = *newSector
 			sector.ID = glob.SectorsListEnd
-			player.OLCEdit.Sector = glob.SectorsListEnd
+			player.OLCEdit.Sector.Sector = glob.SectorsListEnd
 			sector.Dirty = true
 			WriteToPlayer(player, "Sector created.")
 			CmdOLC(player, "")

@@ -307,16 +307,13 @@ type OLCEdit struct {
 	Active bool `json:",omitempty"`
 	Mode   int  `json:",omitempty"`
 
-	/*Current selection & past selections*/
-	Sector int `json:",omitempty"`
-	ID     int `json:",omitempty"`
-
 	Room   EditLink `json:",omitempty"`
 	Object EditLink `json:",omitempty"`
 	//Trigger EditLink `json:",omitempty"`
 	//Mobile  EditLink `json:",omitempty"`
 	//Quest   EditLink `json:",omitempty"`
-	Exit EditLink `json:",omitempty"`
+	Exit   EditLink `json:",omitempty"`
+	Sector EditLink `json:",omitempty"`
 }
 
 type LocationData struct {

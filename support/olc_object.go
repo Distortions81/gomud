@@ -39,7 +39,7 @@ func OLCObject(player *glob.PlayerData,
 	} else if cmdl == "" {
 		if player.OLCEdit.Object.ID != 0 {
 			objId := player.OLCEdit.Object.ID
-			objSec := player.OLCEdit.Sector
+			objSec := player.OLCEdit.Object.Sector
 			obj := glob.SectorsList[objSec].Objects[objId]
 			buf := fmt.Sprintf("Name: %v\r\nID: %v\r\nDesc: %v\r\n", obj.Name, obj.ID, obj.Description)
 			WriteToPlayer(player, buf)
