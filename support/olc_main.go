@@ -20,7 +20,7 @@ func CmdOLC(player *glob.PlayerData, input string) {
 
 	player.OLCEdit.Active = true
 
-	if player.OLCSettings.NoOLCPrefix == false && strings.EqualFold(command, "olc") {
+	if strings.EqualFold(command, "olc") {
 		WriteToPlayer(player, "You are in noPrefix mode, you don't need to type OLC before commands.\r\ntype settings to turn this mode off... Or type STOP to exit.")
 		return
 	} else if strings.EqualFold("stop", input) {
@@ -47,8 +47,8 @@ func CmdOLC(player *glob.PlayerData, input string) {
 
 		if cmdl == "room" {
 			player.OLCEdit.Mode = def.OLC_ROOM
-			player.OLCEdit.Sector = player.Location.Sector
-			player.OLCEdit.ID = player.Location.ID
+			player.OLCEdit.Room.Sector = player.Location.Sector
+			player.OLCEdit.Room.ID = player.Location.ID
 		} else if cmdl == "object" {
 			player.OLCEdit.Mode = def.OLC_OBJECT
 		} else if cmdl == "trigger" {
