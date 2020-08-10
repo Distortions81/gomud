@@ -1,36 +1,20 @@
 ---NEWS---
-Distortions: 8/1/2020:
+Distortions: 8/10/2020
+WIP: Objects in-progress
 
-WIP: objects
-
-Recently added:
-Player/Sector locks (safety)
-Better performance sector/player autosaving
-Performance stats
-Sector editor
-Exit editor
-basic help command
-
-Added:
-playerType WIP
+Description editor in place
+reloadTexts (helps/news/greeting/etc)
 reloadPlayer
-reloadText (news/greet/etc)
-News added
-goto command (telport)
-OLC room editing is in place (exit exiting isn't complete)
-The DIG command works, though!
-Config command added (not many options do anything yet)
-olc settings command added, and is functional.
-command shorthand ( see help command )
-help command
-wizhelp
-emote
-relogin
+saveHelps
+perfStats
+shutdown
+goto
+sectorList
+roomList (prelim
+playerType (promote to builder/mod)
 
-In progress:
-Sector editor
-Room/Sector ID edit & auto-relink
-Aliases ( Mostly done )
+Lots of general under the hood work, general cleanup
+Coming soon: help files for existing commands.
 
 {iFor more information, see the Discord!{x
 {uhttps://discord.gg/55CDABa
