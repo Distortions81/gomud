@@ -27,6 +27,10 @@ func SetupNewCharacter(player *glob.PlayerData) {
 	player.Config.PostNewline = true
 	player.Config.PreNewline = true
 
+	player.OLCSettings.NoOLCPrefix = true
+	player.OLCSettings.OLCRoomFollow = true
+	player.OLCSettings.OLCShowCodes = true
+
 	player.Fingerprint = MakeFingerprint(player.Name)
 	WriteToAll("A newcomer has arrived, their name is " + player.Name + "...")
 }
@@ -131,6 +135,17 @@ func ReadPlayer(name string, load bool) (*glob.PlayerData, bool) {
 				}
 				if player.BytesOut == nil {
 					player.BytesOut = make(map[string]int)
+				}
+				/*Re-link OLC pointer*/
+				if player.OLCEdit.Active {
+					loc, found := LocationDataFromID(player.OLCEdit.Room.Sector, player.OLCEdit.Room.ID)
+					if found {
+						player.OLCEdit.Room.RoomLink = loc.RoomLink
+					}
+					obj, found := GetObjectFromID(player.OLCEdit.Object.Sector, player.OLCEdit.Object.ID)
+					if found {
+						player.OLCEdit.Object.ObjectLink = obj
+					}
 				}
 
 				mlog.Write("Player loaded: " + player.Name)
