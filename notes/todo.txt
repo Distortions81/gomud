@@ -6,10 +6,7 @@ RENAME TEMP FILE
 
 olc/player dirty flags, add/check them!
 
-
-split up files, olc, olc room, olc object, reorg interp/buffer/negotate
-split up OLC command, individual functions.
-split up struct.go, move lists to lists.go
+ reorg interp/buffer/negotate
 look into putting related functions into structs?
 replace login with account/character, seperate process.
 
@@ -17,8 +14,6 @@ replace login with account/character, seperate process.
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 telnet negotate, CHARSET, MCCP, UNICDOE, SSL, etc.
-start OLC object
-sector creator/editor
 dig vnum spacing options
 
 
@@ -36,22 +31,11 @@ write logs to log folder with date, buffered
 sort directions, NSEW-CUSTOM? color?
 player colorname
 
-old mud code/areas & docs to git
-
-
-make easy system for custom strings, map[fuction:strname:setname(languages, color, noncolor, version)]strings
-allow user submissions?
-strings.dat
-
 channels / yell
 notes (after edit mode, and newline support)
 
-
-MAKE DEFAULT SETTINGS LIST
-
 rewrite login code into individual functions, 
 psudo code
-
 
 loginName {
     if state != login {
