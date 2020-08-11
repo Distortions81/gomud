@@ -110,29 +110,6 @@ func ScaleBytes(b int) string {
 	return output
 }
 
-func SplitArgsTwo(input string, sep string) (command string, longArg string) {
-	inputLen := len(input)
-	command = ""
-	longArg = ""
-	argNum := 0
-	//If we have arguments
-	if inputLen > 0 {
-		args := strings.Split(input, sep)
-		argNum = len(args)
-
-		if argNum > 0 {
-			//Command name, tolower
-			command = args[0]
-
-			//all arguments after command
-			if argNum > 1 {
-				longArg = strings.Join(args[1:argNum], sep)
-			}
-		}
-	}
-	return command, longArg
-}
-
 func IsStandardDirection(input string) bool {
 	command := strings.ToLower(input)
 

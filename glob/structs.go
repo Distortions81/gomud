@@ -43,16 +43,6 @@ type HelpPage struct {
 	Valid bool `json:"-"`
 }
 
-type LocationData struct {
-	Sector int `json:",omitempty"`
-	ID     int `json:",omitempty"`
-
-	RoomLink *RoomData `json:"-"`
-	//Function to print
-	//Function to parse
-	Valid bool `json:"-"`
-}
-
 type Command struct {
 	AS    bool                                  `json:"-"`
 	Short string                                `json:"-"`

@@ -12,6 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+/*Will be replaced*/
 func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 
 	if con == nil {
