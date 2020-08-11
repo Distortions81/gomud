@@ -15,6 +15,16 @@ import (
 	"../mlog"
 )
 
+func GetPTypeString(ptype int) string {
+	for _, a := range glob.PlayerTypes {
+		if a.PType == ptype {
+			return a.PName
+		}
+	}
+
+	return ""
+}
+
 func SetupNewCharacter(player *glob.PlayerData) {
 	if player == nil && !player.Valid {
 		return
@@ -285,54 +295,6 @@ func LinkPlayerConnection(player *glob.PlayerData, con *glob.ConnectionData) {
 
 	CmdWho(player, "")
 	CmdLook(player, "")
-}
-
-func PlayerToRoom(player *glob.PlayerData, sectorID int, roomID int) {
-
-	if player == nil && !player.Valid {
-		return
-	}
-	//Remove player from room, if they are in one
-	if player.Location.RoomLink != nil {
-		room := player.Location.RoomLink
-		delete(room.Players, player.Fingerprint)
-	}
-
-	//Add player to room, add error handling
-	//Automatically generate "players" map if it doesn't exist
-	if glob.SectorsList[sectorID].Valid &&
-		glob.SectorsList[sectorID].Rooms != nil {
-
-		room := glob.SectorsList[sectorID].Rooms[roomID]
-		if room != nil {
-			room.Players[player.Fingerprint] = player
-		}
-
-		player.Location.RoomLink = glob.SectorsList[sectorID].Rooms[roomID]
-		player.Location.Sector = sectorID
-		player.Location.ID = roomID
-		player.Dirty = true
-
-		if player.OLCEdit.Active &&
-			player.OLCEdit.Mode == def.OLC_ROOM &&
-			player.OLCSettings.OLCRoomFollow {
-
-			player.OLCEdit.Room.ID = player.Location.ID
-			player.OLCEdit.Room.Sector = player.Location.Sector
-			player.OLCEdit.Room.RoomLink = player.Location.RoomLink
-		}
-
-	} else {
-		mlog.Write("PlayerToRoom: That sector or room is not valid.")
-		mlog.Write(fmt.Sprintf("Sector: %v, Room: %v, Player: %v", sectorID, roomID, player.Name))
-		if sectorID != def.PLAYER_START_SECTOR && roomID != def.PLAYER_START_ROOM {
-			PlayerToRoom(player, def.PLAYER_START_SECTOR, def.PLAYER_START_ROOM)
-		} else {
-			log.Println("Default room/sector not found. Quitting.")
-			os.Exit(1)
-		}
-
-	}
 }
 
 func RemovePlayer(player *glob.PlayerData) {
