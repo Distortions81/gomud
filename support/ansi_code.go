@@ -8,29 +8,61 @@ func ANSIColor(in string) string {
 
 	length := len(input) - 1
 
-	for i := 0; i < length; i++ {
-
-		cur := input[i]
+	for i := 0; ; i++ {
 		length = len(input)
-		if i+1 < length {
-			next := input[i+1]
 
-			if cur == '{' && next >= 'A' && next <= 'z' {
-				color := getColor(next)
+		if i < length {
+			cur := input[i]
+			if i+1 < length {
+				next := input[i+1]
 
-				colorized = true
-				output = input[:i] + color + input[i+2:]
-				input = output
+				if cur == '{' && next >= 'A' && next <= 'z' {
+					color := getColor(next)
 
-			} else if cur == '{' && next == '{' {
-				colorized = true
-				output = input[:i] + input[i+2:]
-				input = output
+					colorized = true
+					output = input[:i] + color + input[i+2:]
+					input = output
+
+				} else if cur == '{' && next == '{' {
+					output = input[:i] + input[i+2:]
+					input = output
+				}
 			}
+		} else {
+			break
 		}
 	}
 	if colorized {
 		input = input + getColor('x')
+	}
+	return input
+
+}
+
+func StripColorCodes(in string) string {
+	output := ""
+	input := in
+
+	for i := 0; ; i++ {
+		length := len(input) - 1
+		if i < length {
+			cur := input[i]
+
+			if i+1 < length {
+				next := input[i+1]
+
+				if cur == '{' && next >= 'A' && next <= 'z' {
+					output = input[:i] + input[i+2:]
+					input = output
+
+				} else if cur == '{' && next == '{' {
+					output = input[:i] + input[i+2:]
+					input = output
+				}
+			}
+		} else {
+			break
+		}
 	}
 	return input
 

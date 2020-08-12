@@ -1,6 +1,6 @@
 package def
 
-const VERSION = "v0.0.12 8-8-2020-0950"
+const VERSION = "v0.0.13 8-11-2020-0808p"
 const DEFAULT_PORT = ":7777"
 const DEFAULT_PORT_SSL = ":7778"
 
@@ -15,9 +15,9 @@ const MAX_DESC = 950
 const MAX_MLE = 100
 
 const MAX_INPUT_LENGTH = 4096
-const MAX_OUTPUT_LENGTH = 16384
+const MAX_OUTPUT_LENGTH = 65536
 const MAX_INPUT_LINES = 100
-const MAX_CMATCH_SEARCH = 1000
+const MAX_CMATCH_SEARCH = 10000
 
 //Timers
 const ROUND_LENGTH_uS = 250000

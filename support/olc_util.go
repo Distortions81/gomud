@@ -69,21 +69,13 @@ func doDigCustom(player *glob.PlayerData, rooms map[int]*glob.RoomData, found in
 }
 
 func WriteToBuilder(player *glob.PlayerData, text string) {
-
-	var bytes int
-	var err error
-
 	if player == nil || !player.Valid || player.Connection == nil || !player.Connection.Valid {
 		return
 	}
 
 	if player.OLCSettings.OLCShowCodes {
-		bytes, err = player.Connection.Desc.Write([]byte(text + "\r\n"))
+		WriteToConn(player.Connection, text, false, true)
 	} else {
-		bytes, err = player.Connection.Desc.Write([]byte(ANSIColor(text) + "\r\n"))
+		WriteToConn(player.Connection, text, player.Config.Ansi, false)
 	}
-	player.Connection.BytesOut += bytes
-	trackBytesOut(player.Connection)
-
-	DescWriteError(player.Connection, err)
 }

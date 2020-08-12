@@ -30,6 +30,10 @@ func DescWriteError(c *glob.ConnectionData, err error) {
 }
 
 func WriteToDesc(c *glob.ConnectionData, text string) {
+	WriteToConn(c, text, true, false)
+}
+
+func WriteToConn(c *glob.ConnectionData, text string, color bool, codes bool) {
 
 	if c == nil || !c.Valid {
 		return
@@ -40,8 +44,17 @@ func WriteToDesc(c *glob.ConnectionData, text string) {
 		mlog.Write("WriteToDesc: string too large, Truncated!" + cstring)
 	}
 
+	bytes := 0
+	var err error
+
 	message := fmt.Sprintf("%s\r\n", text)
-	bytes, err := c.Desc.Write([]byte(ANSIColor(message)))
+	if color {
+		bytes, err = c.Desc.Write([]byte(ANSIColor(message)))
+	} else if codes {
+		bytes, err = c.Desc.Write([]byte(message))
+	} else {
+		bytes, err = c.Desc.Write([]byte(StripColorCodes(message)))
+	}
 	c.BytesOut += bytes
 	trackBytesOut(c)
 
@@ -49,16 +62,10 @@ func WriteToDesc(c *glob.ConnectionData, text string) {
 }
 
 func WriteToPlayer(player *glob.PlayerData, text string) {
-
 	if player == nil || !player.Valid || player.Connection == nil || !player.Connection.Valid {
 		return
 	}
-
-	bytes, err := player.Connection.Desc.Write([]byte(ANSIColor(text) + "\r\n"))
-	player.Connection.BytesOut += bytes
-	trackBytesOut(player.Connection)
-
-	DescWriteError(player.Connection, err)
+	WriteToConn(player.Connection, text, player.Config.Ansi, false)
 }
 
 func WriteToPlayerCodes(player *glob.PlayerData, text string) {
@@ -66,55 +73,39 @@ func WriteToPlayerCodes(player *glob.PlayerData, text string) {
 	if player == nil || !player.Valid || player.Connection == nil || !player.Connection.Valid {
 		return
 	}
-
-	bytes, err := player.Connection.Desc.Write([]byte(text + "\r\n"))
-	player.Connection.BytesOut += bytes
-	trackBytesOut(player.Connection)
-
-	DescWriteError(player.Connection, err)
+	WriteToConn(player.Connection, text, false, true)
 }
 
 func WriteToAll(text string) {
-	if text == "" {
-		return
-	}
 
-	for x := 1; x <= glob.ConnectionListEnd; x++ {
+	for x := 0; x <= glob.ConnectionListEnd; x++ {
 		var con *glob.ConnectionData
 		con = &glob.ConnectionList[x]
-		if con.Valid == false {
-			continue
-		}
-		if con.State == def.CON_STATE_PLAYING {
-			bytes, err := con.Desc.Write([]byte(ANSIColor(text) + "\r\n"))
-			con.BytesOut += bytes
-			trackBytesOut(con)
-
-			DescWriteError(con, err)
+		if con != nil && con.Valid && con.Player != nil && con.State == def.CON_STATE_PLAYING {
+			if con != nil && con.Valid && con.Player != nil && con.Player.Valid {
+				WriteToConn(con, text, con.Player.Config.Ansi, false)
+			} else if con != nil && con.Valid {
+				WriteToConn(con, text, true, false)
+			}
 		}
 	}
-	//mlog.Write(text)
 }
 
 func WriteToOthers(player *glob.PlayerData, text string) {
-	if player == nil || !player.Valid || text == "" {
+	if player == nil || !player.Valid || player.Connection == nil || !player.Connection.Valid || text == "" {
 		return
 	}
-
-	pc := player.Connection
-
-	for x := 1; x <= glob.ConnectionListEnd; x++ {
+	for x := 0; x <= glob.ConnectionListEnd; x++ {
 		var con *glob.ConnectionData
 		con = &glob.ConnectionList[x]
-		if con.Valid == false {
-			continue
-		}
-		if con.Desc != pc.Desc && con.State == def.CON_STATE_PLAYING {
-			bytes, err := con.Desc.Write([]byte(ANSIColor(text) + "\r\n"))
-			con.BytesOut += bytes
-			trackBytesOut(con)
-
-			DescWriteError(con, err)
+		if con != player.Connection {
+			if con != nil && con.Valid && con.Player != nil && con.State == def.CON_STATE_PLAYING {
+				if con != nil && con.Valid && con.Player != nil && con.Player.Valid {
+					WriteToConn(con, text, con.Player.Config.Ansi, false)
+				} else if con != nil && con.Valid {
+					WriteToConn(con, text, true, false)
+				}
+			}
 		}
 	}
 	mlog.Write(text)

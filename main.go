@@ -171,6 +171,7 @@ func main() {
 	time.Sleep(time.Second)
 }
 
+/*TODO: If performance becomes an issue, sleep once per round */
 func mainLoop() {
 
 	rand.Seed(time.Now().UTC().UnixNano())
