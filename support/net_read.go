@@ -2,6 +2,7 @@ package support
 
 import (
 	"bufio"
+	"fmt"
 	"strings"
 
 	"../def"
@@ -49,12 +50,21 @@ func ReadConnection(con *glob.ConnectionData) {
 			}
 		}
 
-		con.Input.BufferInPos++
-		con.Input.BufferInCount++
-		if con.Input.BufferInPos >= def.MAX_INPUT_LINES {
-			con.Input.BufferInPos = 0
+		lines := strings.Split(limit, ";")
+		for i, line := range lines {
+			if i < def.MAX_COMMANDS_PER_LINE {
+				con.Input.BufferInPos++
+				con.Input.BufferInCount++
+				if con.Input.BufferInPos >= def.MAX_INPUT_LINES {
+					con.Input.BufferInPos = 0
+				}
+				con.Input.InputBuffer[con.Input.BufferInPos] = line
+			} else {
+				buf := fmt.Sprintf("Too many commands on one line, stopped at #%v", def.MAX_COMMANDS_PER_LINE)
+				WriteToDesc(con, buf)
+				break
+			}
 		}
-		con.Input.InputBuffer[con.Input.BufferInPos] = limit
 		glob.ConnectionListLock.Unlock() /*--- UNLOCK ---*/
 
 	}
