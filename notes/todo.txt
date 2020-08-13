@@ -10,10 +10,12 @@ olc/player dirty flags, add/check them!
 look into putting related functions into structs?
 replace login with account/character, seperate process.
 
+-------------------------------------------------------
+Make function within EditLink for linking RoomLink/Object Link
 
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-telnet negotate, CHARSET, MCCP, UNICDOE, SSL, etc.
+telnet negotate, CHARSET, MCCP, UNICODE, SSL, etc.
 dig vnum spacing options
 
 

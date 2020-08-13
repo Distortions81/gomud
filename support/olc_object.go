@@ -19,11 +19,16 @@ func OLCObject(player *glob.PlayerData,
 	var obj *glob.ObjectData
 
 	if cmdl == "done" {
+		/* Exit editor */
 		player.OLCEdit.Mode = def.OLC_NONE
 		WriteToPlayer(player, "Exiting OLC.")
 		player.OLCEdit.Active = false
 		return
+
+		/* Create new obj */
 	} else if cmdl == "create" {
+
+		/* Check if sector/id is specified */
 		sector, id, wasErr = ParseVnum(player, argThreeThrough)
 		if wasErr == false && sector > 0 && id > 0 {
 			glob.SectorsList[sector].Objects[id] = CreateObject()
