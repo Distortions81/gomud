@@ -143,20 +143,24 @@ func main() {
 	mainLoop()
 
 	//After starting loops, wait here for process signals
-	sc := make(chan os.Signal, 1)
+	glob.SignalHandle = make(chan os.Signal, 1)
 
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-sc
+	signal.Notify(glob.SignalHandle, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	<-glob.SignalHandle
 
+	support.WriteToAll("Server shutting down!")
+	ServerClose()
+}
+
+func ServerClose() {
 	glob.ConnectionListLock.Lock()
 	//glob.ServerState = def.SERVER_CLOSING
-	support.WriteToAll("Server killed!")
 
 	/*Save everything*/
 	for x := 1; x <= glob.ConnectionListEnd; x++ {
 		con := glob.ConnectionList[x]
 		if con.Player != nil && con.Player.Valid {
-			support.WritePlayer(con.Player)
+			support.WritePlayer(con.Player, false)
 			if con.Desc != nil {
 				con.Desc.Write([]byte("Your character has been saved!\r\n"))
 			}
@@ -304,7 +308,7 @@ func mainLoop() {
 					glob.PlayerList[glob.PlayerBackgroundPos].ReqSave {
 
 					/*Write*/
-					support.WritePlayer(glob.PlayerList[glob.PlayerBackgroundPos])
+					support.WritePlayer(glob.PlayerList[glob.PlayerBackgroundPos], true)
 
 					/*If requested, notify player*/
 					if glob.PlayerList[glob.PlayerBackgroundPos].ReqSave {
@@ -326,7 +330,7 @@ func mainLoop() {
 					time.Since(player.UnlinkedTime) > (2*time.Minute) {
 
 					player.UnlinkedTime = time.Time{}
-					support.WritePlayer(player)
+					support.WritePlayer(player, true)
 					support.WriteToRoom(player, fmt.Sprintf("%s fades into nothing...", player.Name))
 					support.RemovePlayer(player)
 				}

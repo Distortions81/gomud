@@ -9,6 +9,8 @@ import (
 	"../def"
 )
 
+var SignalHandle chan os.Signal
+
 /*Descriptor counting*/
 var OpenDesc int
 var OpenDescLock sync.Mutex

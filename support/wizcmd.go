@@ -2,18 +2,15 @@ package support
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"../glob"
 )
 
 func CmdShutdown(player *glob.PlayerData, args string) {
-	WriteToAll("Server shutting down.")
-	CmdAsave(player, "")
-	CmdSavePlayers(player, "")
-	os.Exit(0)
+	glob.SignalHandle <- syscall.SIGINT
 }
 
 func CmdPerfStat(player *glob.PlayerData, args string) {
@@ -115,7 +112,7 @@ func CmdSavePlayers(player *glob.PlayerData, args string) {
 	for x := 1; x <= glob.PlayerListEnd; x++ {
 		target := glob.PlayerList[x]
 		if target != nil && target.Valid {
-			WritePlayer(target)
+			WritePlayer(target, true)
 			WriteToPlayer(player, player.Name+" was saved.")
 		}
 	}

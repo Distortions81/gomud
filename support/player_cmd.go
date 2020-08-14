@@ -100,7 +100,7 @@ func CmdCommands(player *glob.PlayerData, args string) {
 }
 
 func CmdQuit(player *glob.PlayerData, args string) {
-	okay := WritePlayer(player)
+	okay := WritePlayer(player, true)
 	if okay == false {
 		WriteToPlayer(player, "Saving character failed!!!")
 		return //Don't quit if we couldn't save

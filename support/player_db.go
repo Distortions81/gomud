@@ -78,7 +78,7 @@ func ReadPlayer(name string, load bool) (*glob.PlayerData, bool) {
 	}
 }
 
-func WritePlayer(player *glob.PlayerData) bool {
+func WritePlayer(player *glob.PlayerData, asyncSave bool) bool {
 	outbuf := new(bytes.Buffer)
 	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
@@ -105,22 +105,28 @@ func WritePlayer(player *glob.PlayerData) bool {
 	}
 
 	//Async write
-	go func(outbuf bytes.Buffer) {
-		glob.PlayerFileLock.Lock()
-		defer glob.PlayerFileLock.Unlock()
-
-		err = ioutil.WriteFile(fileName, []byte(outbuf.String()), 0644)
-
-		if err != nil {
-			CheckError("WritePlayer: WriteFile", err, def.ERROR_NONFATAL)
-		}
-
-		buf := fmt.Sprintf("Wrote %v, %v.", fileName, ScaleBytes(len(outbuf.String())))
-		mlog.Write(buf)
-	}(*outbuf)
+	if asyncSave {
+		go writePlayerFile(outbuf, fileName)
+	} else {
+		writePlayerFile(outbuf, fileName)
+	}
 
 	player.Dirty = false
 	return true
+}
+
+func writePlayerFile(outbuf *bytes.Buffer, fileName string) {
+	glob.PlayerFileLock.Lock()
+	defer glob.PlayerFileLock.Unlock()
+
+	err := ioutil.WriteFile(fileName, []byte(outbuf.String()), 0644)
+
+	if err != nil {
+		CheckError("WritePlayer: WriteFile", err, def.ERROR_NONFATAL)
+	}
+
+	buf := fmt.Sprintf("Wrote %v, %v.", fileName, ScaleBytes(len(outbuf.String())))
+	mlog.Write(buf)
 }
 
 func RemovePlayer(player *glob.PlayerData) {
