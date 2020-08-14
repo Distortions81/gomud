@@ -148,7 +148,7 @@ func main() {
 	signal.Notify(glob.SignalHandle, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-glob.SignalHandle
 
-	support.WriteToAll("Server shutting down!")
+	support.WriteToAll("Server is shutting down in 5 seconds!")
 	ServerClose()
 }
 
@@ -169,10 +169,10 @@ func ServerClose() {
 	support.WriteSectorList()
 	support.WriteToAll("All sectors saved!")
 	support.WriteToAll("")
+	time.Sleep(5 * time.Second)
 	support.WriteToAll(glob.AuRevoir)
 
 	glob.ConnectionListLock.Unlock()
-	time.Sleep(time.Second)
 }
 
 /*TODO: If performance becomes an issue, sleep once per round */
