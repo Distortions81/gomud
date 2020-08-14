@@ -142,6 +142,10 @@ func CmdWho(player *glob.PlayerData, args string) {
 			WriteToPlayer(player, buf)
 		}
 	}
+
+	buf = fmt.Sprintf("Server uptime: %v", time.Since(glob.BootTime).Round(time.Second).String())
+	WriteToPlayer(player, "")
+	WriteToPlayer(player, buf)
 }
 
 func CmdSave(player *glob.PlayerData, args string) {

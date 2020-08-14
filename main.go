@@ -113,11 +113,11 @@ func WaitNewConnection() {
 func main() {
 
 	var err error
-
 	t := time.Now()
 	glob.MaxRun = time.Nanosecond
 	glob.MinRun = time.Second
 	glob.MedRun = time.Nanosecond
+	glob.BootTime = t
 
 	logName := fmt.Sprintf("log/%v-%v-%v.log", t.Day(), t.Month(), t.Year())
 	glob.MudLog, err = os.OpenFile(logName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
@@ -148,7 +148,7 @@ func main() {
 	signal.Notify(glob.SignalHandle, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-glob.SignalHandle
 
-	support.WriteToAll("Server is shutting down in 5 seconds!")
+	support.WriteToAll("Server is shutting down!")
 	ServerClose()
 }
 
@@ -169,7 +169,7 @@ func ServerClose() {
 	support.WriteSectorList()
 	support.WriteToAll("All sectors saved!")
 	support.WriteToAll("")
-	time.Sleep(5 * time.Second)
+	time.Sleep(1 * time.Second)
 	support.WriteToAll(glob.AuRevoir)
 
 	glob.ConnectionListLock.Unlock()

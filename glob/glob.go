@@ -10,6 +10,7 @@ import (
 )
 
 var SignalHandle chan os.Signal
+var BootTime time.Time
 
 /*Descriptor counting*/
 var OpenDesc int
