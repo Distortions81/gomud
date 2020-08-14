@@ -56,6 +56,10 @@ func OLCObject(player *glob.PlayerData,
 		glob.SectorsList[sector].Objects[found] = CreateObject()
 		glob.SectorsList[sector].Objects[found].ID = found
 
+		player.OLCEdit.Object.ObjectLink, isFound = GetObjectFromID(sector, found)
+		player.OLCEdit.Object.Sector = sector
+		player.OLCEdit.Object.ID = found
+
 		buf := fmt.Sprintf("Object %v:%v created.", sector, found)
 		WriteToPlayer(player, buf)
 		glob.SectorsList[player.OLCEdit.Object.Sector].Dirty = true

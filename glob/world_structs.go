@@ -14,6 +14,7 @@ type SectorData struct {
 
 	Rooms   map[int]*RoomData   `json:",omitempty"`
 	Objects map[int]*ObjectData `json:",omitempty"`
+	Resets  map[int]*ResetsData `json:",omitempty"`
 
 	Dirty bool `json:"-"`
 
@@ -118,4 +119,18 @@ type LocationData struct {
 	//Function to print
 	//Function to parse
 	Valid bool `json:"-"`
+}
+
+type ResetsData struct {
+	Name string `json:",omitempty"`
+
+	Sector int `json:",omitempty"`
+	ObjID  int `json:",omitempty"`
+	//MobID int
+
+	Quanity  int
+	Interval string
+
+	RoomLink *RoomData `json:"-"`
+	Valid    bool
 }

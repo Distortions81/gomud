@@ -135,6 +135,11 @@ func ReadSector(name string) *glob.SectorData {
 			if sector.ID > glob.SectorsListEnd {
 				glob.SectorsListEnd = sector.ID
 			}
+
+			if sector.Resets == nil {
+				sector.Resets = make(map[int]*glob.ResetsData)
+			}
+
 			numRooms := 0
 			for x, _ := range sector.Rooms {
 				numRooms++
