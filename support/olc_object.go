@@ -2,6 +2,7 @@ package support
 
 import (
 	"fmt"
+	"strings"
 
 	"../def"
 	"../glob"
@@ -67,7 +68,42 @@ func OLCObject(player *glob.PlayerData,
 			WriteToPlayer(player, "Name set.")
 			glob.SectorsList[player.OLCEdit.Object.Sector].Dirty = true
 		}
+	} else if cmdl == "description" || cmdl == "desc" {
+		if cmdB == "editor" {
+			player.CurEdit.Active = true
+			player.CurEdit.CallBack = "olc object"
+			player.CurEdit.CallBackP = &player.OLCEdit.Object.ObjectLink.Description
 
+			dLines := strings.Split(player.OLCEdit.Object.ObjectLink.Description, "\r\n")
+			dLen := len(dLines)
+			player.CurEdit.NumLines = 0
+			player.CurEdit.CurLine = 0
+			if player.CurEdit.Lines == nil {
+				player.CurEdit.Lines = make(map[int]string)
+			}
+			for x := 0; x < dLen; x++ {
+				player.CurEdit.Lines[x] = dLines[x]
+				player.CurEdit.NumLines++
+				player.CurEdit.CurLine++
+			}
+			player.CurEdit.NumLines--
+			player.CurEdit.CurLine--
+			MleEditor(player, argThreeThrough)
+			WriteToPlayer(player, "Description sent to editor.")
+			return
+		} else if cmdBl == "paste" {
+			newDesc := ""
+			for x := 0; x <= player.CurEdit.NumLines; x++ {
+				newDesc = newDesc + player.CurEdit.Lines[x] + "\r\n"
+			}
+			player.OLCEdit.Object.ObjectLink.Description = newDesc
+			WriteToPlayer(player, "Text transfered from editor.")
+			CmdOLC(player, "")
+			return
+		}
+		player.OLCEdit.Object.ObjectLink.Description = argTwoThrough
+		WriteToPlayer(player, "Description set")
+		glob.SectorsList[player.OLCEdit.Object.Sector].Dirty = true //Autosave
 	} else if cmdl == "" {
 		if player.OLCEdit.Object.ID != 0 {
 			objId := player.OLCEdit.Object.ID
@@ -86,6 +122,8 @@ func OLCObject(player *glob.PlayerData,
 			player.OLCEdit.Object.Sector = sector
 			player.OLCEdit.Object.ID = id
 			WriteToPlayer(player, "Object selected.")
+			CmdOLC(player, "")
+			return
 		} else {
 			WriteToPlayer(player, "Didn't find a valid object.")
 		}
