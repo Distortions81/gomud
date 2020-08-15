@@ -53,10 +53,6 @@ func OLCReset(player *glob.PlayerData,
 			glob.SectorsList[sector].Rooms[id].Resets = make(map[int]*glob.ResetsData)
 		}
 
-		bufe := fmt.Sprintf("sector: %v, id: %v found: %v, err: %v, input: %v",
-			sector, id, isFound, wasErr, input)
-		WriteToPlayer(player, bufe)
-
 		for x := 1; ; x++ {
 			r := glob.SectorsList[sector].Rooms[id].Resets[x]
 			if r == nil || r.Valid == false {
@@ -83,7 +79,7 @@ func OLCReset(player *glob.PlayerData,
 
 	} else if cmdl == "name" {
 		if player.OLCEdit.Reset.ResetLink == nil {
-			WriteToPlayer(player, "No selected reset")
+			WriteToPlayer(player, "No selected room")
 		} else {
 			player.OLCEdit.Reset.ResetLink.Name = argTwoThrough
 			WriteToPlayer(player, "Name set.")
@@ -94,6 +90,9 @@ func OLCReset(player *glob.PlayerData,
 		id := player.OLCEdit.Reset.ID
 		buf := ""
 		if sector != 0 && id != 0 && glob.SectorsList[sector].Rooms[id] != nil {
+			rBuf := fmt.Sprintf("Room: %v:%v", sector, id)
+			WriteToPlayer(player, rBuf)
+
 			for _, res := range glob.SectorsList[sector].Rooms[id].Resets {
 				buf = fmt.Sprintf("Name: %v\r\nID: %v\r\nType: %v\r\n",
 					res.Name, res.Number, res.Type)
@@ -123,9 +122,6 @@ func OLCReset(player *glob.PlayerData,
 			}
 		} else {
 			WriteToPlayer(player, "Didn't find a valid room.")
-			buf := fmt.Sprintf("sector: %v, id: %v found: %v, err: %v, input: %v",
-				sector, id, isFound, wasErr, input)
-			WriteToPlayer(player, buf)
 		}
 	}
 }

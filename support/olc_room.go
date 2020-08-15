@@ -134,6 +134,9 @@ func OLCRoom(player *glob.PlayerData,
 			player.OLCEdit.Room.RoomLink.Description = argTwoThrough
 			WriteToPlayer(player, "Description set")
 			glob.SectorsList[player.OLCEdit.Room.Sector].Dirty = true //Autosave
+		} else if cmdl == "reset" || cmdl == "resets" {
+			player.OLCEdit.Mode = def.OLC_RESET
+			CmdOLC(player, "")
 		} else if cmdl == "exit" || cmdl == "exits" {
 			if cmdB == "" {
 				WriteToPlayer(player, "OLC exit <exit name>")
@@ -192,11 +195,15 @@ func OLCRoom(player *glob.PlayerData,
 			if exits == "" {
 				exits = "None"
 			}
-			buf = buf + fmt.Sprintf("Room: %v:%v (sector/id)\r\nName: %v\r\nDescription: \r\n\r\n%v\r\n\r\nExits:\r\n%v",
+			numResets := 0
+			for x, _ := range player.OLCEdit.Room.RoomLink.Resets {
+				numResets = x
+			}
+			buf = buf + fmt.Sprintf("Room: %v:%v (sector/id)\r\nName: %v\r\nDescription: \r\n\r\n%v\r\n\r\nExits:\r\n%v\r\nResets: %v",
 				player.OLCEdit.Room.Sector, player.OLCEdit.Room.ID,
-				player.OLCEdit.Room.RoomLink.Name, player.OLCEdit.Room.RoomLink.Description, exits)
+				player.OLCEdit.Room.RoomLink.Name, player.OLCEdit.Room.RoomLink.Description, exits, numResets)
 			WriteToBuilder(player, buf)
-			WriteToPlayer(player, "Syntax for OLC room:\r\rolc <name/description> <text>\r\nolc exit <exit name>\r\nolc exit create <direction name>\r\nolc room <location>")
+			WriteToPlayer(player, "Syntax for OLC room:\r\rolc <name/description> <text>\r\nolc exit <exit name>\r\nolc exit create <direction name>\r\nolc room <location>\r\nolc resets")
 		} else {
 			WriteToPlayer(player, "No room selected in editor, selecting current room.")
 			player.OLCEdit.Room.ID = player.Location.ID
