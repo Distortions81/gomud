@@ -101,7 +101,7 @@ func interpretInput(con *glob.ConnectionData, input string, isAlias bool) {
 				OLCPrompt = fmt.Sprintf("<OLC ROOM: %v:%v>:", con.Player.OLCEdit.Room.Sector, con.Player.OLCEdit.Room.ID)
 			} else if con.Player.OLCEdit.Mode == def.OLC_OBJECT {
 				OLCPrompt = fmt.Sprintf("<OLC OBJECT: WIP>:")
-			} else if con.Player.OLCEdit.Mode == def.OLC_TRIGGER {
+			} else if con.Player.OLCEdit.Mode == def.OLC_RESET {
 				OLCPrompt = fmt.Sprintf("<OLC TRIGGER: WIP>:")
 			} else if con.Player.OLCEdit.Mode == def.OLC_MOBILE {
 				OLCPrompt = fmt.Sprintf("<OLC MOBILE: WIP>: ")

@@ -1,8 +1,11 @@
-package glob
+package support
 
-import "../def"
+import (
+	"../def"
+	"../glob"
+)
 
-var PlayerTypes = []pTypeData{
+var PlayerTypes = []glob.PTypeData{
 	{PType: def.PLAYER_TYPE_NEW, PName: "New"},
 	{PType: def.PLAYER_TYPE_NORMAL, PName: "Normal"},
 	{PType: def.PLAYER_TYPE_VETERAN, PName: "Veteran"},
@@ -14,7 +17,7 @@ var PlayerTypes = []pTypeData{
 	{PType: def.PLAYER_TYPE_OWNER, PName: "Owner"},
 }
 
-var WearLocationsList = []WearLocations{
+var WearLocationsList = []glob.WearLocations{
 	{Name: "head", ID: def.OBJ_WEAR_HEAD},
 	{Name: "face", ID: def.OBJ_WEAR_FACE},
 

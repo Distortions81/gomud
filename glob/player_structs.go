@@ -83,7 +83,7 @@ type InputBuffer struct {
 	Valid bool ` json:"-"`
 }
 
-type pTypeData struct {
+type PTypeData struct {
 	PType int    `json:",omitempty"`
 	PName string `json:",omitempty"`
 	Valid bool   `json:"-"`

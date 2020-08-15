@@ -51,8 +51,8 @@ func CmdOLC(player *glob.PlayerData, input string) {
 			player.OLCEdit.Room.ID = player.Location.ID
 		} else if cmdl == "object" {
 			player.OLCEdit.Mode = def.OLC_OBJECT
-		} else if cmdl == "trigger" {
-			player.OLCEdit.Mode = def.OLC_TRIGGER
+		} else if cmdl == "reset" || cmdl == "resets" {
+			player.OLCEdit.Mode = def.OLC_RESET
 		} else if cmdl == "mobile" {
 			player.OLCEdit.Mode = def.OLC_MOBILE
 		} else if cmdl == "quest" {
@@ -70,14 +70,15 @@ func CmdOLC(player *glob.PlayerData, input string) {
 		OLCRoom(player, input, command, cmdB, cmdl, cmdBl, argTwoThrough, argThreeThrough)
 	} else if player.OLCEdit.Mode == def.OLC_OBJECT {
 		OLCObject(player, input, command, cmdB, cmdl, cmdBl, argTwoThrough, argThreeThrough)
-	} else if player.OLCEdit.Mode == def.OLC_TRIGGER {
+	} else if player.OLCEdit.Mode == def.OLC_RESET {
 		if cmdl == "done" {
 			player.OLCEdit.Mode = def.OLC_NONE
 			WriteToPlayer(player, "Exiting OLC.")
 			player.OLCEdit.Active = false
 			return
 		}
-		WriteToPlayer(player, "Not available yet (WIP).")
+		OLCReset(player, input, command, cmdB, cmdl, cmdBl, argTwoThrough, argThreeThrough)
+		return
 	} else if player.OLCEdit.Mode == def.OLC_MOBILE {
 		if cmdl == "done" {
 			player.OLCEdit.Mode = def.OLC_NONE

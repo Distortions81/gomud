@@ -10,7 +10,7 @@ import (
 )
 
 func GetPTypeString(ptype int) string {
-	for _, a := range glob.PlayerTypes {
+	for _, a := range PlayerTypes {
 		if a.PType == ptype {
 			return a.PName
 		}

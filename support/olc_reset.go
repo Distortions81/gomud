@@ -13,10 +13,9 @@ func OLCReset(player *glob.PlayerData,
 
 	found := 0
 	isFound := false
-	sector := 0
-	id := 0
+	sector := player.OLCEdit.Reset.Sector
+	id := player.OLCEdit.Reset.ID
 	wasErr := false
-	var res *glob.ResetsData
 
 	if cmdl == "done" {
 		/* Exit editor */
@@ -54,9 +53,13 @@ func OLCReset(player *glob.PlayerData,
 			glob.SectorsList[sector].Rooms[id].Resets = make(map[int]*glob.ResetsData)
 		}
 
+		bufe := fmt.Sprintf("sector: %v, id: %v found: %v, err: %v, input: %v",
+			sector, id, isFound, wasErr, input)
+		WriteToPlayer(player, bufe)
+
 		for x := 1; ; x++ {
 			r := glob.SectorsList[sector].Rooms[id].Resets[x]
-			if r != nil || r.Valid == false {
+			if r == nil || r.Valid == false {
 				found = x
 				break
 			}
@@ -87,20 +90,27 @@ func OLCReset(player *glob.PlayerData,
 			glob.SectorsList[player.OLCEdit.Reset.Sector].Dirty = true
 		}
 	} else if cmdl == "" {
-		if player.OLCEdit.Reset.ID != 0 {
-			sector := player.OLCEdit.Reset.Sector
-			id := player.OLCEdit.Reset.ID
-			resNum := player.OLCEdit.Reset.Number
-			res := glob.SectorsList[sector].Rooms[id].Resets[resNum]
-			buf := fmt.Sprintf("Name: %v\r\nID: %v\r\nType: %v\r\n", res.Name, res.Number, res.Type)
-			WriteToPlayer(player, buf)
+		sector := player.OLCEdit.Reset.Sector
+		id := player.OLCEdit.Reset.ID
+		buf := ""
+		if sector != 0 && id != 0 && glob.SectorsList[sector].Rooms[id] != nil {
+			for _, res := range glob.SectorsList[sector].Rooms[id].Resets {
+				buf = fmt.Sprintf("Name: %v\r\nID: %v\r\nType: %v\r\n",
+					res.Name, res.Number, res.Type)
+				WriteToPlayer(player, buf)
+			}
 		} else {
-			WriteToPlayer(player, "No reset selected.")
+			WriteToPlayer(player, "No room selected!")
+			return
+		}
+		if buf == "" {
+			WriteToPlayer(player, "There are no resets in this room.")
+			return
 		}
 	} else {
 		sector, id, wasErr = ParseVnum(player, input)
 		_, isFound = GetRoomFromID(sector, id)
-		if wasErr == false && isFound == true && res != nil {
+		if wasErr == false && isFound == true {
 			var rLoc glob.LocationData
 			rLoc, isFound = LocationDataFromID(sector, id)
 			if isFound {
@@ -113,6 +123,9 @@ func OLCReset(player *glob.PlayerData,
 			}
 		} else {
 			WriteToPlayer(player, "Didn't find a valid room.")
+			buf := fmt.Sprintf("sector: %v, id: %v found: %v, err: %v, input: %v",
+				sector, id, isFound, wasErr, input)
+			WriteToPlayer(player, buf)
 		}
 	}
 }
