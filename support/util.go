@@ -14,6 +14,30 @@ import (
 	"../mlog"
 )
 
+func GetResetFromID(sector int, id int, number int) (*glob.ResetsData, bool) {
+	sData := glob.SectorsList[sector]
+	if sData.Valid {
+		oData := sData.Rooms[id].Resets[number]
+		if oData != nil {
+			return oData, true
+		}
+	}
+
+	return nil, false
+}
+
+func GetRoomFromID(sector int, id int) (*glob.RoomData, bool) {
+	sData := glob.SectorsList[sector]
+	if sData.Valid {
+		oData := sData.Rooms[id]
+		if oData != nil {
+			return oData, true
+		}
+	}
+
+	return nil, false
+}
+
 func GetObjectFromID(sector int, id int) (*glob.ObjectData, bool) {
 
 	sData := glob.SectorsList[sector]

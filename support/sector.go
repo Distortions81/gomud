@@ -38,8 +38,8 @@ func CreateRoom() *glob.RoomData {
 		Description: "",
 		Players:     make(map[string]*glob.PlayerData),
 		Exits:       make(map[string]*glob.ExitData),
-		PermObjects: make(map[string]*glob.ObjectData),
-		Objects:     make(map[string]*glob.ObjectData),
+		PermObjects: make(map[int]*glob.ObjectData),
+		Objects:     make(map[int]*glob.ObjectData),
 		Valid:       true,
 	}
 
@@ -60,4 +60,12 @@ func CreateObject() *glob.ObjectData {
 		Valid: true,
 	}
 	return &obj
+}
+
+func CreateReset() *glob.ResetsData {
+	res := glob.ResetsData{
+		Valid: true,
+		Name:  "new reset",
+	}
+	return &res
 }

@@ -15,13 +15,15 @@ type WearLocations struct {
 
 type EditLink struct {
 	Name   string `json:",omitempty"`
+	Number int    `json:",omitempty"`
 	Sector int    `json:",omitempty"`
 	ID     int    `json:",omitempty"`
 
 	RoomLink   *RoomData   `json:"-"`
 	ObjectLink *ObjectData `json:"-"`
-	//TriggerLink *TriggerData `json:"-"`
+	ResetLink  *ResetsData `json:"-"`
 	//MobileLink  *MobileData `json:"-"`
+	//QuestLink *QuestData `json:"-"`
 	ExitLink *ExitData `json:"-"`
 }
 
@@ -31,7 +33,7 @@ type OLCEdit struct {
 
 	Room   EditLink `json:",omitempty"`
 	Object EditLink `json:",omitempty"`
-	//Trigger EditLink `json:",omitempty"`
+	Reset  EditLink `json:",omitempty"`
 	//Mobile  EditLink `json:",omitempty"`
 	//Quest   EditLink `json:",omitempty"`
 	Exit   EditLink `json:",omitempty"`

@@ -136,10 +136,6 @@ func ReadSector(name string) *glob.SectorData {
 				glob.SectorsListEnd = sector.ID
 			}
 
-			if sector.Resets == nil {
-				sector.Resets = make(map[int]*glob.ResetsData)
-			}
-
 			numRooms := 0
 			for x, _ := range sector.Rooms {
 				numRooms++
@@ -152,10 +148,13 @@ func ReadSector(name string) *glob.SectorData {
 					room.Exits = make(map[string]*glob.ExitData)
 				}
 				if room.PermObjects == nil {
-					room.PermObjects = make(map[string]*glob.ObjectData)
+					room.PermObjects = make(map[int]*glob.ObjectData)
 				}
 				if room.Objects == nil {
-					room.Objects = make(map[string]*glob.ObjectData)
+					room.Objects = make(map[int]*glob.ObjectData)
+				}
+				if room.Resets == nil {
+					room.Resets = make(map[int]*glob.ResetsData)
 				}
 
 				for x, _ := range room.Exits {

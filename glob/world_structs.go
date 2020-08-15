@@ -14,7 +14,6 @@ type SectorData struct {
 
 	Rooms   map[int]*RoomData   `json:",omitempty"`
 	Objects map[int]*ObjectData `json:",omitempty"`
-	Resets  map[int]*ResetsData `json:",omitempty"`
 
 	Dirty bool `json:"-"`
 
@@ -68,13 +67,15 @@ type ObjectContainer struct {
 }
 
 type RoomData struct {
-	SectorP     *SectorData            `json:"-"`
-	Name        string                 `json:",omitempty"`
-	ColorName   string                 `json:",omitempty"`
-	Description string                 `json:",omitempty"`
+	SectorP     *SectorData `json:"-"`
+	Name        string      `json:",omitempty"`
+	ColorName   string      `json:",omitempty"`
+	Description string      `json:",omitempty"`
+
 	Players     map[string]*PlayerData `json:"-"`
-	Objects     map[string]*ObjectData `json:"-"`
-	PermObjects map[string]*ObjectData `json:",omitempty"`
+	Objects     map[int]*ObjectData    `json:"-"`
+	Resets      map[int]*ResetsData    `json:",omitempty"`
+	PermObjects map[int]*ObjectData    `json:",omitempty"`
 
 	Exits map[string]*ExitData `json:",omitempty"`
 
@@ -122,15 +123,14 @@ type LocationData struct {
 }
 
 type ResetsData struct {
-	Name string `json:",omitempty"`
+	Name   string `json:",omitempty"`
+	Number int    `json:",omitempty"`
 
-	Sector int `json:",omitempty"`
-	ObjID  int `json:",omitempty"`
-	//MobID int
+	Location LocationData `json:",omitempty"`
+	Type     int          `json:",omitempty"`
 
-	Quanity  int
-	Interval string
+	Quanity  int    `json:",omitempty"`
+	Interval string `json:",omitempty"`
 
-	RoomLink *RoomData `json:"-"`
-	Valid    bool
+	Valid bool
 }
