@@ -109,7 +109,7 @@ func getColor(i byte) string {
 	} else if i == 'B' { //bright blue
 		return "\033[1;34m"
 	} else if i == 'M' { //bright magenta
-		return "\033[10;35m"
+		return "\033[1;35m"
 	} else if i == 'C' { //bright cyan
 		return "\033[1;36m"
 	} else if i == 'W' { //bright white
